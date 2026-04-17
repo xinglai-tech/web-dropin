@@ -68,6 +68,15 @@
       </div>
     </div>
 
+    <div class="form-group">
+      <label for="channel">Channel</label>
+      <select id="channel">
+        <option value="Web" selected>Web</option>
+        <option value="iOS">iOS</option>
+        <option value="Android">Android</option>
+      </select>
+    </div>
+
     <button class="btn" id="startBtn">Continue to Checkout</button>
   </div>
 
@@ -93,6 +102,7 @@
         country: countryEl.value,
         currency: currencyEl.value,
         amount: document.getElementById('amount').value,
+        channel: document.getElementById('channel').value,
       });
       window.location.href = '/checkout.html?' + params.toString();
     });

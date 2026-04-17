@@ -34,9 +34,10 @@
       const country  = params.get('country')  || 'SG';
       const currency = params.get('currency') || 'SGD';
       const amount   = parseInt(params.get('amount') || '1000', 10);
+      const channel  = params.get('channel')  || 'Web';
 
       document.getElementById('summary').textContent =
-        `${currency} ${(amount / 100).toFixed(2)} — ${country}`;
+        `${currency} ${(amount / 100).toFixed(2)} — ${country} — ${channel}`;
 
       // ── Fetch client config ─────────────────────────────────────────────
       const configRes = await fetch('/api/config');
@@ -46,7 +47,7 @@
       const pmRes = await fetch('/api/paymentMethods', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ countryCode: country, currency, amount }),
+        body: JSON.stringify({ countryCode: country, currency, amount, channel }),
       });
       const paymentMethodsResponse = await pmRes.json();
 
@@ -73,6 +74,7 @@
                 currency,
                 amount,
                 countryCode: country,
+                channel,
                 returnUrl,
               }),
             });
