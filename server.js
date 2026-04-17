@@ -181,10 +181,6 @@ app.post('/api/payments/details', async (req, res) => {
 
 // ── Start ───────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
-const sslOptions = {
-  key: fs.readFileSync(path.join(__dirname, 'key.pem')),
-  cert: fs.readFileSync(path.join(__dirname, 'cert.pem')),
-};
-https.createServer(sslOptions, app).listen(PORT, () => {
-  console.log(`Server running on https://localhost:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
