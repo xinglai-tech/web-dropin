@@ -80,28 +80,22 @@ app.get('/api/config', (_req, res) => {
 app.post('/api/paymentMethods', async (req, res) => {
   try {
     const { countryCode, currency, amount, channel } = req.body;
+    const ch = channel || 'Web';
+    const isMobile = ch === 'iOS' || ch === 'Android';
+    const blockedPaymentMethods = isMobile
+      ? ['alipay', 'wechatpayQR', 'wechatpayMiniProgram']
+      : ['alipay_wap', 'wechatpayWeb', 'wechatpayMiniProgram'];
+
     const response = await checkout.PaymentsApi.paymentMethods({
       merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
       countryCode: countryCode || 'SG',
       amount: {
         currency: currency || 'SGD',
-        value: amount || 1000,
+        value: amount || 100,
       },
-      channel: channel || 'Web',
+      channel: ch,
+      blockedPaymentMethods,
     });
-
-    const ch = channel || 'Web';
-    const isMobile = ch === 'iOS' || ch === 'Android';
-    const hideTypes = isMobile
-      ? ['alipay', 'wechatpayQR', 'wechatpayMiniProgram']
-      : ['alipay_wap', 'wechatpayWeb', 'wechatpayMiniProgram'];
-
-    if (response.paymentMethods) {
-      response.paymentMethods = response.paymentMethods.filter(
-        (pm) => !hideTypes.includes(pm.type)
-      );
-    }
-
     res.json(response);
   } catch (error) {
     console.error('/paymentMethods error:', error.message);
@@ -123,7 +117,7 @@ app.post('/api/payments', async (req, res) => {
       merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
       amount: {
         currency: currency || 'SGD',
-        value: amount || 1000,
+        value: amount || 100,
       },
       reference: orderRef,
       paymentMethod,
@@ -142,7 +136,7 @@ app.post('/api/payments', async (req, res) => {
       lineItems: [
         {
           quantity: 1,
-          amountIncludingTax: amount || 1000,
+          amountIncludingTax: amount || 100,
           description: 'Test Product',
           id: 'item-1',
           taxAmount: 0,

@@ -33,7 +33,7 @@
       const params  = new URLSearchParams(window.location.search);
       const country  = params.get('country')  || 'SG';
       const currency = params.get('currency') || 'SGD';
-      const amount   = parseInt(params.get('amount') || '1000', 10);
+      const amount   = parseInt(params.get('amount') || '100', 10);
       const channel  = params.get('channel')  || 'Web';
 
       document.getElementById('summary').textContent =
