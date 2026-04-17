@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adyen Checkout</title>
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet"
+        href="https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/6.33.0/adyen.css" />
+  <script src="https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/6.33.0/adyen.js"></script>
+</head>
+<body>
+  <div class="header">
+    <h1>Checkout</h1>
+    <p id="summary"></p>
+  </div>
+
+  <div class="card">
+    <div class="spinner active" id="spinner"></div>
+    <div id="error-banner" style="display:none;background:#fdecea;color:#c0392b;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-size:0.9rem;word-break:break-all;"></div>
+    <div id="dropin-container"></div>
+    <div id="psp-info" style="display:none;background:#eef7ee;padding:12px 16px;border-radius:8px;margin-top:12px;font-size:0.9rem;text-align:center;color:#333;word-break:break-all;"></div>
+    <div id="back-home" style="display:none;text-align:center;margin-top:16px;">
+      <a class="back-link" href="/">← Back to Home</a>
+    </div>
+  </div>
+
+  <script>
+    (async () => {
+      const { AdyenCheckout, Dropin } = window.AdyenWeb;
+      let lastPspReference = '';
+      // ── Read query params ───────────────────────────────────────────────
+      const params  = new URLSearchParams(window.location.search);
+      const country  = params.get('country')  || 'SG';
+      const currency = params.get('currency') || 'SGD';
+      const amount   = parseInt(params.get('amount') || '1000', 10);
+
+      document.getElementById('summary').textContent =
+        `${currency} ${(amount / 100).toFixed(2)} — ${country}`;
+
+      // ── Fetch client config ─────────────────────────────────────────────
+      const configRes = await fetch('/api/config');
+      const { clientKey, environment } = await configRes.json();
+
+      // ── Fetch payment methods ───────────────────────────────────────────
+      const pmRes = await fetch('/api/paymentMethods', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ countryCode: country, currency, amount }),
+      });
+      const paymentMethodsResponse = await pmRes.json();
+
+      // ── Build return URL for redirect payments ──────────────────────────
+      const returnUrl = `${window.location.origin}/result.html`;
+
+      // ── Initialise Adyen Checkout (Advanced Flow) ───────────────────────
+      const adyenCheckout = await AdyenCheckout({
+        environment,
+        clientKey,
+        paymentMethodsResponse,
+        countryCode: country,
+        locale: 'en-US',
+        amount: { currency, value: amount },
+
+        // Called when the shopper submits payment
+        onSubmit: async (state, component, actions) => {
+          try {
+            const res = await fetch('/api/payments', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ...state.data,
+                currency,
+                amount,
+                countryCode: country,
+                returnUrl,
+              }),
+            });
+            const result = await res.json();
+
+            if (result.error) {
+              showError(result.error);
+              actions.reject();
+              return;
+            }
+            if (result.pspReference) lastPspReference = result.pspReference;
+            actions.resolve(result);
+          } catch (err) {
+            console.error('onSubmit error:', err);
+            showError(err.message || 'Payment request failed');
+            actions.reject();
+          }
+        },
+
+        // Called after additional shopper interaction (e.g. native 3DS)
+        onAdditionalDetails: async (state, component, actions) => {
+          try {
+            const res = await fetch('/api/payments/details', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ details: state.data.details }),
+            });
+            const result = await res.json();
+
+            if (result.error) {
+              showError(result.error);
+              actions.reject();
+              return;
+            }
+            if (result.pspReference) lastPspReference = result.pspReference;
+            actions.resolve(result);
+          } catch (err) {
+            console.error('onAdditionalDetails error:', err);
+            showError(err.message || 'Details request failed');
+            actions.reject();
+          }
+        },
+
+        onPaymentCompleted: (result, _component) => {
+          console.log('Payment completed:', result.resultCode);
+          showPsp(lastPspReference);
+          document.getElementById('back-home').style.display = 'block';
+        },
+
+        onPaymentFailed: (result, _component) => {
+          console.log('Payment failed:', result?.resultCode);
+          showPsp(lastPspReference);
+          document.getElementById('back-home').style.display = 'block';
+        },
+
+        onError: (error, _component) => {
+          console.error('Checkout error:', error);
+          showError(error.message || JSON.stringify(error));
+        },
+      });
+
+      // ── Mount Drop-in ───────────────────────────────────────────────────
+      document.getElementById('spinner').classList.remove('active');
+      const dropin = new Dropin(adyenCheckout, {
+        openFirstPaymentMethod: true,
+      }).mount('#dropin-container');
+
+      function showError(msg) {
+        const banner = document.getElementById('error-banner');
+        banner.textContent = '⚠️ ' + msg;
+        banner.style.display = 'block';
+      }
+
+      function showPsp(psp) {
+        if (!psp) return;
+        const el = document.getElementById('psp-info');
+        el.innerHTML = '<strong>PSP Reference:</strong> ' + psp;
+        el.style.display = 'block';
+      }
+    })();
+  </script>
+</body>
+</html>

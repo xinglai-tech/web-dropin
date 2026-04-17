@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Result</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="header">
+    <h1>Payment Result</h1>
+    <p>See the outcome of your payment below</p>
+  </div>
+
+  <div class="card result-card" id="resultCard">
+    <div class="spinner active" id="spinner"></div>
+  </div>
+
+  <script>
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const redirectResult = params.get('redirectResult');
+      const resultCode     = params.get('resultCode');
+
+      const card    = document.getElementById('resultCard');
+      const spinner = document.getElementById('spinner');
+
+      // ── If we already have a resultCode (from onPaymentCompleted) ──────
+      if (resultCode && !redirectResult) {
+        spinner.classList.remove('active');
+        renderResult({ resultCode });
+        return;
+      }
+
+      // ── If we have a redirectResult, call /payments/details ────────────
+      if (redirectResult) {
+        try {
+          const res = await fetch('/api/payments/details', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              details: { redirectResult },
+            }),
+          });
+          const data = await res.json();
+          spinner.classList.remove('active');
+          renderResult(data);
+        } catch (err) {
+          spinner.classList.remove('active');
+          renderResult({ resultCode: 'Error', error: err.message });
+        }
+        return;
+      }
+
+      // ── No data at all ────────────────────────────────────────────────
+      spinner.classList.remove('active');
+      renderResult({ resultCode: 'Unknown' });
+
+      // ── Render helper ──────────────────────────────────────────────────
+      function renderResult(data) {
+        const code = data.resultCode || 'Unknown';
+        const icon = {
+          Authorised: '✅', Received: '⏳', Pending: '⏳',
+          Refused: '❌', Cancelled: '🚫', Error: '⚠️',
+        }[code] || 'ℹ️';
+
+        const statusClass = ['Authorised'].includes(code)
+          ? 'status-authorised'
+          : ['Refused', 'Cancelled', 'Error'].includes(code)
+            ? 'status-refused'
+            : 'status-pending';
+
+        let html = `
+          <div class="result-icon">${icon}</div>
+          <h2 class="${statusClass}">${code}</h2>
+        `;
+
+        // Show available detail fields
+        const fields = [
+          ['pspReference',  data.pspReference],
+          ['merchantReference', data.merchantReference],
+          ['resultCode',    data.resultCode],
+          ['refusalReason', data.refusalReason],
+        ];
+        fields.forEach(([label, value]) => {
+          if (value) {
+            html += `
+              <div class="detail-row">
+                <span>${label}</span><span>${value}</span>
+              </div>`;
+          }
+        });
+
+        html += `<a class="back-link" href="/">← New payment</a>`;
+        card.innerHTML = html;
+      }
+    })();
+  </script>
+</body>
+</html>

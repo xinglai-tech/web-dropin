@@ -1,0 +1,253 @@
+/* ── Reset & Base ────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  background: #f5f7fa;
+  color: #1a1a2e;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.header {
+  width: 100%;
+  background: linear-gradient(135deg, #0abf53 0%, #0abf53 100%);
+  color: #fff;
+  padding: 24px 0;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+.header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.header p {
+  margin-top: 4px;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+/* ── Card container ──────────────────────────────────────────────────────── */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  padding: 32px;
+  margin: 32px 16px;
+  width: 100%;
+  max-width: 560px;
+}
+.card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* ── Form elements ───────────────────────────────────────────────────────── */
+.form-group {
+  margin-bottom: 18px;
+}
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #555;
+}
+.form-group select,
+.form-group input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  background: #fafbfc;
+}
+.form-group select:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: #0abf53;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+}
+.row .form-group {
+  flex: 1;
+}
+
+/* ── Button ──────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-block;
+  width: 100%;
+  padding: 14px;
+  background: #0abf53;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-align: center;
+}
+.btn:hover {
+  background: #09a848;
+}
+.btn:disabled {
+  background: #b0b8c1;
+  cursor: not-allowed;
+}
+
+/* ── Spinner ─────────────────────────────────────────────────────────────── */
+.spinner {
+  display: none;
+  text-align: center;
+  padding: 40px 0;
+}
+.spinner.active {
+  display: block;
+}
+.spinner::after {
+  content: '';
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  border: 4px solid #ddd;
+  border-top-color: #0abf53;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Drop-in container ───────────────────────────────────────────────────── */
+#dropin-container {
+  margin-top: 8px;
+}
+
+/* ── Result page ─────────────────────────────────────────────────────────── */
+.result-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+.result-card {
+  text-align: center;
+}
+.result-card h2 {
+  margin-bottom: 8px;
+}
+.result-card p {
+  color: #666;
+  margin-bottom: 6px;
+  word-break: break-all;
+}
+.result-card .detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+  text-align: left;
+}
+.result-card .detail-row span:first-child {
+  font-weight: 600;
+  color: #555;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 20px;
+  color: #0abf53;
+  text-decoration: none;
+  font-weight: 600;
+}
+.back-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Status colours ──────────────────────────────────────────────────────── */
+.status-authorised {
+  color: #0abf53;
+}
+.status-refused,
+.status-error {
+  color: #e74c3c;
+}
+.status-pending {
+  color: #f39c12;
+}
+
+/* ── Responsive: mobile (≤ 600px) ────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .header {
+    padding: 16px 12px;
+  }
+  .header h1 {
+    font-size: 1.2rem;
+  }
+  .header p {
+    font-size: 0.8rem;
+  }
+
+  .card {
+    margin: 16px 8px;
+    padding: 18px 14px;
+    border-radius: 10px;
+  }
+  .card h2 {
+    font-size: 1.05rem;
+    margin-bottom: 14px;
+  }
+
+  .row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .form-group select,
+  .form-group input {
+    font-size: 16px; /* prevents iOS auto-zoom on focus */
+    padding: 12px 14px;
+  }
+
+  .btn {
+    padding: 16px;
+    font-size: 1rem;
+  }
+
+  .result-icon {
+    font-size: 2.4rem;
+  }
+  .result-card .detail-row {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .result-card .detail-row span:first-child {
+    font-size: 0.8rem;
+  }
+}
+
+/* ── Responsive: tablet (601px – 768px) ──────────────────────────────────── */
+@media (min-width: 601px) and (max-width: 768px) {
+  .card {
+    max-width: 480px;
+    padding: 26px 22px;
+  }
+}
