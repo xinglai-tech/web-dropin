@@ -89,6 +89,19 @@ app.post('/api/paymentMethods', async (req, res) => {
       },
       channel: channel || 'Web',
     });
+
+    const ch = channel || 'Web';
+    const isMobile = ch === 'iOS' || ch === 'Android';
+    const hideTypes = isMobile
+      ? ['alipay', 'wechatpayQR', 'wechatpayMiniProgram']
+      : ['alipay_wap', 'wechatpayWeb', 'wechatpayMiniProgram'];
+
+    if (response.paymentMethods) {
+      response.paymentMethods = response.paymentMethods.filter(
+        (pm) => !hideTypes.includes(pm.type)
+      );
+    }
+
     res.json(response);
   } catch (error) {
     console.error('/paymentMethods error:', error.message);
