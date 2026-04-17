@@ -26,7 +26,6 @@
         <option value="FR">France</option>
         <option value="DE">Germany</option>
         <option value="HK">Hong Kong</option>
-        <option value="IN">India</option>
         <option value="JP">Japan</option>
         <option value="MY">Malaysia</option>
         <option value="NL">Netherlands</option>
@@ -51,7 +50,6 @@
           <option value="EUR">EUR</option>
           <option value="GBP">GBP</option>
           <option value="HKD">HKD</option>
-          <option value="INR">INR</option>
           <option value="JPY">JPY</option>
           <option value="KRW">KRW</option>
           <option value="MYR">MYR</option>
@@ -64,7 +62,7 @@
       </div>
       <div class="form-group">
         <label for="amount">Amount (minor units)</label>
-        <input type="number" id="amount" value="100" min="1" />
+        <input type="number" id="amount" value="10" min="1" max="5000" />
       </div>
     </div>
 
@@ -85,7 +83,7 @@
     const countryCurrency = {
       SG: 'SGD', US: 'USD', GB: 'GBP', NL: 'EUR', DE: 'EUR', FR: 'EUR',
       AU: 'AUD', JP: 'JPY', HK: 'HKD', SE: 'SEK', NO: 'NOK',
-      FI: 'EUR', DK: 'DKK', CA: 'CAD', BR: 'BRL', IN: 'INR', MY: 'MYR',
+      FI: 'EUR', DK: 'DKK', CA: 'CAD', BR: 'BRL', MY: 'MYR',
       TH: 'THB', KR: 'KRW',
     };
 

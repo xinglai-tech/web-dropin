@@ -91,7 +91,7 @@ app.post('/api/paymentMethods', async (req, res) => {
       countryCode: countryCode || 'SG',
       amount: {
         currency: currency || 'SGD',
-        value: amount || 100,
+        value: amount || 10,
       },
       channel: ch,
       blockedPaymentMethods,
@@ -107,6 +107,9 @@ app.post('/api/paymentMethods', async (req, res) => {
 app.post('/api/payments', async (req, res) => {
   try {
     const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel } = req.body;
+    if (amount > 5000) {
+      return res.status(400).json({ error: 'Amount exceeds maximum limit of 5000' });
+    }
     const orderRef = uuid();
 
     const origin = `${req.protocol}://${req.get('host')}`;
@@ -117,7 +120,7 @@ app.post('/api/payments', async (req, res) => {
       merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
       amount: {
         currency: currency || 'SGD',
-        value: amount || 100,
+        value: amount || 10,
       },
       reference: orderRef,
       paymentMethod,
@@ -136,7 +139,7 @@ app.post('/api/payments', async (req, res) => {
       lineItems: [
         {
           quantity: 1,
-          amountIncludingTax: amount || 100,
+          amountIncludingTax: amount || 10,
           description: 'Test Product',
           id: 'item-1',
           taxAmount: 0,
