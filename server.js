@@ -84,7 +84,7 @@ app.post('/api/paymentMethods', async (req, res) => {
     const isMobile = ch === 'iOS' || ch === 'Android';
     const blockedPaymentMethods = isMobile
       ? ['wechatpayQR', 'wechatpayMiniProgram']
-      : ['wechatpayWeb', 'wechatpayMiniProgram'];
+      : ['wechatpayMiniProgram'];
 
     const response = await checkout.PaymentsApi.paymentMethods({
       merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
