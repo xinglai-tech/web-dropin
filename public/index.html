@@ -96,10 +96,15 @@
     });
 
     document.getElementById('startBtn').addEventListener('click', () => {
+      const amountVal = parseInt(document.getElementById('amount').value, 10);
+      if (isNaN(amountVal) || amountVal < 1 || amountVal > 5000) {
+        alert('Amount must be between 1 and 5000');
+        return;
+      }
       const params = new URLSearchParams({
         country: countryEl.value,
         currency: currencyEl.value,
-        amount: document.getElementById('amount').value,
+        amount: amountVal,
         channel: document.getElementById('channel').value,
       });
       window.location.href = '/checkout.html?' + params.toString();
