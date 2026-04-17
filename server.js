@@ -79,7 +79,7 @@ app.get('/api/config', (_req, res) => {
 // ── /paymentMethods ─────────────────────────────────────────────────────────
 app.post('/api/paymentMethods', async (req, res) => {
   try {
-    const { countryCode, currency, amount } = req.body;
+    const { countryCode, currency, amount, channel } = req.body;
     const response = await checkout.PaymentsApi.paymentMethods({
       merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
       countryCode: countryCode || 'SG',
@@ -87,7 +87,7 @@ app.post('/api/paymentMethods', async (req, res) => {
         currency: currency || 'SGD',
         value: amount || 1000,
       },
-      channel: 'Web',
+      channel: channel || 'Web',
     });
     res.json(response);
   } catch (error) {
@@ -99,7 +99,7 @@ app.post('/api/paymentMethods', async (req, res) => {
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {
-    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl } = req.body;
+    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel } = req.body;
     const orderRef = uuid();
 
     const origin = `${req.protocol}://${req.get('host')}`;
@@ -117,7 +117,7 @@ app.post('/api/payments', async (req, res) => {
       browserInfo,
       returnUrl: finalReturnUrl,
       countryCode: countryCode || 'SG',
-      channel: 'Web',
+      channel: channel || 'Web',
       origin,
       shopperInteraction: 'Ecommerce',
       authenticationData: {
