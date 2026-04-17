@@ -9,6 +9,7 @@ const { v4: uuid } = require('uuid');
 const path = require('path');
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -19,7 +20,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: true,
+    secure: 'auto',
     maxAge: 4 * 60 * 60 * 1000, // 4 hours
   },
 }));
@@ -181,6 +182,12 @@ app.post('/api/payments/details', async (req, res) => {
 
 // ── Start ───────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const keyPath = path.join(__dirname, 'key.pem');
+const certPath = path.join(__dirname, 'cert.pem');
+
+if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+  https.createServer({ key: fs.readFileSync(keyPath), cert: fs.readFileSync(certPath) }, app)
+    .listen(PORT, () => console.log(`Server running on https://localhost:${PORT}`));
+} else {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
