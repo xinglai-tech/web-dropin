@@ -39,7 +39,8 @@ function verifyToken(token) {
 }
 
 // ── Auth routes ──────────────────────────────────────────────────────────────
-app.get('/login.html', (_req, res) => {
+app.get('/login.html', (req, res) => {
+  if (verifyToken(req.cookies[AUTH_COOKIE])) return res.redirect('/');
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
@@ -49,15 +50,10 @@ app.post('/auth/login', async (req, res) => {
     username === process.env.AUTH_USERNAME &&
     await bcrypt.compare(password, process.env.AUTH_PASSWORD_HASH)
   ) {
-    res.cookie(AUTH_COOKIE, makeToken(), {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: FOUR_HOURS,
-    });
-    return res.json({ success: true });
+    res.setHeader('Set-Cookie', `${AUTH_COOKIE}=${makeToken()}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${FOUR_HOURS / 1000}`);
+    return res.redirect('/');
   }
-  res.status(401).json({ error: 'Invalid username or password' });
+  res.redirect('/login.html?error=1');
 });
 
 app.get('/auth/logout', (req, res) => {

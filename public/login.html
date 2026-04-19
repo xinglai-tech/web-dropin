@@ -43,7 +43,7 @@
   <div class="login-card">
     <h2>Sign In</h2>
     <div class="error-msg" id="errorMsg">Invalid username or password</div>
-    <form id="loginForm">
+    <form action="/auth/login" method="POST">
       <div class="form-group">
         <label for="username">Username</label>
         <input type="text" id="username" name="username" required autocomplete="username" />
@@ -59,31 +59,9 @@
   <footer style="text-align:center;margin-top:2rem;padding:1rem;color:#888;font-size:0.9rem;">Internal use only</footer>
 
   <script>
-    const form = document.getElementById('loginForm');
-    const errorMsg = document.getElementById('errorMsg');
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      errorMsg.classList.remove('show');
-
-      const res = await fetch('/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          username: document.getElementById('username').value,
-          password: document.getElementById('password').value,
-        }),
-      });
-
-      if (res.ok) {
-        window.location.href = '/';
-      } else {
-        const data = await res.json();
-        errorMsg.textContent = data.error || 'Invalid username or password';
-        errorMsg.classList.add('show');
-      }
-    });
+    if (new URLSearchParams(window.location.search).has('error')) {
+      document.getElementById('errorMsg').classList.add('show');
+    }
   </script>
 </body>
 </html>
