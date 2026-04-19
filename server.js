@@ -9,7 +9,7 @@ const { v4: uuid } = require('uuid');
 const path = require('path');
 
 const app = express();
-app.set('trust proxy', 1);
+app.set('trust proxy', true);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -33,6 +33,7 @@ app.get('/login.html', (_req, res) => {
 });
 
 app.post('/auth/login', async (req, res) => {
+  console.log('Login attempt — protocol:', req.protocol, '| x-forwarded-proto:', req.headers['x-forwarded-proto'], '| secure:', req.secure);
   const { username, password } = req.body;
   if (
     username === process.env.AUTH_USERNAME &&
