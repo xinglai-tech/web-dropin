@@ -2,8 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
-const cookieSession = require('cookie-session');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const cookieParser = require('cookie-parser');
 const { Client, CheckoutAPI } = require('@adyen/api-library');
 const { v4: uuid } = require('uuid');
 const path = require('path');
@@ -12,16 +13,30 @@ const app = express();
 app.set('trust proxy', true);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-// ── Session (stored in cookie, survives container restarts) ─────────────────
-app.use(cookieSession({
-  name: 'session',
-  keys: [process.env.SESSION_SECRET],
-  maxAge: 4 * 60 * 60 * 1000, // 4 hours
-  httpOnly: true,
-  secure: false,
-  sameSite: 'lax',
-}));
+// ── Auth helpers ─────────────────────────────────────────────────────────────
+const AUTH_COOKIE = 'auth_token';
+const FOUR_HOURS = 4 * 60 * 60 * 1000;
+
+function makeToken() {
+  const expires = Date.now() + FOUR_HOURS;
+  const data = `authenticated:${expires}`;
+  const sig = crypto.createHmac('sha256', process.env.SESSION_SECRET).update(data).digest('hex');
+  return `${data}:${sig}`;
+}
+
+function verifyToken(token) {
+  if (!token) return false;
+  const parts = token.split(':');
+  if (parts.length !== 3) return false;
+  const [label, expires, sig] = parts;
+  const data = `${label}:${expires}`;
+  const expected = crypto.createHmac('sha256', process.env.SESSION_SECRET).update(data).digest('hex');
+  if (sig !== expected) return false;
+  if (Date.now() > parseInt(expires, 10)) return false;
+  return true;
+}
 
 // ── Auth routes ──────────────────────────────────────────────────────────────
 app.get('/login.html', (_req, res) => {
@@ -34,23 +49,26 @@ app.post('/auth/login', async (req, res) => {
     username === process.env.AUTH_USERNAME &&
     await bcrypt.compare(password, process.env.AUTH_PASSWORD_HASH)
   ) {
-    req.session.authenticated = true;
+    res.cookie(AUTH_COOKIE, makeToken(), {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: FOUR_HOURS,
+    });
     return res.json({ success: true });
   }
   res.status(401).json({ error: 'Invalid username or password' });
 });
 
 app.get('/auth/logout', (req, res) => {
-  req.session = null;
+  res.clearCookie(AUTH_COOKIE);
   res.redirect('/login.html');
 });
 
 // ── Auth middleware (protect everything below) ───────────────────────────────
 app.use((req, res, next) => {
-  // Allow static assets needed by login page
   if (req.path === '/style.css') return next();
-  if (req.session && req.session.authenticated) return next();
-  // API calls get 401, pages get redirected
+  if (verifyToken(req.cookies[AUTH_COOKIE])) return next();
   if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Unauthorized' });
   res.redirect('/login.html');
 });
