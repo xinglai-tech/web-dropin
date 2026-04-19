@@ -9,6 +9,22 @@ const { Client, CheckoutAPI } = require('@adyen/api-library');
 const { v4: uuid } = require('uuid');
 const path = require('path');
 
+// ── Payment logger ──────────────────────────────────────────────────────────
+const LOG_DIR = fs.existsSync('/home/LogFiles') ? '/home/LogFiles' : path.join(__dirname, 'logs');
+if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
+
+function logPayment(endpoint, request, response) {
+  const entry = {
+    timestamp: new Date().toISOString(),
+    endpoint,
+    request,
+    response,
+  };
+  const date = new Date().toISOString().slice(0, 10);
+  const file = path.join(LOG_DIR, `payments-${date}.log`);
+  fs.appendFileSync(file, JSON.stringify(entry) + '\n');
+}
+
 const app = express();
 app.set('trust proxy', true);
 app.use(express.json());
@@ -97,7 +113,7 @@ app.post('/api/paymentMethods', async (req, res) => {
       ? ['wechatpayQR', 'wechatpayMiniProgram']
       : ['wechatpayMiniProgram'];
 
-    const response = await checkout.PaymentsApi.paymentMethods({
+    const pmRequest = {
       merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
       countryCode: countryCode || 'SG',
       amount: {
@@ -106,7 +122,9 @@ app.post('/api/paymentMethods', async (req, res) => {
       },
       channel: ch,
       blockedPaymentMethods,
-    });
+    };
+    const response = await checkout.PaymentsApi.paymentMethods(pmRequest);
+    logPayment('/paymentMethods', pmRequest, response);
     res.json(response);
   } catch (error) {
     console.error('/paymentMethods error:', error.message);
@@ -127,7 +145,7 @@ app.post('/api/payments', async (req, res) => {
     const finalReturnUrl =
       returnUrl || `${origin}/result.html`;
 
-    const response = await checkout.PaymentsApi.payments({
+    const payRequest = {
       merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
       amount: {
         currency: currency || 'SGD',
@@ -179,8 +197,9 @@ app.post('/api/payments', async (req, res) => {
         stateOrProvince: 'N/A',
         country: countryCode || 'SG',
       },
-    });
-
+    };
+    const response = await checkout.PaymentsApi.payments(payRequest);
+    logPayment('/payments', payRequest, response);
     res.json(response);
   } catch (error) {
     console.error('/payments error:', error.message);
@@ -191,9 +210,9 @@ app.post('/api/payments', async (req, res) => {
 // ── /payments/details ───────────────────────────────────────────────────────
 app.post('/api/payments/details', async (req, res) => {
   try {
-    const response = await checkout.PaymentsApi.paymentsDetails({
-      details: req.body.details,
-    });
+    const detailsReq = { details: req.body.details };
+    const response = await checkout.PaymentsApi.paymentsDetails(detailsReq);
+    logPayment('/payments/details', detailsReq, response);
     res.json(response);
   } catch (error) {
     console.error('/payments/details error:', error.message);
