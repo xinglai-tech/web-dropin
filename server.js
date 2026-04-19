@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
-const session = require('express-session');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const { Client, CheckoutAPI } = require('@adyen/api-library');
 const { v4: uuid } = require('uuid');
@@ -13,18 +13,14 @@ app.set('trust proxy', true);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ── Session ──────────────────────────────────────────────────────────────────
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  proxy: true,
-  cookie: {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    maxAge: 4 * 60 * 60 * 1000, // 4 hours
-  },
+// ── Session (stored in cookie, survives container restarts) ─────────────────
+app.use(cookieSession({
+  name: 'session',
+  keys: [process.env.SESSION_SECRET],
+  maxAge: 4 * 60 * 60 * 1000, // 4 hours
+  httpOnly: true,
+  secure: false,
+  sameSite: 'lax',
 }));
 
 // ── Auth routes ──────────────────────────────────────────────────────────────
@@ -33,7 +29,6 @@ app.get('/login.html', (_req, res) => {
 });
 
 app.post('/auth/login', async (req, res) => {
-  console.log('Login attempt — protocol:', req.protocol, '| x-forwarded-proto:', req.headers['x-forwarded-proto'], '| secure:', req.secure);
   const { username, password } = req.body;
   if (
     username === process.env.AUTH_USERNAME &&
