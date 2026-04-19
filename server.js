@@ -41,9 +41,8 @@ app.post('/auth/login', async (req, res) => {
 });
 
 app.get('/auth/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/login.html');
-  });
+  req.session = null;
+  res.redirect('/login.html');
 });
 
 // ── Auth middleware (protect everything below) ───────────────────────────────

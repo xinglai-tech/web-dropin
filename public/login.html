@@ -69,6 +69,7 @@
       const res = await fetch('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           username: document.getElementById('username').value,
           password: document.getElementById('password').value,
