@@ -73,13 +73,27 @@ body {
   border: 1.5px solid #ddd;
   border-radius: 8px;
   font-size: 1rem;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   background: #fafbfc;
+  color: #1a1a2e;
+}
+.form-group select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: #fafbfc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E") no-repeat right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+.form-group select:hover,
+.form-group input:hover {
+  border-color: #b0b8c1;
 }
 .form-group select:focus,
 .form-group input:focus {
   outline: none;
   border-color: #4A8DAB;
+  box-shadow: 0 0 0 3px rgba(74, 141, 171, 0.12);
 }
 
 .row {
@@ -233,9 +247,12 @@ body {
   .form-group select,
   .form-group input {
     font-size: 16px; /* prevents iOS auto-zoom on focus */
-    width: 70%;
-    height: 36px;
+    height: 40px;
     padding: 0 10px;
+  }
+  .form-group select {
+    padding-right: 30px;
+    background-position: right 10px center;
   }
 
   .btn {

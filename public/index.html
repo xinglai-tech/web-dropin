@@ -7,23 +7,55 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="/style.css" />
   <style>
-    .logout-btn:hover {
-      background: rgba(255,255,255,0.2);
+    .logout-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── Custom Select ──────────────────────────────────── */
+    .csel { position: relative; width: 100%; }
+    .csel__trigger {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; height: 44px; padding: 0 14px;
+      border: 1.5px solid #ddd; border-radius: 8px;
+      background: #fafbfc; font-size: 1rem; color: #1a1a2e;
+      cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s;
+      user-select: none;
     }
+    .csel__trigger:hover { border-color: #b0b8c1; }
+    .csel.open .csel__trigger {
+      border-color: #4A8DAB;
+      box-shadow: 0 0 0 3px rgba(74,141,171,0.12);
+    }
+    .csel__arrow {
+      width: 10px; height: 10px; border-right: 2px solid #666; border-bottom: 2px solid #666;
+      transform: rotate(45deg); transition: transform 0.2s; margin-top: -3px; flex-shrink: 0; margin-left: 8px;
+    }
+    .csel.open .csel__arrow { transform: rotate(-135deg); margin-top: 3px; }
+    .csel__options {
+      display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: #fff; border: 1.5px solid #ddd; border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1); z-index: 100;
+      max-height: 220px; overflow-y: auto;
+    }
+    .csel.open .csel__options { display: block; }
+    .csel__opt {
+      padding: 10px 14px; font-size: 0.95rem; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .csel__opt:first-child { border-radius: 7px 7px 0 0; }
+    .csel__opt:last-child { border-radius: 0 0 7px 7px; }
+    .csel__opt:hover { background: #f0f4f8; }
+    .csel__opt.selected { background: #e8f4f8; color: #4A8DAB; font-weight: 600; }
+    .csel__options::-webkit-scrollbar { width: 6px; }
+    .csel__options::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
     @media (max-width: 600px) {
       .logout-btn {
-        font-size: 0.75rem !important;
-        padding: 5px 7px !important;
-        border-width: 1.5px !important;
-        top: 18px !important;
-        right: 8px !important;
+        font-size: 0.75rem !important; padding: 5px 7px !important;
+        border-width: 1.5px !important; top: 18px !important; right: 8px !important;
       }
-      .header {
-        padding-bottom: 18px !important;
-      }
-      .header p {
-        margin-top: 20px !important;
-      }
+      .header { padding-bottom: 18px !important; }
+      .header p { margin-top: 20px !important; }
+      .csel__trigger { height: 40px; font-size: 0.9rem; padding: 0 10px; }
+      .csel__opt { padding: 9px 10px; font-size: 0.85rem; }
     }
   </style>
 </head>
@@ -38,49 +70,55 @@
     <h2>Payment Settings</h2>
 
     <div class="form-group">
-      <label for="country">Country</label>
-      <select id="country">
-        <option value="AU">Australia</option>
-        <option value="BR">Brazil</option>
-        <option value="CA">Canada</option>
-        <option value="DK">Denmark</option>
-        <option value="FI">Finland</option>
-        <option value="FR">France</option>
-        <option value="DE">Germany</option>
-        <option value="HK">Hong Kong</option>
-        <option value="JP">Japan</option>
-        <option value="MY">Malaysia</option>
-        <option value="NL">Netherlands</option>
-        <option value="NO">Norway</option>
-        <option value="SG" selected>Singapore</option>
-        <option value="KR">South Korea</option>
-        <option value="SE">Sweden</option>
-        <option value="TH">Thailand</option>
-        <option value="GB">United Kingdom</option>
-        <option value="US">United States</option>
-      </select>
+      <label>Country</label>
+      <div class="csel" data-id="country" data-value="SG">
+        <div class="csel__trigger"><span>Singapore</span><div class="csel__arrow"></div></div>
+        <div class="csel__options">
+          <div class="csel__opt" data-value="AU">Australia</div>
+          <div class="csel__opt" data-value="BR">Brazil</div>
+          <div class="csel__opt" data-value="CA">Canada</div>
+          <div class="csel__opt" data-value="DK">Denmark</div>
+          <div class="csel__opt" data-value="FI">Finland</div>
+          <div class="csel__opt" data-value="FR">France</div>
+          <div class="csel__opt" data-value="DE">Germany</div>
+          <div class="csel__opt" data-value="HK">Hong Kong</div>
+          <div class="csel__opt" data-value="JP">Japan</div>
+          <div class="csel__opt" data-value="MY">Malaysia</div>
+          <div class="csel__opt" data-value="NL">Netherlands</div>
+          <div class="csel__opt" data-value="NO">Norway</div>
+          <div class="csel__opt selected" data-value="SG">Singapore</div>
+          <div class="csel__opt" data-value="KR">South Korea</div>
+          <div class="csel__opt" data-value="SE">Sweden</div>
+          <div class="csel__opt" data-value="TH">Thailand</div>
+          <div class="csel__opt" data-value="GB">United Kingdom</div>
+          <div class="csel__opt" data-value="US">United States</div>
+        </div>
+      </div>
     </div>
 
     <div class="row">
       <div class="form-group">
-        <label for="currency">Currency</label>
-        <select id="currency">
-          <option value="AUD">AUD</option>
-          <option value="BRL">BRL</option>
-          <option value="CAD">CAD</option>
-          <option value="DKK">DKK</option>
-          <option value="EUR">EUR</option>
-          <option value="GBP">GBP</option>
-          <option value="HKD">HKD</option>
-          <option value="JPY">JPY</option>
-          <option value="KRW">KRW</option>
-          <option value="MYR">MYR</option>
-          <option value="NOK">NOK</option>
-          <option value="SEK">SEK</option>
-          <option value="SGD" selected>SGD</option>
-          <option value="THB">THB</option>
-          <option value="USD">USD</option>
-        </select>
+        <label>Currency</label>
+        <div class="csel" data-id="currency" data-value="SGD">
+          <div class="csel__trigger"><span>SGD</span><div class="csel__arrow"></div></div>
+          <div class="csel__options">
+            <div class="csel__opt" data-value="AUD">AUD</div>
+            <div class="csel__opt" data-value="BRL">BRL</div>
+            <div class="csel__opt" data-value="CAD">CAD</div>
+            <div class="csel__opt" data-value="DKK">DKK</div>
+            <div class="csel__opt" data-value="EUR">EUR</div>
+            <div class="csel__opt" data-value="GBP">GBP</div>
+            <div class="csel__opt" data-value="HKD">HKD</div>
+            <div class="csel__opt" data-value="JPY">JPY</div>
+            <div class="csel__opt" data-value="KRW">KRW</div>
+            <div class="csel__opt" data-value="MYR">MYR</div>
+            <div class="csel__opt" data-value="NOK">NOK</div>
+            <div class="csel__opt" data-value="SEK">SEK</div>
+            <div class="csel__opt selected" data-value="SGD">SGD</div>
+            <div class="csel__opt" data-value="THB">THB</div>
+            <div class="csel__opt" data-value="USD">USD</div>
+          </div>
+        </div>
       </div>
       <div class="form-group">
         <label for="amount">Amount (minor units)</label>
@@ -90,30 +128,39 @@
     </div>
 
     <div class="form-group">
-      <label for="channel">Channel</label>
-      <select id="channel">
-        <option value="Web" selected>Web</option>
-        <option value="iOS">iOS</option>
-        <option value="Android">Android</option>
-      </select>
+      <label>Channel</label>
+      <div class="csel" data-id="channel" data-value="Web">
+        <div class="csel__trigger"><span>Web</span><div class="csel__arrow"></div></div>
+        <div class="csel__options">
+          <div class="csel__opt selected" data-value="Web">Web</div>
+          <div class="csel__opt" data-value="iOS">iOS</div>
+          <div class="csel__opt" data-value="Android">Android</div>
+        </div>
+      </div>
     </div>
 
     <div class="form-group">
-      <label for="shopperInteraction">Shopper Interaction</label>
-      <select id="shopperInteraction">
-        <option value="Ecommerce" selected>Ecommerce</option>
-        <option value="ContAuth">ContAuth</option>
-      </select>
+      <label>Shopper Interaction</label>
+      <div class="csel" data-id="shopperInteraction" data-value="Ecommerce">
+        <div class="csel__trigger"><span>Ecommerce</span><div class="csel__arrow"></div></div>
+        <div class="csel__options">
+          <div class="csel__opt selected" data-value="Ecommerce">Ecommerce</div>
+          <div class="csel__opt" data-value="ContAuth">ContAuth</div>
+        </div>
+      </div>
     </div>
 
     <div class="form-group">
-      <label for="recurringModel">Recurring Processing Model (optional)</label>
-      <select id="recurringModel">
-        <option value="" selected>None</option>
-        <option value="CardOnFile">CardOnFile</option>
-        <option value="Subscription">Subscription</option>
-        <option value="UnscheduledCardOnFile">UnscheduledCardOnFile</option>
-      </select>
+      <label>Recurring Processing Model (optional)</label>
+      <div class="csel" data-id="recurringModel" data-value="">
+        <div class="csel__trigger"><span>None</span><div class="csel__arrow"></div></div>
+        <div class="csel__options">
+          <div class="csel__opt selected" data-value="">None</div>
+          <div class="csel__opt" data-value="CardOnFile">CardOnFile</div>
+          <div class="csel__opt" data-value="Subscription">Subscription</div>
+          <div class="csel__opt" data-value="UnscheduledCardOnFile">UnscheduledCardOnFile</div>
+        </div>
+      </div>
     </div>
 
     <div class="form-group">
@@ -130,22 +177,55 @@
   </div>
 
   <script>
-    // Default mapping country → currency
+    // ── Custom select logic ──────────────────────────────────────────────
+    function cselVal(id) {
+      return document.querySelector(`.csel[data-id="${id}"]`).dataset.value;
+    }
+    function cselSet(id, val) {
+      const el = document.querySelector(`.csel[data-id="${id}"]`);
+      const opt = el.querySelector(`.csel__opt[data-value="${val}"]`);
+      if (!opt) return;
+      el.dataset.value = val;
+      el.querySelector('.csel__trigger span').textContent = opt.textContent;
+      el.querySelectorAll('.csel__opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+    }
+
+    document.querySelectorAll('.csel').forEach(sel => {
+      const trigger = sel.querySelector('.csel__trigger');
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.csel.open').forEach(s => { if (s !== sel) s.classList.remove('open'); });
+        sel.classList.toggle('open');
+      });
+      sel.querySelectorAll('.csel__opt').forEach(opt => {
+        opt.addEventListener('click', () => {
+          sel.dataset.value = opt.dataset.value;
+          sel.querySelector('.csel__trigger span').textContent = opt.textContent;
+          sel.querySelectorAll('.csel__opt').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          sel.classList.remove('open');
+          sel.dispatchEvent(new Event('change'));
+        });
+      });
+    });
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.csel.open').forEach(s => s.classList.remove('open'));
+    });
+
+    // ── Country → Currency mapping ───────────────────────────────────────
     const countryCurrency = {
       SG: 'SGD', US: 'USD', GB: 'GBP', NL: 'EUR', DE: 'EUR', FR: 'EUR',
       AU: 'AUD', JP: 'JPY', HK: 'HKD', SE: 'SEK', NO: 'NOK',
       FI: 'EUR', DK: 'DKK', CA: 'CAD', BR: 'BRL', MY: 'MYR',
       TH: 'THB', KR: 'KRW',
     };
-
-    const countryEl = document.getElementById('country');
-    const currencyEl = document.getElementById('currency');
-
-    countryEl.addEventListener('change', () => {
-      const mapped = countryCurrency[countryEl.value];
-      if (mapped) currencyEl.value = mapped;
+    document.querySelector('.csel[data-id="country"]').addEventListener('change', () => {
+      const mapped = countryCurrency[cselVal('country')];
+      if (mapped) cselSet('currency', mapped);
     });
 
+    // ── Submit ───────────────────────────────────────────────────────────
     document.getElementById('startBtn').addEventListener('click', () => {
       const amountVal = parseInt(document.getElementById('amount').value, 10);
       const errorEl = document.getElementById('amountError');
@@ -155,13 +235,13 @@
       }
       errorEl.style.display = 'none';
       const params = new URLSearchParams({
-        country: countryEl.value,
-        currency: currencyEl.value,
+        country: cselVal('country'),
+        currency: cselVal('currency'),
         amount: amountVal,
-        channel: document.getElementById('channel').value,
+        channel: cselVal('channel'),
       });
-      params.set('shopperInteraction', document.getElementById('shopperInteraction').value);
-      const recurringModel = document.getElementById('recurringModel').value;
+      params.set('shopperInteraction', cselVal('shopperInteraction'));
+      const recurringModel = cselVal('recurringModel');
       if (recurringModel) params.set('recurringModel', recurringModel);
       const shopperRef = document.getElementById('shopperRef').value.trim();
       if (shopperRef) params.set('shopperRef', shopperRef);

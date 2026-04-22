@@ -63,6 +63,7 @@
       ]);
       const { clientKey, environment } = await configRes.json();
       const paymentMethodsResponse = await pmRes.json();
+      if (!recurringModel) delete paymentMethodsResponse.storedPaymentMethods;
 
       // ── Build return URL for redirect payments ──────────────────────────
       const returnUrl = `${window.location.origin}/result.html`;

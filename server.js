@@ -182,7 +182,7 @@ app.post('/api/payments', async (req, res) => {
         lastName: 'Shopper',
       },
       shopperReference: shopperRef || 'user_shanghai',
-      ...(recurringModel && { recurringProcessingModel: recurringModel }),
+      recurringProcessingModel: recurringModel || (paymentMethod?.storedPaymentMethodId ? 'CardOnFile' : undefined),
       ...(storePaymentMethod && { storePaymentMethod: true }),
       billingAddress: {
         street: '1 Test Street',
