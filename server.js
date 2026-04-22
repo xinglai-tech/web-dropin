@@ -111,7 +111,7 @@ app.get('/api/config', (_req, res) => {
 // ── /paymentMethods ─────────────────────────────────────────────────────────
 app.post('/api/paymentMethods', async (req, res) => {
   try {
-    const { countryCode, currency, amount, channel } = req.body;
+    const { countryCode, currency, amount, channel, shopperRef } = req.body;
     const ch = channel || 'Web';
 
     const pmRequest = {
@@ -122,6 +122,7 @@ app.post('/api/paymentMethods', async (req, res) => {
         value: amount || 10,
       },
       channel: ch,
+      shopperReference: shopperRef || 'user_shanghai',
     };
     const response = await checkout.PaymentsApi.paymentMethods(pmRequest);
     logPayment('/paymentMethods', pmRequest, response);
@@ -135,7 +136,7 @@ app.post('/api/paymentMethods', async (req, res) => {
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {
-    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef } = req.body;
+    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod } = req.body;
     if (amount > 5000) {
       return res.status(400).json({ error: 'Amount exceeds maximum limit of 5000' });
     }
@@ -180,7 +181,9 @@ app.post('/api/payments', async (req, res) => {
         firstName: 'Test',
         lastName: 'Shopper',
       },
-      shopperReference: 'shopper_' + Date.now(),
+      shopperReference: shopperRef || 'user_shanghai',
+      recurringProcessingModel: 'CardOnFile',
+      ...(storePaymentMethod && { storePaymentMethod: true }),
       billingAddress: {
         street: '1 Test Street',
         houseNumberOrName: '1',
@@ -216,6 +219,24 @@ app.post('/api/payments/details', async (req, res) => {
     res.json(response);
   } catch (error) {
     console.error('/payments/details error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── /storedPaymentMethods/:id (delete token) ────────────────────────────────
+app.delete('/api/storedPaymentMethods/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { shopperRef } = req.body;
+    await checkout.RecurringApi.deleteTokenForStoredPaymentDetails(
+      id,
+      shopperRef || 'user_shanghai',
+      process.env.ADYEN_MERCHANT_ACCOUNT,
+    );
+    logPayment('/storedPaymentMethods/delete', { id, shopperRef }, { success: true });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('/storedPaymentMethods delete error:', error.message);
     res.status(500).json({ error: error.message });
   }
 });

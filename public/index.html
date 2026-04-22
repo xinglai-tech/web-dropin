@@ -9,7 +9,7 @@
 </head>
 <body>
   <div class="header">
-    <div style="text-align:right;padding:8px 16px 0;"><a href="/auth/logout" style="color:#fff;font-size:0.85rem;font-weight:500;text-decoration:none;padding:4px 12px;border:1px solid rgba(255,255,255,0.7);border-radius:6px;">Logout</a></div>
+    <div style="text-align:right;padding:0 16px 0;"><a href="/auth/logout" style="color:#fff;font-size:1rem;font-weight:600;text-decoration:none;padding:8px 20px;border:2px solid rgba(255,255,255,0.9);border-radius:4px;">Logout</a></div>
     <h1>Adyen test</h1>
     <p>Select country, currency &amp; amount to start checkout</p>
   </div>
@@ -79,6 +79,11 @@
     </div>
 
     <div class="form-group">
+      <label for="shopperRef">Shopper Reference</label>
+      <input type="text" id="shopperRef" value="user_shanghai" />
+    </div>
+
+    <div class="form-group">
       <label for="merchantRef">Merchant Reference (optional)</label>
       <input type="text" id="merchantRef" placeholder="Leave empty to auto-generate" />
     </div>
@@ -117,6 +122,8 @@
         amount: amountVal,
         channel: document.getElementById('channel').value,
       });
+      const shopperRef = document.getElementById('shopperRef').value.trim();
+      if (shopperRef) params.set('shopperRef', shopperRef);
       const ref = document.getElementById('merchantRef').value.trim();
       if (ref) params.set('merchantRef', ref);
       window.location.href = '/checkout.html?' + params.toString();

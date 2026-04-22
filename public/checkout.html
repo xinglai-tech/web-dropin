@@ -8,6 +8,14 @@
   <link rel="stylesheet" href="/style.css" />
   <link rel="stylesheet"
         href="https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/6.33.0/adyen.css" />
+  <style>
+    .adyen-checkout__store-details {
+      background: #f5f7fa !important;
+      border: none !important;
+      border-radius: 8px;
+      padding: 12px !important;
+    }
+  </style>
   <script src="https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/6.33.0/adyen.js"></script>
 </head>
 <body>
@@ -19,7 +27,7 @@
   <div class="card">
     <div class="spinner active" id="spinner"></div>
     <div id="error-banner" style="display:none;background:#fdecea;color:#c0392b;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-size:0.9rem;word-break:break-all;"></div>
-    <div id="dropin-container"></div>
+    <div id="dropin-container" style="display:none;"></div>
     <div id="psp-info" style="display:none;background:#eef7ee;padding:12px 16px;border-radius:8px;margin-top:12px;font-size:0.9rem;text-align:center;color:#333;word-break:break-all;"></div>
     <div style="text-align:center;margin-top:16px;">
       <a href="/" style="color:#4A8DAB;font-size:0.9rem;text-decoration:none;font-weight:500;">← Back to Home</a>
@@ -37,20 +45,21 @@
       const amount   = parseInt(params.get('amount') || '10', 10);
       const channel  = params.get('channel')  || 'Web';
       const merchantRef = params.get('merchantRef') || '';
+      const shopperRef = params.get('shopperRef') || 'user_shanghai';
 
       document.getElementById('summary').textContent =
         `${currency} ${(amount / 100).toFixed(2)} — ${country} — ${channel}`;
 
-      // ── Fetch client config ─────────────────────────────────────────────
-      const configRes = await fetch('/api/config');
+      // ── Fetch config & payment methods in parallel ────────────────────
+      const [configRes, pmRes] = await Promise.all([
+        fetch('/api/config'),
+        fetch('/api/paymentMethods', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ countryCode: country, currency, amount, channel, shopperRef }),
+        }),
+      ]);
       const { clientKey, environment } = await configRes.json();
-
-      // ── Fetch payment methods ───────────────────────────────────────────
-      const pmRes = await fetch('/api/paymentMethods', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ countryCode: country, currency, amount, channel }),
-      });
       const paymentMethodsResponse = await pmRes.json();
 
       // ── Build return URL for redirect payments ──────────────────────────
@@ -64,6 +73,7 @@
         countryCode: country,
         locale: 'en-US',
         amount: { currency, value: amount },
+        enableStoreDetails: true,
 
         // Called when the shopper submits payment
         onSubmit: async (state, component, actions) => {
@@ -78,6 +88,7 @@
                 countryCode: country,
                 channel,
                 returnUrl,
+                shopperRef,
                 ...(merchantRef && { merchantRef }),
               }),
             });
@@ -138,9 +149,38 @@
       });
 
       // ── Mount Drop-in ───────────────────────────────────────────────────
-      document.getElementById('spinner').classList.remove('active');
       const dropin = new Dropin(adyenCheckout, {
+        onReady: () => {
+          document.getElementById('spinner').classList.remove('active');
+          document.getElementById('dropin-container').style.display = '';
+        },
         openFirstPaymentMethod: true,
+        showStoredPaymentMethods: true,
+        showRemovePaymentMethodButton: true,
+        paymentMethodsConfiguration: {
+          card: {
+            enableStoreDetails: true,
+          },
+        },
+        onDisableStoredPaymentMethod: async (storedPaymentMethod, resolve, reject) => {
+          try {
+            const res = await fetch(`/api/storedPaymentMethods/${storedPaymentMethod}`, {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ shopperRef }),
+            });
+            if (res.ok) {
+              resolve();
+            } else {
+              const err = await res.json();
+              showError(err.error || 'Failed to remove card');
+              reject();
+            }
+          } catch (e) {
+            showError('Failed to remove card');
+            reject();
+          }
+        },
       }).mount('#dropin-container');
 
       function showError(msg) {
