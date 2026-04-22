@@ -113,10 +113,6 @@ app.post('/api/paymentMethods', async (req, res) => {
   try {
     const { countryCode, currency, amount, channel } = req.body;
     const ch = channel || 'Web';
-    const isMobile = ch === 'iOS' || ch === 'Android';
-    const blockedPaymentMethods = isMobile
-      ? ['wechatpayQR', 'wechatpayMiniProgram']
-      : ['wechatpayMiniProgram'];
 
     const pmRequest = {
       merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
@@ -126,7 +122,6 @@ app.post('/api/paymentMethods', async (req, res) => {
         value: amount || 10,
       },
       channel: ch,
-      blockedPaymentMethods,
     };
     const response = await checkout.PaymentsApi.paymentMethods(pmRequest);
     logPayment('/paymentMethods', pmRequest, response);
