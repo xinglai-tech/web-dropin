@@ -21,7 +21,7 @@ body {
 /* ── Header ──────────────────────────────────────────────────────────────── */
 .header {
   width: 100%;
-  background: linear-gradient(135deg, #0abf53 0%, #0abf53 100%);
+  background: linear-gradient(135deg, #4A8DAB 0%, #4A8DAB 100%);
   color: #fff;
   padding: 24px 0;
   text-align: center;
@@ -78,7 +78,7 @@ body {
 .form-group select:focus,
 .form-group input:focus {
   outline: none;
-  border-color: #0abf53;
+  border-color: #4A8DAB;
 }
 
 .row {
@@ -94,7 +94,7 @@ body {
   display: inline-block;
   width: 100%;
   padding: 14px;
-  background: #0abf53;
+  background: #4A8DAB;
   color: #fff;
   font-size: 1rem;
   font-weight: 600;
@@ -105,7 +105,7 @@ body {
   text-align: center;
 }
 .btn:hover {
-  background: #09a848;
+  background: #3D7D99;
 }
 .btn:disabled {
   background: #b0b8c1;
@@ -127,7 +127,7 @@ body {
   width: 36px;
   height: 36px;
   border: 4px solid #ddd;
-  border-top-color: #0abf53;
+  border-top-color: #4A8DAB;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -174,7 +174,7 @@ body {
 .back-link {
   display: inline-block;
   margin-top: 20px;
-  color: #0abf53;
+  color: #4A8DAB;
   text-decoration: none;
   font-weight: 600;
 }
@@ -184,7 +184,7 @@ body {
 
 /* ── Status colours ──────────────────────────────────────────────────────── */
 .status-authorised {
-  color: #0abf53;
+  color: #4A8DAB;
 }
 .status-refused,
 .status-error {
