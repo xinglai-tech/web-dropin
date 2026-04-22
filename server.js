@@ -140,11 +140,11 @@ app.post('/api/paymentMethods', async (req, res) => {
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {
-    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel } = req.body;
+    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef } = req.body;
     if (amount > 5000) {
       return res.status(400).json({ error: 'Amount exceeds maximum limit of 5000' });
     }
-    const orderRef = uuid();
+    const orderRef = merchantRef || uuid();
 
     const origin = `${req.protocol}://${req.get('host')}`;
     const finalReturnUrl =
