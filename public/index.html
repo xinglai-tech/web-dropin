@@ -6,12 +6,17 @@
   <title>Adyen test</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="/style.css" />
+  <style>
+    .logout-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+  </style>
 </head>
 <body>
-  <div class="header">
-    <div style="text-align:right;padding:0 16px 0;"><a href="/auth/logout" style="color:#fff;font-size:1rem;font-weight:600;text-decoration:none;padding:8px 20px;border:2px solid rgba(255,255,255,0.9);border-radius:4px;">Logout</a></div>
+  <div class="header" style="position:relative;">
+    <a href="/auth/logout" class="logout-btn" style="position:absolute;top:8px;right:16px;color:#fff;font-size:0.95rem;font-weight:400;text-decoration:none;padding:5px 6px;border:2px solid rgba(255,255,255,0.9);border-radius:4px;transition:background 0.2s;">Logout</a>
     <h1>Adyen test</h1>
-    <p>Select country, currency &amp; amount to start checkout</p>
+    <p style="margin-top:12px;">Select country, currency &amp; amount to start checkout</p>
   </div>
 
   <div class="card">

@@ -197,39 +197,47 @@ body {
 /* ── Responsive: mobile (≤ 600px) ────────────────────────────────────────── */
 @media (max-width: 600px) {
   .header {
-    padding: 16px 12px;
+    padding: 10px 12px;
   }
   .header h1 {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
   .header p {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   .card {
-    margin: 16px 8px;
-    padding: 18px 14px;
+    margin: 10px 8px;
+    padding: 14px 12px;
     border-radius: 10px;
   }
   .card h2 {
-    font-size: 1.05rem;
-    margin-bottom: 14px;
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+
+  .form-group {
+    margin-bottom: 10px;
+  }
+  .form-group label {
+    margin-bottom: 3px;
+    font-size: 0.8rem;
   }
 
   .row {
-    flex-direction: column;
-    gap: 0;
+    flex-direction: row;
+    gap: 8px;
   }
 
   .form-group select,
   .form-group input {
     font-size: 16px; /* prevents iOS auto-zoom on focus */
-    padding: 12px 14px;
+    padding: 8px 10px;
   }
 
   .btn {
-    padding: 16px;
-    font-size: 1rem;
+    padding: 12px;
+    font-size: 0.95rem;
   }
 
   .result-icon {
