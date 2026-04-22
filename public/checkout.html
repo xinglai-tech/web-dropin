@@ -144,7 +144,9 @@
 
         onError: (error, _component) => {
           console.error('Checkout error:', error);
-          showError(error.message || JSON.stringify(error));
+          const msg = error.message || JSON.stringify(error);
+          if (/applepay|apple pay/i.test(msg)) return;
+          showError(msg);
         },
       });
 
