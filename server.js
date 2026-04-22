@@ -14,15 +14,20 @@ const LOG_DIR = fs.existsSync('/home/LogFiles') ? '/home/LogFiles' : path.join(_
 if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
 
 function logPayment(endpoint, request, response) {
-  const entry = {
-    timestamp: new Date().toISOString(),
-    endpoint,
-    request,
-    response,
-  };
-  const date = new Date().toISOString().slice(0, 10);
-  const file = path.join(LOG_DIR, `payments-${date}.log`);
-  fs.appendFileSync(file, JSON.stringify(entry) + '\n');
+  try {
+    const entry = {
+      timestamp: new Date().toISOString(),
+      endpoint,
+      request,
+      response,
+    };
+    const date = new Date().toISOString().slice(0, 10);
+    const file = path.join(LOG_DIR, `payments-${date}.log`);
+    fs.appendFileSync(file, JSON.stringify(entry) + '\n');
+    console.log(`[LOG] Written to ${file}`);
+  } catch (err) {
+    console.error('[LOG] Failed to write:', err.message);
+  }
 }
 
 const app = express();
@@ -90,7 +95,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ── Adyen client ────────────────────────────────────────────────────────────
 const client = new Client({
   apiKey: process.env.ADYEN_API_KEY,
-  environment: 'LIVE',
+  environment: process.env.ADYEN_ENVIRONMENT || 'TEST',
   liveEndpointUrlPrefix: process.env.ADYEN_LIVE_URL_PREFIX,
 });
 const checkout = new CheckoutAPI(client);
@@ -99,7 +104,7 @@ const checkout = new CheckoutAPI(client);
 app.get('/api/config', (_req, res) => {
   res.json({
     clientKey: process.env.ADYEN_CLIENT_KEY,
-    environment: 'live',
+    environment: (process.env.ADYEN_ENVIRONMENT || 'TEST').toLowerCase(),
   });
 });
 
