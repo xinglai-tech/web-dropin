@@ -68,7 +68,8 @@ body {
 .form-group select,
 .form-group input {
   width: 100%;
-  padding: 10px 14px;
+  height: 44px;
+  padding: 0 14px;
   border: 1.5px solid #ddd;
   border-radius: 8px;
   font-size: 1rem;
@@ -232,7 +233,9 @@ body {
   .form-group select,
   .form-group input {
     font-size: 16px; /* prevents iOS auto-zoom on focus */
-    padding: 8px 10px;
+    width: 70%;
+    height: 36px;
+    padding: 0 10px;
   }
 
   .btn {
