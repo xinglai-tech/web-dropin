@@ -46,6 +46,8 @@
       const channel  = params.get('channel')  || 'Web';
       const merchantRef = params.get('merchantRef') || '';
       const shopperRef = params.get('shopperRef') || 'user_shanghai';
+      const shopperInteraction = params.get('shopperInteraction') || 'Ecommerce';
+      const recurringModel = params.get('recurringModel') || '';
 
       document.getElementById('summary').textContent =
         `${currency} ${(amount / 100).toFixed(2)} — ${country} — ${channel}`;
@@ -89,6 +91,8 @@
                 channel,
                 returnUrl,
                 shopperRef,
+                shopperInteraction,
+                ...(recurringModel && { recurringModel }),
                 ...(merchantRef && { merchantRef }),
               }),
             });

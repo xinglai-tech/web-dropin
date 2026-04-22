@@ -136,7 +136,7 @@ app.post('/api/paymentMethods', async (req, res) => {
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {
-    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod } = req.body;
+    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel } = req.body;
     if (amount > 5000) {
       return res.status(400).json({ error: 'Amount exceeds maximum limit of 5000' });
     }
@@ -159,7 +159,7 @@ app.post('/api/payments', async (req, res) => {
       countryCode: countryCode || 'SG',
       channel: channel || 'Web',
       origin,
-      shopperInteraction: 'Ecommerce',
+      shopperInteraction: shopperInteraction || 'Ecommerce',
       authenticationData: {
         threeDSRequestData: {
           nativeThreeDS: 'preferred',
@@ -182,7 +182,7 @@ app.post('/api/payments', async (req, res) => {
         lastName: 'Shopper',
       },
       shopperReference: shopperRef || 'user_shanghai',
-      recurringProcessingModel: 'CardOnFile',
+      ...(recurringModel && { recurringProcessingModel: recurringModel }),
       ...(storePaymentMethod && { storePaymentMethod: true }),
       billingAddress: {
         street: '1 Test Street',

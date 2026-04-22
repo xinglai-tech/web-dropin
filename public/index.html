@@ -15,11 +15,14 @@
         font-size: 0.7rem !important;
         padding: 3px 5px !important;
         border-width: 1.5px !important;
-        top: 14px !important;
+        top: 18px !important;
         right: 8px !important;
       }
+      .header {
+        padding-bottom: 24px !important;
+      }
       .header p {
-        margin-top: 16px !important;
+        margin-top: 20px !important;
       }
     }
   </style>
@@ -96,6 +99,24 @@
     </div>
 
     <div class="form-group">
+      <label for="shopperInteraction">Shopper Interaction</label>
+      <select id="shopperInteraction">
+        <option value="Ecommerce" selected>Ecommerce</option>
+        <option value="ContAuth">ContAuth</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="recurringModel">Recurring Processing Model (optional)</label>
+      <select id="recurringModel">
+        <option value="" selected>None</option>
+        <option value="CardOnFile">CardOnFile</option>
+        <option value="Subscription">Subscription</option>
+        <option value="UnscheduledCardOnFile">UnscheduledCardOnFile</option>
+      </select>
+    </div>
+
+    <div class="form-group">
       <label for="shopperRef">Shopper Reference</label>
       <input type="text" id="shopperRef" value="user_shanghai" />
     </div>
@@ -139,6 +160,9 @@
         amount: amountVal,
         channel: document.getElementById('channel').value,
       });
+      params.set('shopperInteraction', document.getElementById('shopperInteraction').value);
+      const recurringModel = document.getElementById('recurringModel').value;
+      if (recurringModel) params.set('recurringModel', recurringModel);
       const shopperRef = document.getElementById('shopperRef').value.trim();
       if (shopperRef) params.set('shopperRef', shopperRef);
       const ref = document.getElementById('merchantRef').value.trim();
