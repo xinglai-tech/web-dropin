@@ -75,6 +75,7 @@
         <div class="csel__trigger"><span>Singapore</span><div class="csel__arrow"></div></div>
         <div class="csel__options">
           <div class="csel__opt" data-value="AU">Australia</div>
+          <div class="csel__opt" data-value="BE">Belgium</div>
           <div class="csel__opt" data-value="BR">Brazil</div>
           <div class="csel__opt" data-value="CA">Canada</div>
           <div class="csel__opt" data-value="DK">Denmark</div>
@@ -220,7 +221,7 @@
       SG: 'SGD', US: 'USD', GB: 'GBP', NL: 'EUR', DE: 'EUR', FR: 'EUR',
       AU: 'AUD', JP: 'JPY', HK: 'HKD', SE: 'SEK', NO: 'NOK',
       FI: 'EUR', DK: 'DKK', CA: 'CAD', BR: 'BRL', MY: 'MYR',
-      TH: 'THB', KR: 'KRW', IT: 'EUR', ES: 'EUR',
+      TH: 'THB', KR: 'KRW', IT: 'EUR', ES: 'EUR', BE: 'EUR',
     };
     document.querySelector('.csel[data-id="country"]').addEventListener('change', () => {
       const mapped = countryCurrency[cselVal('country')];
