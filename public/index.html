@@ -125,8 +125,8 @@
       </div>
       <div class="form-group">
         <label for="amount">Amount (minor units)</label>
-        <input type="number" id="amount" value="10" min="1" max="5000" />
-        <span id="amountError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;">Amount must be between 1 and 5000</span>
+        <input type="number" id="amount" value="1000" min="1" />
+        <span id="amountError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;">Amount must be at least 1</span>
       </div>
     </div>
 
@@ -232,7 +232,7 @@
     document.getElementById('startBtn').addEventListener('click', () => {
       const amountVal = parseInt(document.getElementById('amount').value, 10);
       const errorEl = document.getElementById('amountError');
-      if (isNaN(amountVal) || amountVal < 1 || amountVal > 5000) {
+      if (isNaN(amountVal) || amountVal < 1) {
         errorEl.style.display = 'block';
         return;
       }
