@@ -47,6 +47,20 @@
     .csel__options::-webkit-scrollbar { width: 6px; }
     .csel__options::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 
+    .csel--disabled { opacity: 0.45; pointer-events: none; }
+
+    label.checkbox-label {
+      display: flex; align-items: center; gap: 10px; cursor: pointer;
+      font-size: 0.85rem; font-weight: 600; color: #555;
+      -webkit-user-select: none; -moz-user-select: none; user-select: none;
+      margin-bottom: 0; line-height: 1.4;
+    }
+    label.checkbox-label input[type="checkbox"] {
+      width: 18px; height: 18px; margin: 0; flex: 0 0 18px;
+      accent-color: #4A8DAB; cursor: pointer;
+    }
+    label.checkbox-label span { flex: 1 1 auto; }
+
     @media (max-width: 600px) {
       .logout-btn {
         font-size: 0.75rem !important; padding: 5px 7px !important;
@@ -176,6 +190,24 @@
       <input type="text" id="merchantRef" placeholder="Leave empty to auto-generate" />
     </div>
 
+    <div class="form-group">
+      <label class="checkbox-label">
+        <input type="checkbox" id="billingAddressRequired" />
+        <span>Billing Address Required</span>
+      </label>
+    </div>
+
+    <div class="form-group" id="billingModeGroup">
+      <label>Billing Address Mode</label>
+      <div class="csel csel--disabled" data-id="billingAddressMode" data-value="full">
+        <div class="csel__trigger"><span>Full</span><div class="csel__arrow"></div></div>
+        <div class="csel__options">
+          <div class="csel__opt selected" data-value="full">Full</div>
+          <div class="csel__opt" data-value="partial">Partial (postal code only)</div>
+        </div>
+      </div>
+    </div>
+
     <button class="btn" id="startBtn">Continue to Checkout</button>
   </div>
 
@@ -228,6 +260,14 @@
       if (mapped) cselSet('currency', mapped);
     });
 
+    // ── Billing address required → enable/disable mode select ────────────
+    const billingReqEl = document.getElementById('billingAddressRequired');
+    const billingModeCsel = document.querySelector('.csel[data-id="billingAddressMode"]');
+    billingReqEl.addEventListener('change', () => {
+      billingModeCsel.classList.toggle('csel--disabled', !billingReqEl.checked);
+      if (!billingReqEl.checked) billingModeCsel.classList.remove('open');
+    });
+
     // ── Submit ───────────────────────────────────────────────────────────
     document.getElementById('startBtn').addEventListener('click', () => {
       const amountVal = parseFloat(document.getElementById('amount').value);
@@ -250,6 +290,10 @@
       if (shopperRef) params.set('shopperRef', shopperRef);
       const ref = document.getElementById('merchantRef').value.trim();
       if (ref) params.set('merchantRef', ref);
+      if (billingReqEl.checked) {
+        params.set('billingAddressRequired', 'true');
+        params.set('billingAddressMode', cselVal('billingAddressMode'));
+      }
       window.location.href = '/checkout.html?' + params.toString();
     });
   </script>
