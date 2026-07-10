@@ -124,8 +124,8 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="amount">Amount (minor units)</label>
-        <input type="number" id="amount" value="1000" min="1" />
+        <label for="amount">Amount</label>
+        <input type="number" id="amount" value="10" min="0.01" step="0.01" />
         <span id="amountError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;">Amount must be at least 1</span>
       </div>
     </div>
@@ -230,9 +230,9 @@
 
     // ── Submit ───────────────────────────────────────────────────────────
     document.getElementById('startBtn').addEventListener('click', () => {
-      const amountVal = parseInt(document.getElementById('amount').value, 10);
+      const amountVal = parseFloat(document.getElementById('amount').value);
       const errorEl = document.getElementById('amountError');
-      if (isNaN(amountVal) || amountVal < 1) {
+      if (isNaN(amountVal) || amountVal < 0.01) {
         errorEl.style.display = 'block';
         return;
       }

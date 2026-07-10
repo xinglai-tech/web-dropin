@@ -42,15 +42,27 @@
       const params  = new URLSearchParams(window.location.search);
       const country  = params.get('country')  || 'SG';
       const currency = params.get('currency') || 'SGD';
-      const amount   = parseInt(params.get('amount') || '10', 10);
+      const amountMajor = parseFloat(params.get('amount') || '10');
       const channel  = params.get('channel')  || 'Web';
       const merchantRef = params.get('merchantRef') || '';
       const shopperRef = params.get('shopperRef') || 'user_shanghai';
       const shopperInteraction = params.get('shopperInteraction') || 'Ecommerce';
       const recurringModel = params.get('recurringModel') || '';
 
+      // ── Convert major units to minor units ────────────────────────────
+      const zeroDecimalCurrencies = ['JPY', 'KRW', 'VND', 'CLP', 'PYG', 'GNF', 'RWF', 'UGX', 'XOF', 'XAF', 'ISK', 'HUF'];
+      const threeDecimalCurrencies = ['BHD', 'JOD', 'KWD', 'OMR', 'TND'];
+      let amount;
+      if (zeroDecimalCurrencies.includes(currency)) {
+        amount = Math.round(amountMajor);
+      } else if (threeDecimalCurrencies.includes(currency)) {
+        amount = Math.round(amountMajor * 1000);
+      } else {
+        amount = Math.round(amountMajor * 100);
+      }
+
       document.getElementById('summary').textContent =
-        `${currency} ${(amount / 100).toFixed(2)} — ${country} — ${channel}`;
+        `${currency} ${amountMajor} — ${country} — ${channel}`;
 
       // ── Fetch config & payment methods in parallel ────────────────────
       const [configRes, pmRes] = await Promise.all([
