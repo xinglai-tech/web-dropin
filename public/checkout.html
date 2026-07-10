@@ -15,6 +15,115 @@
       border-radius: 8px;
       padding: 12px !important;
     }
+
+    /* ── Test cards side panel ─────────────────────────────────────────── */
+    .test-cards-panel {
+      display: none;
+      position: absolute;
+      left: 24px;
+      width: 300px;
+      overflow-y: auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+      z-index: 100;
+    }
+    .test-cards-panel.visible {
+      display: block;
+    }
+    .test-cards-panel h3 {
+      font-size: 1rem;
+      margin-bottom: 6px;
+      color: #333;
+    }
+    .tc-hint {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 14px;
+    }
+    .tc-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 8px;
+    }
+    .tc-row:last-child {
+      border-bottom: none;
+    }
+    .tc-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .tc-group-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #4A8DAB;
+      margin: 14px 0 4px;
+      padding-bottom: 4px;
+      border-bottom: 1.5px solid #eef2f5;
+    }
+    .tc-group-title:first-child {
+      margin-top: 0;
+    }
+    .tc-logo {
+      height: 18px;
+      width: auto;
+      border-radius: 3px;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+    }
+    .tc-logo-emoji {
+      font-size: 14px;
+      line-height: 1;
+    }
+    .tc-brand {
+      font-size: 0.72rem;
+      color: #888;
+      font-weight: 600;
+    }
+    .tc-meta {
+      font-size: 0.68rem;
+      color: #e67e22;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .tc-number {
+      font-size: 0.9rem;
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      color: #1a1a2e;
+      letter-spacing: 0.02em;
+    }
+    .tc-copy {
+      border: none;
+      background: #eef2f5;
+      color: #4A8DAB;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+    }
+    .tc-copy:hover {
+      background: #dce6ec;
+    }
+    .tc-copy.copied {
+      background: #4A8DAB;
+      color: #fff;
+    }
+    @media (max-width: 1100px) {
+      .test-cards-panel.visible {
+        display: none;
+      }
+    }
   </style>
   <script src="https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/6.33.0/adyen.js"></script>
 </head>
@@ -33,6 +142,12 @@
       <a href="/" style="color:#4A8DAB;font-size:0.9rem;text-decoration:none;font-weight:500;">← Back to Home</a>
     </div>
   </div>
+
+  <aside id="test-cards-panel" class="test-cards-panel">
+    <h3>Test Cards</h3>
+    <p class="tc-hint">Expiry <b>03/30</b> &middot; CVC <b>737</b> (Amex <b>7373</b>)</p>
+    <div class="tc-list"></div>
+  </aside>
 
   <script>
     (async () => {
@@ -172,6 +287,7 @@
         onReady: () => {
           document.getElementById('spinner').classList.remove('active');
           document.getElementById('dropin-container').style.display = '';
+          setupTestCardsPanel();
         },
         openFirstPaymentMethod: true,
         showStoredPaymentMethods: true,
@@ -204,6 +320,231 @@
           }
         },
       }).mount('#dropin-container');
+
+      // ── Test cards side panel ─────────────────────────────────────────
+      function setupTestCardsPanel() {
+        // Default expiry 03/30, CVC 737 unless overridden per card.
+        const TEST_CARD_GROUPS = [
+          { scheme: 'Visa', cards: [
+            { label: 'Classic (NL)',   number: '4111111145551142' },
+            { label: 'Classic (ES)',   number: '4988438843884305' },
+            { label: 'Consumer (NL)',  number: '4111111111111111' },
+            { label: 'Corporate (GB)', number: '4444333322221111' },
+            { label: 'Credit (US)',    number: '4000020000000000' },
+            { label: 'Debit (US)',     number: '4400000000000008' },
+          ]},
+          { scheme: 'Mastercard', cards: [
+            { label: 'Credit (GB)',    number: '5555555555554444' },
+            { label: 'Consumer (NL)',  number: '5555341244441115' },
+            { label: 'Corporate (NL)', number: '2222410740360010' },
+            { label: 'Credit (NL)',    number: '2223000048410010' },
+            { label: 'Premium (US)',   number: '5100060000000002', exp: '12/29' },
+            { label: 'Prepaid (BR)',   number: '5103221911199245' },
+          ]},
+          { scheme: 'American Express', cards: [
+            { label: 'Amex (NL)',            number: '370000000000002', cvc: '7373' },
+            { label: 'CVC optional (NL)',    number: '370000000100018', cvc: '7373' },
+          ]},
+          { scheme: 'Bancontact', cards: [
+            { label: 'BCMC / Mastercard', number: '5127880999999990' },
+            { label: 'BCMC / Maestro',    number: '6703444444444449', cvc: 'None' },
+            { label: 'BCMC / Visa',       number: '4871049999999910' },
+          ]},
+          { scheme: 'Cartes Bancaires', cards: [
+            { label: 'CB',        number: '4360000001000005' },
+            { label: 'Visa',      number: '4035501000000008' },
+          ]},
+          { scheme: 'China UnionPay', cards: [
+            { label: 'ExpressPay',   number: '8171999927660000', exp: '10/30' },
+            { label: 'Debit',        number: '6243030000000001', exp: '12/29' },
+          ]},
+          { scheme: 'Dankort', cards: [
+            { label: 'Dankort',        number: '5019555544445555' },
+            { label: 'Visa / Dankort', number: '4571000000000001' },
+          ]},
+          { scheme: 'Diners', cards: [
+            { label: 'Diners (US)',      number: '36006663333344' },
+            { label: 'CVC optional (NL)', number: '36070500001020' },
+          ]},
+          { scheme: 'Discover', cards: [
+            { label: 'Discover (US)', number: '6011601160116611' },
+            { label: 'Discover (GB)', number: '6445644564456445' },
+          ]},
+          { scheme: 'Elo', cards: [
+            { label: 'Elo (BR)', number: '5066991111111118' },
+          ]},
+          { scheme: 'Hipercard', cards: [
+            { label: 'Hipercard (BR)', number: '6062828888666688' },
+          ]},
+          { scheme: 'JCB', cards: [
+            { label: 'Consumer (US)', number: '3569990010095841' },
+          ]},
+          { scheme: 'Maestro', cards: [
+            { label: 'Maestro (US)', number: '6771798021000008' },
+          ]},
+          { scheme: 'Eftpos', cards: [
+            { label: 'Mastercard / Eftpos', number: '4687380100010006' },
+            { label: 'Eftpos',              number: '4089670000000014' },
+          ]},
+          { scheme: 'UATP', cards: [
+            { label: 'UATP', number: '135410014004955', cvc: 'None' },
+          ]},
+          { scheme: 'Visa Electron', cards: [
+            { label: 'Electron (BR)', number: '4001020000000009' },
+          ]},
+          { scheme: 'V Pay', cards: [
+            { label: 'V Pay (PL)', number: '4013250000000000006' },
+          ]},
+          { scheme: '3D Secure 2', cards: [
+            { label: 'Visa',             number: '4917610000000000' },
+            { label: 'Visa Classic',     number: '4166676676676746' },
+            { label: 'Mastercard',       number: '5454545454545454' },
+            { label: 'Mastercard Credit', number: '2222400010000008' },
+            { label: 'Amex',             number: '371449635398431', cvc: '7373' },
+            { label: 'Discover',         number: '6011111111111117' },
+            { label: 'JCB / Mastercard', number: '3566111111111113' },
+            { label: 'Diners',           number: '30569309025904' },
+            { label: 'Bancontact / Maestro', number: '6703444444444449', cvc: 'None' },
+            { label: 'Maestro',          number: '5000550000000029', cvc: 'None' },
+            { label: 'UnionPay Credit',  number: '6250947000000014', cvc: '123' },
+          ]},
+        ];
+
+        const DEFAULT_EXP = '03/30';
+        const DEFAULT_CVC = '737';
+
+        const LOGO_BASE = 'https://checkoutshopper-test.adyen.com/checkoutshopper/images/logos/';
+        const SCHEME_LOGOS = {
+          'Visa': 'visa',
+          'Mastercard': 'mc',
+          'American Express': 'amex',
+          'Bancontact': 'bcmc',
+          'Cartes Bancaires': 'cartebancaire',
+          'China UnionPay': 'cup',
+          'Dankort': 'dankort',
+          'Diners': 'diners',
+          'Discover': 'discover',
+          'Elo': 'elo',
+          'Hipercard': 'hipercard',
+          'JCB': 'jcb',
+          'Maestro': 'maestro',
+          'Eftpos': 'eftpos_australia',
+          'UATP': 'uatp',
+          'Visa Electron': 'visaelectron',
+          'V Pay': 'vpay',
+        };
+
+        const panel = document.getElementById('test-cards-panel');
+        const list = panel.querySelector('.tc-list');
+
+        const copyHandler = (btn, number) => async () => {
+          try {
+            await navigator.clipboard.writeText(number);
+          } catch (e) {
+            const ta = document.createElement('textarea');
+            ta.value = number;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+          }
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 1200);
+        };
+
+        if (list.childElementCount === 0) {
+          TEST_CARD_GROUPS.forEach((g) => {
+            const title = document.createElement('div');
+            title.className = 'tc-group-title';
+            const logo = SCHEME_LOGOS[g.scheme];
+            if (logo) {
+              const img = document.createElement('img');
+              img.className = 'tc-logo';
+              img.src = LOGO_BASE + logo + '.svg';
+              img.alt = '';
+              img.onerror = () => img.remove();
+              title.appendChild(img);
+            } else if (g.scheme === '3D Secure 2') {
+              const badge = document.createElement('span');
+              badge.className = 'tc-logo-emoji';
+              badge.textContent = '🔒';
+              title.appendChild(badge);
+            }
+            const label = document.createElement('span');
+            label.textContent = g.scheme;
+            title.appendChild(label);
+            list.appendChild(title);
+
+            g.cards.forEach((c) => {
+              const display = c.number.replace(/(.{4})/g, '$1 ').trim();
+              const meta = [];
+              if (c.exp && c.exp !== DEFAULT_EXP) meta.push('Exp ' + c.exp);
+              if (c.cvc && c.cvc !== DEFAULT_CVC) meta.push('CVC ' + c.cvc);
+
+              const row = document.createElement('div');
+              row.className = 'tc-row';
+              row.innerHTML =
+                '<div class="tc-info">' +
+                '<span class="tc-brand"></span>' +
+                '<span class="tc-number"></span>' +
+                '<span class="tc-meta"></span>' +
+                '</div>' +
+                '<button class="tc-copy" type="button">Copy</button>';
+              row.querySelector('.tc-brand').textContent = c.label;
+              row.querySelector('.tc-number').textContent = display;
+              const metaEl = row.querySelector('.tc-meta');
+              if (meta.length) {
+                metaEl.textContent = meta.join(' · ');
+              } else {
+                metaEl.remove();
+              }
+              const btn = row.querySelector('.tc-copy');
+              btn.addEventListener('click', copyHandler(btn, c.number));
+              list.appendChild(row);
+            });
+          });
+        }
+
+        const card = document.querySelector('.card');
+        const GAP = 24;
+        const alignPanel = () => {
+          panel.style.top = card.offsetTop + 'px';
+          panel.style.height = card.offsetHeight + 'px';
+          const left = card.offsetLeft - GAP - panel.offsetWidth;
+          panel.style.left = Math.max(12, left) + 'px';
+        };
+
+        const isCardOpen = () => {
+          const sel = document.querySelector('.adyen-checkout__payment-method--selected');
+          if (!sel) return false;
+          if (sel.className.includes('--scheme')) return true;
+          return !!sel.querySelector('.adyen-checkout__card-input');
+        };
+        const update = () => {
+          const open = isCardOpen();
+          panel.classList.toggle('visible', open);
+          if (open) alignPanel();
+        };
+
+        const container = document.getElementById('dropin-container');
+        new MutationObserver(update).observe(container, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+          attributeFilter: ['class'],
+        });
+        new ResizeObserver(() => {
+          if (panel.classList.contains('visible')) alignPanel();
+        }).observe(card);
+        window.addEventListener('resize', () => {
+          if (panel.classList.contains('visible')) alignPanel();
+        });
+        update();
+      }
 
       function showError(msg) {
         const banner = document.getElementById('error-banner');
