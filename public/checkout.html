@@ -126,27 +126,31 @@
     }
 
     /* ── API debug panel ───────────────────────────────────────────────── */
+    .debug-toggles {
+      display: none;
+      gap: 8px;
+      margin-top: 16px;
+    }
     .debug-toggle {
-      position: fixed;
-      top: 18px;
-      right: 16px;
-      z-index: 200;
-      width: 104px;
+      flex: 1 1 0;
+      min-width: 0;
       text-align: center;
-      background: transparent;
-      color: #fff;
-      border: 1.5px solid rgba(255, 255, 255, 0.8);
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 0.85rem;
+      white-space: nowrap;
+      background: #fff;
+      color: #4A8DAB;
+      border: 1.5px solid #d8e5ec;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: clamp(0.78rem, 2.6vw, 0.9rem);
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
     }
     .debug-toggle:hover {
-      background: rgba(255, 255, 255, 0.18);
+      background: #f5f9fb;
+      color: #3D7D99;
+      border-color: #cfe0e9;
     }
-    .debug-toggle.event { right: 128px; }
     .debug-panel {
       position: fixed;
       top: 0;
@@ -183,11 +187,11 @@
       color: #fff;
       border: none;
       border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 0.78rem;
+      padding: 8px 14px;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
-      margin-left: 6px;
+      margin-left: 8px;
       transition: background 0.15s;
     }
     .debug-btn:hover {
@@ -325,6 +329,10 @@
     <div id="error-banner" style="display:none;background:#fdecea;color:#c0392b;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-size:0.9rem;word-break:break-all;"></div>
     <div id="dropin-container" style="display:none;"></div>
     <div id="psp-info" style="display:none;background:#eef7ee;padding:12px 16px;border-radius:8px;margin-top:12px;font-size:0.9rem;text-align:center;color:#333;word-break:break-all;"></div>
+    <div class="debug-toggles">
+      <button id="event-toggle" class="debug-toggle event" type="button">SDK Event</button>
+      <button id="debug-toggle" class="debug-toggle" type="button">API Log</button>
+    </div>
     <div style="text-align:center;margin-top:16px;">
       <a href="/" style="color:#4A8DAB;font-size:0.9rem;text-decoration:none;font-weight:500;">← Back to Home</a>
     </div>
@@ -336,8 +344,6 @@
     <div class="tc-list"></div>
   </aside>
 
-  <button id="debug-toggle" class="debug-toggle" type="button">API Log</button>
-  <button id="event-toggle" class="debug-toggle event" type="button">SDK Event</button>
   <aside id="debug-panel" class="debug-panel">
     <div class="debug-header">
       <h3>Backend API</h3>
@@ -379,6 +385,7 @@
     const debugPanel = document.getElementById('debug-panel');
     const debugBody = document.getElementById('debug-body');
     const debugToggle = document.getElementById('debug-toggle');
+    const debugToggles = document.querySelector('.debug-toggles');
     const freezeChk = document.getElementById('freeze-redirect');
     const debugFooter = document.getElementById('debug-footer');
     const debugProceed = document.getElementById('debug-proceed');
@@ -391,13 +398,16 @@
     window.addEventListener('resize', syncDebugHeader);
 
     debugToggle.addEventListener('click', () => {
+      if (debugPanel.classList.contains('open')) {
+        debugPanel.classList.remove('open');
+        return;
+      }
       syncDebugHeader();
+      eventPanel.classList.remove('open');
       debugPanel.classList.add('open');
-      debugToggle.style.display = 'none';
     });
     document.getElementById('debug-close').addEventListener('click', () => {
       debugPanel.classList.remove('open');
-      debugToggle.style.display = '';
     });
     document.getElementById('debug-clear').addEventListener('click', () => {
       debugBody.innerHTML =
@@ -456,8 +466,8 @@
 
     // Pause a redirect so the log can be inspected; resume on Proceed click.
     function freezeRedirect(proceedFn) {
+      eventPanel.classList.remove('open');
       debugPanel.classList.add('open');
-      debugToggle.style.display = 'none';
       debugFooter.style.display = 'flex';
       debugProceed.onclick = () => {
         debugFooter.style.display = 'none';
@@ -477,13 +487,16 @@
     window.addEventListener('resize', syncEventHeader);
 
     eventToggle.addEventListener('click', () => {
+      if (eventPanel.classList.contains('open')) {
+        eventPanel.classList.remove('open');
+        return;
+      }
       syncEventHeader();
+      debugPanel.classList.remove('open');
       eventPanel.classList.add('open');
-      eventToggle.style.display = 'none';
     });
     document.getElementById('event-close').addEventListener('click', () => {
       eventPanel.classList.remove('open');
-      eventToggle.style.display = '';
     });
     document.getElementById('event-clear').addEventListener('click', () => {
       eventBody.innerHTML =
@@ -726,6 +739,7 @@
           logEvent('onReady', { component: 'dropin' });
           document.getElementById('spinner').classList.remove('active');
           document.getElementById('dropin-container').style.display = '';
+          debugToggles.style.display = 'flex';
           setupTestCardsPanel();
         },
         onSelect: (activeComponent) => {
