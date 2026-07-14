@@ -463,6 +463,9 @@
       const recurringModel = params.get('recurringModel') || '';
       const billingAddressRequired = params.get('billingAddressRequired') === 'true';
       const billingAddressMode = params.get('billingAddressMode') || 'full';
+      const enableStoreDetails = params.get('enableStoreDetails') !== 'false';
+      const showPayButton = params.get('showPayButton') !== 'false';
+      const threeDSMode = params.get('threeDSMode') || 'native';
 
       // ── Convert major units to minor units ────────────────────────────
       const zeroDecimalCurrencies = ['JPY', 'KRW', 'VND', 'CLP', 'PYG', 'GNF', 'RWF', 'UGX', 'XOF', 'XAF', 'ISK', 'HUF'];
@@ -506,7 +509,7 @@
         countryCode: country,
         locale: 'en-US',
         amount: { currency, value: amount },
-        enableStoreDetails: true,
+        enableStoreDetails,
 
         // Called when the shopper submits payment
         onSubmit: async (state, component, actions) => {
@@ -520,6 +523,7 @@
               returnUrl,
               shopperRef,
               shopperInteraction,
+              threeDSMode,
               ...(recurringModel && { recurringModel }),
               ...(merchantRef && { merchantRef }),
             };
@@ -606,9 +610,11 @@
         openFirstPaymentMethod: true,
         showStoredPaymentMethods: true,
         showRemovePaymentMethodButton: true,
+        showPayButton,
         paymentMethodsConfiguration: {
           card: {
-            enableStoreDetails: true,
+            enableStoreDetails,
+            showPayButton,
             billingAddressRequired,
             ...(billingAddressRequired && { billingAddressMode }),
           },

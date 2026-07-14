@@ -61,6 +61,85 @@
     }
     label.checkbox-label span { flex: 1 1 auto; }
 
+    /* Keep label heights consistent whether or not they contain an info icon */
+    .form-group > label { min-height: 20px; line-height: 20px; }
+
+    /* ── Info tooltip ──────────────────────────────────────────────────── */
+    .info-tip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 17px;
+      height: 17px;
+      margin-left: 6px;
+      border-radius: 50%;
+      background: #b9c6cf;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      font-style: normal;
+      font-family: inherit;
+      cursor: help;
+      position: relative;
+      vertical-align: middle;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .info-tip:hover {
+      background: #4A8DAB;
+    }
+    .info-tip::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 9px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: 320px;
+      background: #fff;
+      color: #33556a;
+      border: 1px solid #dce6ec;
+      text-align: left;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 400;
+      font-style: normal;
+      font-family: inherit;
+      line-height: 1.55;
+      letter-spacing: normal;
+      text-transform: none;
+      white-space: pre-line;
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s;
+      z-index: 120;
+      pointer-events: none;
+    }
+    .info-tip::before {
+      content: '';
+      position: absolute;
+      bottom: calc(100% + 3px);
+      left: 50%;
+      transform: translateX(-50%);
+      border: 7px solid transparent;
+      border-top-color: #fff;
+      filter: drop-shadow(0 1px 0 #dce6ec);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s;
+      z-index: 120;
+      pointer-events: none;
+    }
+    .info-tip:hover::after,
+    .info-tip:focus::after,
+    .info-tip:hover::before,
+    .info-tip:focus::before {
+      opacity: 1;
+      visibility: visible;
+    }
+
     @media (max-width: 600px) {
       .logout-btn {
         font-size: 0.75rem !important; padding: 5px 7px !important;
@@ -84,7 +163,7 @@
     <h2>Payment Settings</h2>
 
     <div class="form-group">
-      <label>Country</label>
+      <label>Country<span class="info-tip" tabindex="0" data-tip="Shopper's country.&#10;​Some payment methods are only available in certain countries.">i</span></label>
       <div class="csel" data-id="country" data-value="SG">
         <div class="csel__trigger"><span>🇸🇬 Singapore</span><div class="csel__arrow"></div></div>
         <div class="csel__options">
@@ -115,7 +194,7 @@
 
     <div class="row">
       <div class="form-group">
-        <label>Currency</label>
+        <label>Currency<span class="info-tip" tabindex="0" data-tip="Transaction currency.&#10;Must be supported by the chosen payment method, otherwise that method is filtered out.">i</span></label>
         <div class="csel" data-id="currency" data-value="SGD">
           <div class="csel__trigger"><span>SGD</span><div class="csel__arrow"></div></div>
           <div class="csel__options">
@@ -144,66 +223,98 @@
       </div>
     </div>
 
+    <div class="row">
+      <div class="form-group">
+        <label>Shopper Interaction<span class="info-tip" tabindex="0" data-tip="Indicates if this is a one-time payment (Ecommerce) or a recurring transaction using an existing stored card (ContAuth).">i</span></label>
+        <div class="csel" data-id="shopperInteraction" data-value="Ecommerce">
+          <div class="csel__trigger"><span>Ecommerce</span><div class="csel__arrow"></div></div>
+          <div class="csel__options">
+            <div class="csel__opt selected" data-value="Ecommerce">Ecommerce</div>
+            <div class="csel__opt" data-value="ContAuth">ContAuth</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>RecurringProcessingModel<span class="info-tip" tabindex="0" data-tip="How a stored card is charged:&#10;• CardOnFile (shopper-initiated payment)&#10;• Subscription (fixed schedule such as monthly, merchant-initiated)&#10;• UnscheduledCardOnFile (random schedule or amount, merchant-initiated)">i</span></label>
+        <div class="csel" data-id="recurringModel" data-value="">
+          <div class="csel__trigger"><span>None</span><div class="csel__arrow"></div></div>
+          <div class="csel__options">
+            <div class="csel__opt selected" data-value="">None</div>
+            <div class="csel__opt" data-value="CardOnFile">CardOnFile</div>
+            <div class="csel__opt" data-value="Subscription">Subscription</div>
+            <div class="csel__opt" data-value="UnscheduledCardOnFile">UnscheduledCardOnFile</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="form-group">
+        <label for="shopperRef">Shopper Reference<span class="info-tip" tabindex="0" data-tip="Your unique identifier for the shopper. &#10;Used to store and retrieve their saved payment methods.">i</span></label>
+        <input type="text" id="shopperRef" value="user_shanghai" />
+      </div>
+
+      <div class="form-group">
+        <label for="merchantRef">Merchant Reference<span class="info-tip" tabindex="0" data-tip="Your unique reference for this payment used to match the transaction in your own system. Auto-generated if left empty.">i</span></label>
+        <input type="text" id="merchantRef" placeholder="Leave empty to auto-generate" />
+      </div>
+    </div>
+
+    <div class="form-group" style="display:flex;align-items:center;">
+      <label class="checkbox-label">
+        <input type="checkbox" id="billingAddressRequired" />
+        <span>Billing Address Required</span>
+      </label>
+      <span class="info-tip" tabindex="0" data-tip="Require shopper to enter his billing address">i</span>
+    </div>
+
+    <div class="form-group" id="billingModeGroup">
+      <label>Billing Address Mode<span class="info-tip" tabindex="0" data-tip="Full = require complete billing address &#10;Partial = require postal code only">i</span></label>
+      <div class="csel csel--disabled" data-id="billingAddressMode" data-value="full">
+        <div class="csel__trigger"><span>Full</span><div class="csel__arrow"></div></div>
+        <div class="csel__options">
+          <div class="csel__opt selected" data-value="full">Full</div>
+          <div class="csel__opt" data-value="partial">Partial (postal code only)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group" style="display:flex;align-items:center;">
+      <label class="checkbox-label">
+        <input type="checkbox" id="enableStoreDetails" checked />
+        <span>Enable Store Details</span>
+      </label>
+      <span class="info-tip" tabindex="0" data-tip="Show &quot;save payment details&quot; checkbox in the card form so the shopper can store their card.">i</span>
+    </div>
+
+    <div class="form-group" style="display:flex;align-items:center;">
+      <label class="checkbox-label">
+        <input type="checkbox" id="showPayButton" checked />
+        <span>Show Pay Button</span>
+      </label>
+      <span class="info-tip" tabindex="0" data-tip="Show Drop-in's built-in Pay button. Turn off to use your own button.">i</span>
+    </div>
+
     <div class="form-group">
-      <label>Channel</label>
+      <label>3DS Mode<span class="info-tip" tabindex="0" data-tip="• Native = 3DS2 rendered in merchant's page.&#10;• Redirect = shopper is redirected to the issuer's authentication page.">i</span></label>
+      <div class="csel" data-id="threeDSMode" data-value="native">
+        <div class="csel__trigger"><span>Native</span><div class="csel__arrow"></div></div>
+        <div class="csel__options">
+          <div class="csel__opt selected" data-value="native">Native</div>
+          <div class="csel__opt" data-value="redirect">Redirect</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Channel<span class="info-tip" tabindex="0" data-tip="Platform where the payment happens (Web, iOS, Android). &#10;Affects which payment methods are returned and 3DS flow (native or web).">i</span></label>
       <div class="csel" data-id="channel" data-value="Web">
         <div class="csel__trigger"><span>Web</span><div class="csel__arrow"></div></div>
         <div class="csel__options">
           <div class="csel__opt selected" data-value="Web">Web</div>
           <div class="csel__opt" data-value="iOS">iOS</div>
           <div class="csel__opt" data-value="Android">Android</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>Shopper Interaction</label>
-      <div class="csel" data-id="shopperInteraction" data-value="Ecommerce">
-        <div class="csel__trigger"><span>Ecommerce</span><div class="csel__arrow"></div></div>
-        <div class="csel__options">
-          <div class="csel__opt selected" data-value="Ecommerce">Ecommerce</div>
-          <div class="csel__opt" data-value="ContAuth">ContAuth</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>Recurring Processing Model (optional)</label>
-      <div class="csel" data-id="recurringModel" data-value="">
-        <div class="csel__trigger"><span>None</span><div class="csel__arrow"></div></div>
-        <div class="csel__options">
-          <div class="csel__opt selected" data-value="">None</div>
-          <div class="csel__opt" data-value="CardOnFile">CardOnFile</div>
-          <div class="csel__opt" data-value="Subscription">Subscription</div>
-          <div class="csel__opt" data-value="UnscheduledCardOnFile">UnscheduledCardOnFile</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="shopperRef">Shopper Reference</label>
-      <input type="text" id="shopperRef" value="user_shanghai" />
-    </div>
-
-    <div class="form-group">
-      <label for="merchantRef">Merchant Reference (optional)</label>
-      <input type="text" id="merchantRef" placeholder="Leave empty to auto-generate" />
-    </div>
-
-    <div class="form-group">
-      <label class="checkbox-label">
-        <input type="checkbox" id="billingAddressRequired" />
-        <span>Billing Address Required</span>
-      </label>
-    </div>
-
-    <div class="form-group" id="billingModeGroup">
-      <label>Billing Address Mode</label>
-      <div class="csel csel--disabled" data-id="billingAddressMode" data-value="full">
-        <div class="csel__trigger"><span>Full</span><div class="csel__arrow"></div></div>
-        <div class="csel__options">
-          <div class="csel__opt selected" data-value="full">Full</div>
-          <div class="csel__opt" data-value="partial">Partial (postal code only)</div>
         </div>
       </div>
     </div>
@@ -294,10 +405,11 @@
         params.set('billingAddressRequired', 'true');
         params.set('billingAddressMode', cselVal('billingAddressMode'));
       }
+      params.set('enableStoreDetails', document.getElementById('enableStoreDetails').checked ? 'true' : 'false');
+      params.set('showPayButton', document.getElementById('showPayButton').checked ? 'true' : 'false');
+      params.set('threeDSMode', cselVal('threeDSMode'));
       window.location.href = '/checkout.html?' + params.toString();
     });
   </script>
-
-  <footer style="text-align:center;margin-top:2rem;padding:1rem;color:#888;font-size:0.9rem;"> Internal use only</footer>
 </body>
 </html>

@@ -136,7 +136,7 @@ app.post('/api/paymentMethods', async (req, res) => {
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {
-    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel } = req.body;
+    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode } = req.body;
     const orderRef = merchantRef || uuid();
 
     const origin = `${req.protocol}://${req.get('host')}`;
@@ -157,11 +157,13 @@ app.post('/api/payments', async (req, res) => {
       channel: channel || 'Web',
       origin,
       shopperInteraction: shopperInteraction || 'Ecommerce',
-      authenticationData: {
-        threeDSRequestData: {
-          nativeThreeDS: 'preferred',
+      ...(threeDSMode !== 'redirect' && {
+        authenticationData: {
+          threeDSRequestData: {
+            nativeThreeDS: 'preferred',
+          },
         },
-      },
+      }),
       // Required by Klarna / Afterpay / similar
       lineItems: [
         {
