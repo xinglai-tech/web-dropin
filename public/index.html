@@ -64,6 +64,11 @@
     /* Keep label heights consistent whether or not they contain an info icon */
     .form-group > label { min-height: 20px; line-height: 20px; }
 
+    /* Slimmer Billing Address Mode dropdown + smaller Full/Partial text */
+    .csel[data-id="billingAddressMode"] .csel__trigger { height: 30px; }
+    .csel[data-id="billingAddressMode"] .csel__trigger span,
+    .csel[data-id="billingAddressMode"] .csel__opt { font-size: 0.85rem; }
+
     /* ── Info tooltip ──────────────────────────────────────────────────── */
     .info-tip {
       display: inline-flex;
@@ -261,20 +266,16 @@
       </div>
     </div>
 
-    <div class="form-group" style="display:flex;align-items:center;">
-      <label class="checkbox-label">
+    <div class="form-group" id="billingModeGroup" style="display:flex;align-items:center;gap:10px;">
+      <label class="checkbox-label" style="flex:0 0 auto;">
         <input type="checkbox" id="billingAddressRequired" />
         <span>Billing Address Required</span>
       </label>
       <span class="info-tip" tabindex="0" data-tip="Require shopper to enter his billing address">i</span>
-    </div>
-
-    <div class="form-group" id="billingModeGroup">
-      <label>Billing Address Mode<span class="info-tip" tabindex="0" data-tip="Full = require complete billing address &#10;Partial = require postal code only">i</span></label>
-      <div class="csel csel--disabled" data-id="billingAddressMode" data-value="full">
-        <div class="csel__trigger"><span>Full</span><div class="csel__arrow"></div></div>
+      <div class="csel csel--disabled" data-id="billingAddressMode" data-value="full" style="margin-left:auto;width:auto;min-width:210px;">
+        <div class="csel__trigger"><span>Full (complete address)</span><div class="csel__arrow"></div></div>
         <div class="csel__options">
-          <div class="csel__opt selected" data-value="full">Full</div>
+          <div class="csel__opt selected" data-value="full">Full (complete address)</div>
           <div class="csel__opt" data-value="partial">Partial (postal code only)</div>
         </div>
       </div>
@@ -293,7 +294,7 @@
         <input type="checkbox" id="showPayButton" checked />
         <span>Show Pay Button</span>
       </label>
-      <span class="info-tip" tabindex="0" data-tip="Show Drop-in's built-in Pay button. Turn off to use your own button.">i</span>
+      <span class="info-tip" tabindex="0" data-tip="Show SDK's built-in Pay button. &#10 Disable to use your own button, need to implement onsubmit().">i</span>
     </div>
 
     <div class="form-group">
@@ -308,7 +309,7 @@
     </div>
 
     <div class="form-group">
-      <label>Channel<span class="info-tip" tabindex="0" data-tip="Platform where the payment happens (Web, iOS, Android). &#10;Affects which payment methods are returned and 3DS flow (native or web).">i</span></label>
+      <label>Channel<span class="info-tip" tabindex="0" data-tip="Platform where the payment happens (Web, iOS, Android). &#10;Affects which payment methods are returned and data used for 3DS flow (native or web).">i</span></label>
       <div class="csel" data-id="channel" data-value="Web">
         <div class="csel__trigger"><span>Web</span><div class="csel__arrow"></div></div>
         <div class="csel__options">

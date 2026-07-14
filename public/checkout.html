@@ -130,7 +130,9 @@
       position: fixed;
       top: 18px;
       right: 16px;
-      z-index: 210;
+      z-index: 200;
+      width: 104px;
+      text-align: center;
       background: transparent;
       color: #fff;
       border: 1.5px solid rgba(255, 255, 255, 0.8);
@@ -144,6 +146,7 @@
     .debug-toggle:hover {
       background: rgba(255, 255, 255, 0.18);
     }
+    .debug-toggle.event { top: 58px; }
     .debug-panel {
       position: fixed;
       top: 0;
@@ -334,6 +337,7 @@
   </aside>
 
   <button id="debug-toggle" class="debug-toggle" type="button">API Log</button>
+  <button id="event-toggle" class="debug-toggle event" type="button">SDK Event</button>
   <aside id="debug-panel" class="debug-panel">
     <div class="debug-header">
       <h3>Backend API</h3>
@@ -354,6 +358,19 @@
     <div class="debug-footer" id="debug-footer" style="display:none;">
       <span>⏸ Redirect paused — review the log above.</span>
       <button id="debug-proceed" class="debug-proceed" type="button">Proceed →</button>
+    </div>
+  </aside>
+
+  <aside id="event-panel" class="debug-panel">
+    <div class="debug-header">
+      <h3>SDK Events</h3>
+      <div>
+        <button id="event-clear" class="debug-btn" type="button">Clear</button>
+        <button id="event-close" class="debug-btn" type="button">✕</button>
+      </div>
+    </div>
+    <div class="debug-body" id="event-body">
+      <p class="debug-empty">No SDK events yet. Interact with the payment form to see events.</p>
     </div>
   </aside>
 
@@ -448,6 +465,100 @@
       };
     }
 
+    // ── SDK Event panel ───────────────────────────────────────────────────
+    const eventPanel = document.getElementById('event-panel');
+    const eventBody = document.getElementById('event-body');
+    const eventToggle = document.getElementById('event-toggle');
+    const eventHeaderEl = eventPanel.querySelector('.debug-header');
+    function syncEventHeader() {
+      eventHeaderEl.style.height = mainHeader.offsetHeight + 'px';
+    }
+    syncEventHeader();
+    window.addEventListener('resize', syncEventHeader);
+
+    eventToggle.addEventListener('click', () => {
+      syncEventHeader();
+      eventPanel.classList.add('open');
+      eventToggle.style.display = 'none';
+    });
+    document.getElementById('event-close').addEventListener('click', () => {
+      eventPanel.classList.remove('open');
+      eventToggle.style.display = '';
+    });
+    document.getElementById('event-clear').addEventListener('click', () => {
+      eventBody.innerHTML =
+        '<p class="debug-empty">No SDK events yet. Interact with the payment form to see events.</p>';
+    });
+
+    function safeStringify(obj) {
+      const seen = new WeakSet();
+      try {
+        return JSON.stringify(obj, (k, v) => {
+          if (v instanceof Node) return '[DOM ' + v.nodeName + ']';
+          if (typeof Window !== 'undefined' && v instanceof Window) return '[Window]';
+          if (typeof v === 'function') return '[fn]';
+          if (typeof v === 'object' && v !== null) {
+            if (seen.has(v)) return '[circular]';
+            seen.add(v);
+          }
+          return v;
+        }, 2);
+      } catch (e) {
+        return String(obj);
+      }
+    }
+
+    function logEvent(name, data) {
+      const empty = eventBody.querySelector('.debug-empty');
+      if (empty) empty.remove();
+
+      const json = data === undefined ? '(no payload)' : safeStringify(data);
+      const time = new Date().toLocaleTimeString();
+
+      const entry = document.createElement('div');
+      entry.className = 'debug-entry';
+
+      const title = document.createElement('div');
+      title.className = 'debug-entry-title res';
+      const left = document.createElement('span');
+      left.innerHTML =
+        '<span class="method">' + name + '</span> &middot; ' +
+        '<span class="label" style="color:#7b61a8;">' + time + '</span>';
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'debug-copy';
+      copyBtn.type = 'button';
+      copyBtn.textContent = 'Copy';
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(json);
+        } catch (e) {
+          const ta = document.createElement('textarea');
+          ta.value = json;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        copyBtn.textContent = 'Copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy';
+          copyBtn.classList.remove('copied');
+        }, 1200);
+      });
+      title.appendChild(left);
+      title.appendChild(copyBtn);
+
+      const pre = document.createElement('pre');
+      pre.className = 'debug-json';
+      pre.textContent = json;
+
+      entry.appendChild(title);
+      entry.appendChild(pre);
+      eventBody.appendChild(entry);
+      eventBody.scrollTop = eventBody.scrollHeight;
+    }
+
     (async () => {
       const { AdyenCheckout, Dropin } = window.AdyenWeb;
       let lastPspReference = '';
@@ -511,8 +622,13 @@
         amount: { currency, value: amount },
         enableStoreDetails,
 
+        onChange: (state, component) => {
+          logEvent('onChange', { paymentMethod: component?.props?.type, isValid: state.isValid, data: state.data });
+        },
+
         // Called when the shopper submits payment
         onSubmit: async (state, component, actions) => {
+          logEvent('onSubmit', { paymentMethod: component?.props?.type, isValid: state.isValid });
           try {
             const paymentsRequestBody = {
               ...state.data,
@@ -557,6 +673,7 @@
 
         // Called after additional shopper interaction (e.g. native 3DS)
         onAdditionalDetails: async (state, component, actions) => {
+          logEvent('onAdditionalDetails', state.data);
           try {
             const detailsRequestBody = { details: state.data.details };
             logApi('/payments/details', 'Request', detailsRequestBody);
@@ -583,16 +700,19 @@
         },
 
         onPaymentCompleted: (result, _component) => {
+          logEvent('onPaymentCompleted', result);
           console.log('Payment completed:', result.resultCode);
           showPsp(lastPspReference);
         },
 
         onPaymentFailed: (result, _component) => {
+          logEvent('onPaymentFailed', result);
           console.log('Payment failed:', result?.resultCode);
           showPsp(lastPspReference);
         },
 
         onError: (error, _component) => {
+          logEvent('onError', { name: error?.name, message: error?.message });
           console.error('Checkout error:', error);
           const msg = error.message || JSON.stringify(error);
           if (/applepay|apple pay/i.test(msg)) return;
@@ -603,9 +723,13 @@
       // ── Mount Drop-in ───────────────────────────────────────────────────
       const dropin = new Dropin(adyenCheckout, {
         onReady: () => {
+          logEvent('onReady', { component: 'dropin' });
           document.getElementById('spinner').classList.remove('active');
           document.getElementById('dropin-container').style.display = '';
           setupTestCardsPanel();
+        },
+        onSelect: (activeComponent) => {
+          logEvent('onSelect', { paymentMethod: activeComponent?.props?.type });
         },
         openFirstPaymentMethod: true,
         showStoredPaymentMethods: true,
@@ -617,6 +741,9 @@
             showPayButton,
             billingAddressRequired,
             ...(billingAddressRequired && { billingAddressMode }),
+            onBrand: (d) => logEvent('card.onBrand', { brand: d?.brand, type: d?.type }),
+            onBinLookup: (d) => logEvent('card.onBinLookup', d),
+            onFieldValid: (d) => logEvent('card.onFieldValid', { fieldType: d?.fieldType, valid: d?.valid, endDigits: d?.endDigits }),
           },
           wechatpayQR: {
             countdownTime: 59,
