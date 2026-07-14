@@ -119,6 +119,43 @@
       background: #4A8DAB;
       color: #fff;
     }
+    .tc-note-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #4A8DAB;
+      margin: 18px 0 6px;
+      padding-bottom: 4px;
+      border-bottom: 1.5px solid #eef2f5;
+    }
+    .tc-note {
+      font-size: 0.8rem;
+      color: #555;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .tc-note.warn {
+      color: #c0392b;
+    }
+    .tc-note.bullet {
+      position: relative;
+      padding-left: 16px;
+      margin-bottom: 4px;
+    }
+    .tc-note.bullet::before {
+      content: '•';
+      position: absolute;
+      left: 3px;
+      color: #4A8DAB;
+    }
+    .tc-note a {
+      color: #4A8DAB;
+      word-break: break-all;
+    }
+    .tc-note a:hover {
+      color: #3D7D99;
+    }
     @media (max-width: 1100px) {
       .test-cards-panel.visible {
         display: none;
@@ -734,6 +771,8 @@
       });
 
       // ── Mount Drop-in ───────────────────────────────────────────────────
+      let lastSelectedType = null;
+      let refreshCredPanel = null;
       const dropin = new Dropin(adyenCheckout, {
         onReady: () => {
           logEvent('onReady', { component: 'dropin' });
@@ -744,6 +783,8 @@
         },
         onSelect: (activeComponent) => {
           logEvent('onSelect', { paymentMethod: activeComponent?.props?.type });
+          lastSelectedType = activeComponent?.props?.type || null;
+          if (refreshCredPanel) refreshCredPanel();
         },
         openFirstPaymentMethod: true,
         showStoredPaymentMethods: true,
@@ -919,7 +960,153 @@
           }, 1200);
         };
 
-        if (list.childElementCount === 0) {
+        const titleEl = panel.querySelector('h3');
+        const hintEl = panel.querySelector('.tc-hint');
+
+        // Shared across all Klarna variants.
+        const KLARNA_CRED = {
+          title: 'Klarna Test',
+          notesTitle: 'Sandbox credentials',
+          notes: [
+            { text: 'Please use credentials provided by Klarna in the sandbox environment.' },
+            { text: 'https://docs.klarna.com/resources/developer-tools/sample-data/sample-customer-data/#all-countries' },
+            { text: 'Klarna provides different credentials per country. Ensure the credential you select matches the country code in the payment settings.', warn: true },
+          ],
+        };
+
+        // Test credentials for local payment methods, keyed by txVariant.
+        const LPM_CREDENTIALS = {
+          grabpay_SG: {
+            title: 'GrabPay (SG) Test',
+            fields: [
+              { label: 'Mobile', value: '+65 11111112' },
+              { label: 'OTP', value: '123456' },
+              { label: 'PIN', value: '123450' },
+            ],
+            notesTitle: 'Use of wallet rules',
+            notes: [
+              { text: 'Transactions cannot be more than 1 dollar as it will be rejected.', warn: true },
+              { text: 'ALWAYS refund the transaction since this is a shared wallet.', warn: true },
+            ],
+          },
+          sepadirectdebit: {
+            title: 'SEPA Direct Debit Test',
+            fields: [
+              { label: 'Account Name', value: 'A. Klaassen' },
+              { label: 'IBAN', value: 'NL98ABNA0410108103' },
+            ],
+          },
+          afterpaytouch: {
+            title: 'Afterpay Touch Test',
+
+            notesTitle: 'Create a test account',
+            notes: [
+              { text: '1. Go to https://portal.sandbox.afterpay.com/.' },
+              { text: '2. Enter a real email address and select Continue. You will get confirmations of payments and refunds on this email.' },
+              { text: '3. From the drop-down, select the country/region for the test shopper: Australia, New Zealand, US, or Canada.' },
+              { text: '4. Enter a unique mobile number (not linked to an existing account) in the correct format and select Continue.' },
+              { text: '5. When prompted for the SMS verification code, enter 111111.' },
+    
+            ],
+          },
+          afterpaytouch_US: {
+            title: 'Afterpay Touch (US) Test',
+            notesTitle: 'Create a test account',
+            notes: [
+              { text: '1. Go to https://portal.sandbox.afterpay.com/.' },
+              { text: '2. Enter a real email address and select Continue. You will get confirmations of payments and refunds on this email.' },
+              { text: '3. From the drop-down, select the country/region for the test shopper: US.' },
+              { text: '4. Enter any correctly formatted mobile number (see the input box hints) and select Continue. The phone number will not be used.' },
+              { text: '5. When prompted for the SMS verification code, enter 111111.' },
+              { text: '6. Follow the on-screen steps to complete your profile, accept the terms, and select Continue.' },
+            ],
+          },
+          klarna: KLARNA_CRED,
+          klarna_account: KLARNA_CRED,
+          klarna_paynow: KLARNA_CRED,
+          ideal: {
+            title: 'iDEAL Test',
+            notesTitle: 'Test simulation',
+            notes: [
+              { text: 'On the payment page:' },
+              { text: '1. Click **Select your bank** to navigate to a list of issuers.' },
+              { text: '2. Select the **TESTNL2A** issuer.' },
+              { text: '3. Select the test simulation you want to run according to the table.' },
+            ],
+          },
+          paybybank: {
+            title: 'Pay by Bank (Europe) Test',
+            notes: [
+              { text: 'After redirect, log in on Adyen\u2019s open banking partner Tink with the credentials for the relevant country.' },
+              { text: 'https://docs.adyen.com/payment-methods/pay-by-bank-europe/web-drop-in#test-credentials' },
+            ],
+            sections: [
+              {
+                title: 'UK — Issuer ID Selection',
+                copyable: false,
+                fields: [
+                  { label: '1st Tink Demo Bank', value: 'uk-demobank-open-banking-handoff' },
+                  { label: '2nd Tink Demo Bank', value: 'uk-demobank-open-banking-redirect' },
+                  { label: '3rd Tink Demo Bank', value: 'uk-demobank-open-banking-redirect-aispis' },
+                ],
+              },
+              {
+                title: 'UK (Tink login)',
+                fields: [
+                  { label: 'Username', value: 'u83646180' },
+                  { label: 'Password', value: 'rlf446' },
+                ],
+                notes: [
+                  { text: 'Approved shows two checking accounts. Select the first (ending **285**) for amounts > GBP 150, or the second (ending **327**) for amounts < GBP 150.' },
+                ],
+              },
+              {
+                title: 'Germany',
+                preNotes: [
+                  { text: 'Select **Tink Demo bank**', bullet: true },
+                  { text: 'Select **Open banking**', bullet: true },
+                  { text: 'Select **Password and OTP With Templates**', bullet: true },
+                  { text: 'Select **2FA with App code**', bullet: true },
+                  { text: 'Enter below credential and type 1234 as code', bullet: true },
+                  { text: 'Select **saving or checking account** to pay', bullet: true },
+                ],
+                fields: [
+                  { label: 'Username', value: 'u83188312' },
+                  { label: 'Password', value: 'zhx571' },
+                ],
+              },
+              {
+                title: 'France',
+                fields: [
+                  { label: 'Username', value: 'u77894411' },
+                  { label: 'Password', value: 'mzw990' },
+                ],
+              },
+              {
+                title: 'Finland',
+                fields: [
+                  { label: 'Username', value: 'u06516046' },
+                  { label: 'Password', value: 'kam413' },
+                ],
+              },
+              {
+                title: 'Other scenarios (all countries)',
+                fields: [
+                  { label: 'Authentication error — Username', value: 'u92721594' },
+                  { label: 'Authentication error — Password', value: 'nbs589' },
+                  { label: 'Temporary error — Username', value: 'u91902655' },
+                  { label: 'Temporary error — Password', value: 'jtx720' },
+                ],
+              },
+            ],
+          },
+        };
+
+        function renderCards() {
+          titleEl.textContent = 'Test Cards';
+          hintEl.innerHTML = 'Expiry <b>03/30</b> &middot; CVC <b>737</b> (Amex <b>7373</b>)';
+          hintEl.style.display = '';
+          list.innerHTML = '';
           TEST_CARD_GROUPS.forEach((g) => {
             const title = document.createElement('div');
             title.className = 'tc-group-title';
@@ -972,6 +1159,112 @@
           });
         }
 
+        function addFieldRow(f, copyable) {
+          const showCopy = copyable !== false;
+          const row = document.createElement('div');
+          row.className = 'tc-row';
+          row.innerHTML =
+            '<div class="tc-info">' +
+            '<span class="tc-brand"></span>' +
+            '<span class="tc-number"></span>' +
+            '</div>' +
+            (showCopy ? '<button class="tc-copy" type="button">Copy</button>' : '');
+          row.querySelector('.tc-brand').textContent = f.label;
+          row.querySelector('.tc-number').textContent = f.value;
+          if (showCopy) {
+            const btn = row.querySelector('.tc-copy');
+            btn.addEventListener('click', copyHandler(btn, f.value));
+          }
+          list.appendChild(row);
+        }
+        function addSectionTitle(t) {
+          const nt = document.createElement('div');
+          nt.className = 'tc-note-title';
+          nt.textContent = t;
+          list.appendChild(nt);
+        }
+        function addNote(n) {
+          const el = document.createElement('div');
+          el.className = 'tc-note' + (n.warn ? ' warn' : '') + (n.bullet ? ' bullet' : '');
+          appendRichText(el, n.text);
+          list.appendChild(el);
+        }
+        function renderLpm(cred) {
+          titleEl.textContent = cred.title;
+          hintEl.style.display = 'none';
+          list.innerHTML = '';
+          (cred.fields || []).forEach((f) => addFieldRow(f));
+          (cred.sections || []).forEach((s) => {
+            if (s.title) addSectionTitle(s.title);
+            (s.preNotes || []).forEach(addNote);
+            (s.fields || []).forEach((f) => addFieldRow(f, s.copyable));
+            (s.notes || []).forEach(addNote);
+          });
+          if (cred.notesTitle) addSectionTitle(cred.notesTitle);
+          (cred.notes || []).forEach(addNote);
+        }
+
+        function appendRichText(el, text) {
+          const boldRe = /\*\*(.+?)\*\*/g;
+          let last = 0;
+          let m;
+          while ((m = boldRe.exec(text)) !== null) {
+            if (m.index > last) appendLinkified(el, text.slice(last, m.index));
+            const b = document.createElement('b');
+            appendLinkified(b, m[1]);
+            el.appendChild(b);
+            last = m.index + m[0].length;
+          }
+          if (last < text.length) appendLinkified(el, text.slice(last));
+        }
+
+        function appendLinkified(el, text) {
+          const re = /(https?:\/\/[^\s]+)/g;
+          let last = 0;
+          let m;
+          while ((m = re.exec(text)) !== null) {
+            if (m.index > last) {
+              el.appendChild(document.createTextNode(text.slice(last, m.index)));
+            }
+            let url = m[0];
+            let trailing = '';
+            const tm = url.match(/[).,;:]+$/);
+            if (tm) {
+              trailing = tm[0];
+              url = url.slice(0, url.length - trailing.length);
+            }
+            const a = document.createElement('a');
+            a.href = url;
+            a.textContent = url;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            el.appendChild(a);
+            if (trailing) el.appendChild(document.createTextNode(trailing));
+            last = m.index + m[0].length;
+          }
+          if (last < text.length) {
+            el.appendChild(document.createTextNode(text.slice(last)));
+          }
+        }
+
+        const STATE_MODS = new Set([
+          'selected', 'loading', 'confirming', 'disabling', 'pending', 'open', 'standalone', 'list',
+        ]);
+        const getSelectedType = () => {
+          const sel = document.querySelector('.adyen-checkout__payment-method--selected');
+          if (!sel) return null;
+          if (lastSelectedType) return lastSelectedType;
+          const prefix = 'adyen-checkout__payment-method--';
+          for (const cls of sel.classList) {
+            if (cls.indexOf(prefix) === 0) {
+              const mod = cls.slice(prefix.length);
+              if (!STATE_MODS.has(mod)) return mod;
+            }
+          }
+          if (sel.querySelector('.adyen-checkout__card-input')) return 'scheme';
+          return null;
+        };
+
         const card = document.querySelector('.card');
         const GAP = 24;
         const alignPanel = () => {
@@ -981,17 +1274,26 @@
           panel.style.left = Math.max(12, left) + 'px';
         };
 
-        const isCardOpen = () => {
-          const sel = document.querySelector('.adyen-checkout__payment-method--selected');
-          if (!sel) return false;
-          if (sel.className.includes('--scheme')) return true;
-          return !!sel.querySelector('.adyen-checkout__card-input');
-        };
+        let renderedKey = null;
         const update = () => {
-          const open = isCardOpen();
-          panel.classList.toggle('visible', open);
-          if (open) alignPanel();
+          const type = getSelectedType();
+          const isCard = type === 'scheme';
+          const cred = type ? LPM_CREDENTIALS[type] : null;
+          const show = isCard || !!cred;
+          panel.classList.toggle('visible', show);
+          if (!show) {
+            renderedKey = null;
+            return;
+          }
+          const key = isCard ? 'scheme' : type;
+          if (renderedKey !== key) {
+            if (isCard) renderCards();
+            else renderLpm(cred);
+            renderedKey = key;
+          }
+          alignPanel();
         };
+        refreshCredPanel = update;
 
         const container = document.getElementById('dropin-container');
         new MutationObserver(update).observe(container, {
