@@ -625,6 +625,7 @@
       const billingAddressRequired = params.get('billingAddressRequired') === 'true';
       const billingAddressMode = params.get('billingAddressMode') || 'full';
       const enableStoreDetails = params.get('enableStoreDetails') !== 'false';
+      const showStoredPaymentMethods = params.get('showStoredPaymentMethods') !== 'false';
       const showPayButton = params.get('showPayButton') !== 'false';
       const threeDSMode = params.get('threeDSMode') || 'native';
 
@@ -657,7 +658,7 @@
       const { clientKey, environment } = await configRes.json();
       const paymentMethodsResponse = await pmRes.json();
       logApi('/paymentMethods', 'Response', paymentMethodsResponse);
-      if (!recurringModel) delete paymentMethodsResponse.storedPaymentMethods;
+      if (!showStoredPaymentMethods) delete paymentMethodsResponse.storedPaymentMethods;
 
       // ── Build return URL for redirect payments ──────────────────────────
       const returnUrl = `${window.location.origin}/result.html`;
@@ -787,7 +788,7 @@
           if (refreshCredPanel) refreshCredPanel();
         },
         openFirstPaymentMethod: true,
-        showStoredPaymentMethods: true,
+        showStoredPaymentMethods,
         showRemovePaymentMethodButton: true,
         showPayButton,
         paymentMethodsConfiguration: {
@@ -1096,6 +1097,24 @@
                   { label: 'Authentication error — Password', value: 'nbs589' },
                   { label: 'Temporary error — Username', value: 'u91902655' },
                   { label: 'Temporary error — Password', value: 'jtx720' },
+                ],
+              },
+            ],
+          },
+          paysafecard: {
+            title: 'paysafecard Test',
+            sections: [
+              {
+                title: '16-digit code',
+                fields: [
+                  { label: 'Code', value: '0000 0000 0990 3417' },
+                ],
+              },
+              {
+                title: 'Test myPaysafecard account',
+                fields: [
+                  { label: 'Username', value: 'BpwSzXrZAxxYXGUbvFrp' },
+                  { label: 'Password', value: 'TTJVvUNKxijajaA1' },
                 ],
               },
             ],
