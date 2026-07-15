@@ -621,6 +621,8 @@
       const merchantRef = params.get('merchantRef') || '';
       const shopperRef = params.get('shopperRef') || 'user_shanghai';
       const shopperInteraction = params.get('shopperInteraction') || 'Ecommerce';
+      const telephoneNumber = params.get('telephoneNumber') || '';
+      const shopperEmail = params.get('shopperEmail') || '';
       const recurringModel = params.get('recurringModel') || '';
       const billingAddressRequired = params.get('billingAddressRequired') === 'true';
       const billingAddressMode = params.get('billingAddressMode') || 'full';
@@ -645,7 +647,7 @@
         `${currency} ${amountMajor} — ${country} — ${channel}`;
 
       // ── Fetch config & payment methods in parallel ────────────────────
-      const pmRequestBody = { countryCode: country, currency, amount, channel, shopperRef };
+      const pmRequestBody = { countryCode: country, currency, amount, channel, shopperRef, ...(telephoneNumber && { telephoneNumber }) };
       logApi('/paymentMethods', 'Request', pmRequestBody);
       const [configRes, pmRes] = await Promise.all([
         fetch('/api/config'),
@@ -691,6 +693,8 @@
               shopperRef,
               shopperInteraction,
               threeDSMode,
+              ...(telephoneNumber && { telephoneNumber }),
+              ...(shopperEmail && { shopperEmail }),
               ...(recurringModel && { recurringModel }),
               ...(merchantRef && { merchantRef }),
             };
@@ -803,6 +807,9 @@
           },
           wechatpayQR: {
             countdownTime: 59,
+          },
+          econtext_stores: {
+            personalDetailsRequired: false,
           },
         },
         onDisableStoredPaymentMethod: async (storedPaymentMethod, resolve, reject) => {
@@ -1119,6 +1126,94 @@
               },
             ],
           },
+          paypay: {
+            title: 'PayPay Test',
+            notesTitle: 'Test flow',
+            notes: [
+              { text: '1. Click the login button in the top of the VeriTrans page.' },
+              { text: '2. Choose success or failure flow and click pay.' },
+              { text: '3. Complete the payment.' },
+            ],
+          },
+          rakutenpay: {
+            title: 'Rakuten Pay Test',
+            notesTitle: 'Test flow',
+            notes: [
+              { text: '1. Click the login button in the top of the VeriTrans page.' },
+              { text: '2. Choose success or failure flow and click pay.' },
+              { text: '3. Complete the payment.' },
+            ],
+          },
+          econtext_stores: {
+            title: 'eContext (Konbini) Test',
+            sections: [
+              {
+                notes: [
+                  { text: '1. We set **personalDetailsRequired** to false in sandbox so you don\u2019t have to enter the shopper information again in the checkout page.' },
+                  { text: '2. After you see the payment reference (6-digit number), log in to your customer area https://ca-test.adyen.com/ca/ui/payments/offers/ and find this offer.' },
+                  { text: 'Remember you can only test the following flow once you integrate in your own merchant account.', warn: true },
+                  { text: 'Copy the **Acquirer reference**, \n e.g. **VNX42DNSHDB89PV5-262320-econtext_stores**.' },
+                  { text: '3. Log in to the econtext Simulator https://form.int.econ.ne.jp/paynotice using the credentials below.' },
+                ],
+              },
+              {
+            
+                fields: [
+                  { label: 'Username', value: 'ectest' },
+                  { label: 'Password', value: '#Gwecn25' },
+                ],
+                notes: [
+                  { text: '' },
+                  { text: '4. On the econtext Simulator form:' },
+                  { text: '• In the first box, provide **742001** as the shopID.' },
+                  { text: '• In the second box, provide the **Acquirer reference** you copied in the previous step.' },
+                  { text: '• In the third box, select the store you want to test.' },
+                  { text: '• Click **Submit**.' },
+                  { text: '5. Wait for 15 min and check the payment status again.' },
+                ],
+              },
+            ],
+          },
+          atome: {
+            title: 'Atome Test',
+            sections: [
+              {
+                notes: [
+                  { text: '1. Enter shopper information in the checkout page.' },
+                  { text: '2. Choose Pay in browser.' },
+                  { text: '3. Log in with one of the test accounts below.' },
+                ],
+              },
+              {
+                title: 'Singapore — Successful scenario',
+                fields: [
+                  { label: 'Mobile Number', value: '+6580000250' },
+                  { label: 'OTP', value: '6162' },
+                ],
+              },
+              {
+                title: 'Singapore — Failure scenario',
+                fields: [
+                  { label: 'Mobile Number', value: '+6580001500' },
+                  { label: 'OTP', value: '1111' },
+                ],
+              },
+              {
+                title: 'Malaysia — Successful scenario',
+                fields: [
+                  { label: 'Mobile Number', value: '+60120000237' },
+                  { label: 'OTP', value: '6928' },
+                ],
+              },
+              {
+                title: 'Malaysia — Failure scenario',
+                fields: [
+                  { label: 'Mobile Number', value: '+60100001500' },
+                  { label: 'OTP', value: '1111' },
+                ],
+              },
+            ],
+          },
         };
 
         function renderCards() {
@@ -1237,13 +1332,21 @@
           if (last < text.length) appendLinkified(el, text.slice(last));
         }
 
+        function appendTextWithBreaks(el, text) {
+          const parts = text.split('\n');
+          parts.forEach((part, i) => {
+            if (i > 0) el.appendChild(document.createElement('br'));
+            if (part) el.appendChild(document.createTextNode(part));
+          });
+        }
+
         function appendLinkified(el, text) {
           const re = /(https?:\/\/[^\s]+)/g;
           let last = 0;
           let m;
           while ((m = re.exec(text)) !== null) {
             if (m.index > last) {
-              el.appendChild(document.createTextNode(text.slice(last, m.index)));
+              appendTextWithBreaks(el, text.slice(last, m.index));
             }
             let url = m[0];
             let trailing = '';
@@ -1262,7 +1365,7 @@
             last = m.index + m[0].length;
           }
           if (last < text.length) {
-            el.appendChild(document.createTextNode(text.slice(last)));
+            appendTextWithBreaks(el, text.slice(last));
           }
         }
 

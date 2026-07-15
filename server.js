@@ -111,7 +111,7 @@ app.get('/api/config', (_req, res) => {
 // ── /paymentMethods ─────────────────────────────────────────────────────────
 app.post('/api/paymentMethods', async (req, res) => {
   try {
-    const { countryCode, currency, amount, channel, shopperRef } = req.body;
+    const { countryCode, currency, amount, channel, shopperRef, telephoneNumber } = req.body;
     const ch = channel || 'Web';
 
     const pmRequest = {
@@ -123,6 +123,7 @@ app.post('/api/paymentMethods', async (req, res) => {
       },
       channel: ch,
       shopperReference: shopperRef || 'user_shanghai',
+      ...(telephoneNumber && { telephoneNumber }),
     };
     const response = await checkout.PaymentsApi.paymentMethods(pmRequest);
     logPayment('/paymentMethods', pmRequest, response);
@@ -136,7 +137,7 @@ app.post('/api/paymentMethods', async (req, res) => {
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {
-    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode } = req.body;
+    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail } = req.body;
     const orderRef = merchantRef || uuid();
 
     const origin = `${req.protocol}://${req.get('host')}`;
@@ -175,11 +176,12 @@ app.post('/api/payments', async (req, res) => {
           taxPercentage: 0,
         },
       ],
-      shopperEmail: 'test@example.com',
+      ...(shopperEmail && { shopperEmail }),
       shopperName: {
         firstName: 'Test',
         lastName: 'Shopper',
       },
+      ...(telephoneNumber && { telephoneNumber }),
       shopperReference: shopperRef || 'user_shanghai',
       recurringProcessingModel: recurringModel || (paymentMethod?.storedPaymentMethodId ? 'CardOnFile' : undefined),
       ...(storePaymentMethod && { storePaymentMethod: true }),

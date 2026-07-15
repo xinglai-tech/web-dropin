@@ -191,6 +191,7 @@
           <div class="csel__opt" data-value="JP">🇯🇵 Japan</div>
           <div class="csel__opt" data-value="MY">🇲🇾 Malaysia</div>
           <div class="csel__opt" data-value="NL">🇳🇱 Netherlands</div>
+          <div class="csel__opt" data-value="NZ">🇳🇿 New Zealand</div>
           <div class="csel__opt" data-value="NO">🇳🇴 Norway</div>
           <div class="csel__opt selected" data-value="SG">🇸🇬 Singapore</div>
           <div class="csel__opt" data-value="KR">🇰🇷 South Korea</div>
@@ -220,6 +221,7 @@
             <div class="csel__opt" data-value="KRW">KRW</div>
             <div class="csel__opt" data-value="MYR">MYR</div>
             <div class="csel__opt" data-value="NOK">NOK</div>
+            <div class="csel__opt" data-value="NZD">NZD</div>
             <div class="csel__opt" data-value="SEK">SEK</div>
             <div class="csel__opt selected" data-value="SGD">SGD</div>
             <div class="csel__opt" data-value="THB">THB</div>
@@ -272,6 +274,18 @@
       </div>
     </div>
 
+    <div class="row">
+      <div class="form-group">
+        <label for="telephoneNumber">Telephone Number<span class="info-tip" tabindex="0" data-tip="Shopper's phone number sent in the payments request. Used by some payment methods and risk checks.">i</span></label>
+        <input type="text" id="telephoneNumber" value="1234567890" />
+      </div>
+
+      <div class="form-group">
+        <label for="shopperEmail">Email<span class="info-tip" tabindex="0" data-tip="Shopper's email sent in the payments request. Used by some payment methods and receipts.">i</span></label>
+        <input type="email" id="shopperEmail" value="test@example.com" />
+      </div>
+    </div>
+
     <div class="form-group" id="billingModeGroup" style="display:flex;align-items:center;gap:10px;">
       <label class="checkbox-label" style="flex:0 0 auto;">
         <input type="checkbox" id="billingAddressRequired" />
@@ -311,25 +325,27 @@
       <span class="info-tip" tabindex="0" data-tip="Show SDK's built-in Pay button. &#10 Disable to use your own button, need to implement onsubmit().">i</span>
     </div>
 
-    <div class="form-group">
-      <label>3DS Mode<span class="info-tip" tabindex="0" data-tip="• Native = 3DS2 rendered in merchant's page.&#10;• Redirect = shopper is redirected to the issuer's authentication page.">i</span></label>
-      <div class="csel" data-id="threeDSMode" data-value="native">
-        <div class="csel__trigger"><span>Native</span><div class="csel__arrow"></div></div>
-        <div class="csel__options">
-          <div class="csel__opt selected" data-value="native">Native</div>
-          <div class="csel__opt" data-value="redirect">Redirect</div>
+    <div class="row">
+      <div class="form-group">
+        <label>3DS Mode<span class="info-tip" tabindex="0" data-tip="• Native = 3DS2 rendered in merchant's page.&#10;• Redirect = shopper is redirected to the issuer's authentication page.">i</span></label>
+        <div class="csel" data-id="threeDSMode" data-value="native">
+          <div class="csel__trigger"><span>Native</span><div class="csel__arrow"></div></div>
+          <div class="csel__options">
+            <div class="csel__opt selected" data-value="native">Native</div>
+            <div class="csel__opt" data-value="redirect">Redirect</div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="form-group">
-      <label>Channel<span class="info-tip" tabindex="0" data-tip="Platform where the payment happens (Web, iOS, Android). &#10;Affects which payment methods are returned and data used for 3DS flow (native or web).">i</span></label>
-      <div class="csel" data-id="channel" data-value="Web">
-        <div class="csel__trigger"><span>Web</span><div class="csel__arrow"></div></div>
-        <div class="csel__options">
-          <div class="csel__opt selected" data-value="Web">Web</div>
-          <div class="csel__opt" data-value="iOS">iOS</div>
-          <div class="csel__opt" data-value="Android">Android</div>
+      <div class="form-group">
+        <label>Channel<span class="info-tip" tabindex="0" data-tip="Platform where the payment happens (Web, iOS, Android). &#10;Affects which payment methods are returned and data used for 3DS flow (native or web).">i</span></label>
+        <div class="csel" data-id="channel" data-value="Web">
+          <div class="csel__trigger"><span>Web</span><div class="csel__arrow"></div></div>
+          <div class="csel__options">
+            <div class="csel__opt selected" data-value="Web">Web</div>
+            <div class="csel__opt" data-value="iOS">iOS</div>
+            <div class="csel__opt" data-value="Android">Android</div>
+          </div>
         </div>
       </div>
     </div>
@@ -379,7 +395,7 @@
       SG: 'SGD', US: 'USD', GB: 'GBP', NL: 'EUR', DE: 'EUR', FR: 'EUR',
       AU: 'AUD', JP: 'JPY', HK: 'HKD', SE: 'SEK', NO: 'NOK',
       FI: 'EUR', DK: 'DKK', CA: 'CAD', BR: 'BRL', MY: 'MYR',
-      TH: 'THB', KR: 'KRW', IT: 'EUR', ES: 'EUR', BE: 'EUR',
+      TH: 'THB', KR: 'KRW', IT: 'EUR', ES: 'EUR', BE: 'EUR', NZ: 'NZD',
     };
     document.querySelector('.csel[data-id="country"]').addEventListener('change', () => {
       const mapped = countryCurrency[cselVal('country')];
@@ -416,6 +432,10 @@
       if (shopperRef) params.set('shopperRef', shopperRef);
       const ref = document.getElementById('merchantRef').value.trim();
       if (ref) params.set('merchantRef', ref);
+      const phone = document.getElementById('telephoneNumber').value.trim();
+      if (phone) params.set('telephoneNumber', phone);
+      const email = document.getElementById('shopperEmail').value.trim();
+      if (email) params.set('shopperEmail', email);
       if (billingReqEl.checked) {
         params.set('billingAddressRequired', 'true');
         params.set('billingAddressMode', cselVal('billingAddressMode'));
