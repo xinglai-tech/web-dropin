@@ -723,7 +723,7 @@
       const billingAddressMode = params.get('billingAddressMode') || 'full';
       const enableStoreDetails = params.get('enableStoreDetails') !== 'false';
       const showStoredPaymentMethods = params.get('showStoredPaymentMethods') !== 'false';
-      const showPayButton = params.get('showPayButton') !== 'false';
+      const shopperLocale = params.get('shopperLocale') || 'en-US';
       const threeDSMode = params.get('threeDSMode') || 'native';
 
       // ── Convert major units to minor units ────────────────────────────
@@ -766,7 +766,7 @@
         clientKey,
         paymentMethodsResponse,
         countryCode: country,
-        locale: 'en-US',
+        locale: shopperLocale,
         amount: { currency, value: amount },
         enableStoreDetails,
 
@@ -889,11 +889,9 @@
         openFirstPaymentMethod: true,
         showStoredPaymentMethods,
         showRemovePaymentMethodButton: true,
-        showPayButton,
         paymentMethodsConfiguration: {
           card: {
             enableStoreDetails,
-            showPayButton,
             billingAddressRequired,
             ...(billingAddressRequired && { billingAddressMode }),
             onBrand: (d) => logEvent('card.onBrand', { brand: d?.brand, type: d?.type }),
@@ -1079,6 +1077,30 @@
 
         // Test credentials for local payment methods, keyed by txVariant.
         const LPM_CREDENTIALS = {
+          googlepay: {
+            title: 'Google Pay Test',
+            sections: [
+              {
+                notes: [
+                  { text: 'Please login with your personal Google account.' },
+                  { text: 'Google will inject multiple test cards in the sandbox environment into your account, so you will not be charged.' },
+                ],
+              },
+              {
+                title: 'Non-3DS scenario',
+                notes: [
+                  { text: '•  **NL Consumer : Mastercard** ••1115' },
+                  { text: '• **NL Consumer : Visa** ••1111' },
+                ],
+              },
+              {
+                title: '3DS scenario',
+                notes: [
+                  { text: '• **Auth Verified: Visa** — Visa ••0000' },
+                ],
+              },
+            ],
+          },
           grabpay_SG: {
             title: 'GrabPay (SG) Test',
             fields: [
@@ -1310,6 +1332,8 @@
             ],
           },
         };
+        // Older SDK naming for Google Pay.
+        LPM_CREDENTIALS.paywithgoogle = LPM_CREDENTIALS.googlepay;
 
         function renderCards() {
           titleEl.textContent = 'Test Cards';
