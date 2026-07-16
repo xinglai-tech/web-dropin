@@ -154,7 +154,7 @@
     .tc-note a:hover {
       color: #3D7D99;
     }
-    @media (max-width: 1100px) {
+    @media (max-width: 1280px) {
       .test-cards-panel.visible {
         display: none;
       }
@@ -169,7 +169,9 @@
       left: 100%;
       margin-left: 24px;
       width: 460px;
-      max-width: 46vw;
+      /* Cap to the space available to the right of the centered card so the
+         dock never pushes past the viewport (e.g. on 14" laptops). */
+      max-width: calc(50vw - 330px);
       flex-direction: column;
       gap: 12px;
       background: #fff;
@@ -190,7 +192,7 @@
       display: flex;
       gap: 8px;
     }
-    @media (max-width: 1100px) {
+    @media (max-width: 1280px) {
       .debug-dock {
         position: static;
         left: auto;
@@ -236,7 +238,7 @@
     }
     #clear-log {
       display: none;
-      align-self: flex-end;
+      align-self: center;
       background: #fff;
       color: #4A8DAB;
       border: 1.5px solid #d8e5ec;
@@ -251,6 +253,20 @@
       background: #f5f9fb;
       color: #3D7D99;
       border-color: #cfe0e9;
+    }
+    .webhook-link {
+      display: block;
+      margin-top: 16px;
+      text-align: center;
+      color: #4A8DAB;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .webhook-link:hover {
+      color: #3D7D99;
+      text-decoration: underline;
     }
     .debug-dock:has(.debug-panel.open) #clear-log {
       display: inline-block;
@@ -475,8 +491,10 @@
         <p class="debug-empty">No SDK events yet. Interact with the payment form to see events.</p>
       </div>
     </aside>
-    <button id="clear-log" type="button">Clear</button>
+    <button id="clear-log" type="button">Clear log</button>
     </div>
+
+    <a id="webhook-cta" class="webhook-link" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">↗ View transaction status in webhook</a>
 
     <div style="text-align:center;margin-top:16px;">
       <a href="/" style="color:#4A8DAB;font-size:0.9rem;text-decoration:none;font-weight:500;">← Back to Home</a>
@@ -500,6 +518,7 @@
     const debugProceed = document.getElementById('debug-proceed');
     const mainHeader = document.querySelector('.header');
     const debugHeaderEl = debugPanel.querySelector('.debug-header');
+    let webhookStatusUrl = '';
     function syncDebugHeader() {
       debugHeaderEl.style.height = '';
     }
@@ -752,7 +771,9 @@
           body: JSON.stringify(pmRequestBody),
         }),
       ]);
-      const { clientKey, environment } = await configRes.json();
+      const configData = await configRes.json();
+      const { clientKey, environment } = configData;
+      webhookStatusUrl = configData.webhookStatusUrl || '';
       const paymentMethodsResponse = await pmRes.json();
       logApi('/paymentMethods', 'Response', paymentMethodsResponse);
       if (!showStoredPaymentMethods) delete paymentMethodsResponse.storedPaymentMethods;
@@ -1572,9 +1593,18 @@
       }
 
       function showPsp(psp) {
-        if (!psp) return;
-        const el = document.getElementById('psp-info');
-        el.innerHTML = '<strong>PSP Reference:</strong> ' + psp;
+        if (psp) {
+          const el = document.getElementById('psp-info');
+          el.innerHTML = '<strong>PSP Reference:</strong> ' + psp;
+          el.style.display = 'block';
+        }
+        showWebhookButton();
+      }
+
+      function showWebhookButton() {
+        if (!webhookStatusUrl) return;
+        const el = document.getElementById('webhook-cta');
+        el.href = webhookStatusUrl;
         el.style.display = 'block';
       }
     })();

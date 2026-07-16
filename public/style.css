@@ -251,20 +251,18 @@ body {
   background: #3D7D99;
 }
 .webhook-link {
-  display: inline-block;
-  width: 100%;
-  margin-top: 10px;
-  padding: 12px;
-  background: #fff;
+  display: block;
+  margin-top: 14px;
+  text-align: center;
   color: #4A8DAB;
+  font-size: 0.9rem;
+  font-weight: 500;
   text-decoration: none;
-  font-weight: 600;
-  border: 1.5px solid #4A8DAB;
-  border-radius: 8px;
-  transition: background 0.2s, color 0.2s;
+  transition: color 0.2s;
 }
 .webhook-link:hover {
-  background: #eaf3f8;
+  color: #3D7D99;
+  text-decoration: underline;
 }
 
 /* ── Status colours ──────────────────────────────────────────────────────── */

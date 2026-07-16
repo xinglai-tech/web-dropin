@@ -115,7 +115,7 @@
 
         html += `<a class="back-link" href="/">Start a new payment</a>`;
         if (webhookStatusUrl) {
-          html += `<a class="webhook-link" href="${webhookStatusUrl}" target="_blank" rel="noopener noreferrer">View transaction status in webhook</a>`;
+          html += `<a class="webhook-link" href="${webhookStatusUrl}" target="_blank" rel="noopener noreferrer">↗ View transaction status in webhook</a>`;
         }
         card.innerHTML = html;
       }
