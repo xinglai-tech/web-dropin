@@ -26,6 +26,12 @@
       const card    = document.getElementById('resultCard');
       const spinner = document.getElementById('spinner');
 
+      let webhookStatusUrl = '';
+      try {
+        const cfg = await (await fetch('/api/config')).json();
+        webhookStatusUrl = cfg.webhookStatusUrl || '';
+      } catch (e) { /* config optional */ }
+
       // ── If we already have a resultCode (from onPaymentCompleted) ──────
       if (resultCode && !redirectResult) {
         spinner.classList.remove('active');
@@ -61,38 +67,56 @@
       function renderResult(data) {
         const code = data.resultCode || 'Unknown';
         const icon = {
-          Authorised: '✅', Received: '⏳', Pending: '⏳',
-          Refused: '❌', Cancelled: '🚫', Error: '⚠️',
-        }[code] || 'ℹ️';
+          Authorised: '✓', Received: '⏳', Pending: '⏳',
+          Refused: '✕', Cancelled: '⊘', Error: '!',
+        }[code] || 'ℹ';
 
-        const statusClass = ['Authorised'].includes(code)
-          ? 'status-authorised'
+        const subtitle = {
+          Authorised: 'Your payment was successful.',
+          Received: 'Your payment has been received and is being processed.',
+          Pending: 'Your payment is pending confirmation.',
+          Refused: 'Your payment was refused. Please try another method.',
+          Cancelled: 'The payment was cancelled.',
+          Error: 'Something went wrong while processing your payment.',
+        }[code] || 'We could not determine the payment status.';
+
+        const tone = code === 'Authorised'
+          ? { badge: 'success', status: 'status-authorised' }
           : ['Refused', 'Cancelled', 'Error'].includes(code)
-            ? 'status-refused'
-            : 'status-pending';
+            ? { badge: 'refused', status: 'status-refused' }
+            : ['Received', 'Pending'].includes(code)
+              ? { badge: 'pending', status: 'status-pending' }
+              : { badge: 'info', status: 'status-info' };
 
         let html = `
-          <div class="result-icon">${icon}</div>
-          <h2 class="${statusClass}">${code}</h2>
+          <div class="result-badge ${tone.badge} ${tone.status}">${icon}</div>
+          <h2 class="${tone.status}">${code}</h2>
+          <p class="result-sub">${subtitle}</p>
         `;
 
         // Show available detail fields
         const fields = [
-          ['pspReference',  data.pspReference],
-          ['merchantReference', data.merchantReference],
-          ['resultCode',    data.resultCode],
-          ['refusalReason', data.refusalReason],
+          ['PSP Reference',  data.pspReference],
+          ['Merchant Reference', data.merchantReference],
+          ['Result Code',    data.resultCode],
+          ['Refusal Reason', data.refusalReason],
+          ['Error', data.error],
         ];
-        fields.forEach(([label, value]) => {
-          if (value) {
-            html += `
+        const rows = fields
+          .filter(([, value]) => value)
+          .map(([label, value]) => `
               <div class="detail-row">
                 <span>${label}</span><span>${value}</span>
-              </div>`;
-          }
-        });
+              </div>`)
+          .join('');
+        if (rows) {
+          html += `<div class="result-details">${rows}</div>`;
+        }
 
-        html += `<a class="back-link" href="/">← New payment</a>`;
+        html += `<a class="back-link" href="/">Start a new payment</a>`;
+        if (webhookStatusUrl) {
+          html += `<a class="webhook-link" href="${webhookStatusUrl}" target="_blank" rel="noopener noreferrer">View transaction status in webhook</a>`;
+        }
         card.innerHTML = html;
       }
     })();

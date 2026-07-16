@@ -105,6 +105,7 @@ app.get('/api/config', (_req, res) => {
   res.json({
     clientKey: process.env.ADYEN_CLIENT_KEY,
     environment: (process.env.ADYEN_ENVIRONMENT || 'TEST').toLowerCase(),
+    webhookStatusUrl: process.env.WEBHOOK_STATUS_URL || '',
   });
 });
 
@@ -137,12 +138,38 @@ app.post('/api/paymentMethods', async (req, res) => {
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {
-    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail } = req.body;
+    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail, billingAddress, deliveryAddress } = req.body;
     const orderRef = merchantRef || uuid();
 
     const origin = `${req.protocol}://${req.get('host')}`;
     const finalReturnUrl =
       returnUrl || `${origin}/result.html`;
+
+    // Default address used to fill in fields the frontend does not supply.
+    // Some countries (US, CA, ...) require a valid stateOrProvince, so we
+    // provide country-aware defaults.
+    const cc = countryCode || 'SG';
+    const ADDRESS_DEFAULTS = {
+      US: { street: '1 Test Street', houseNumberOrName: '1', city: 'New York', postalCode: '10001', stateOrProvince: 'NY', country: 'US' },
+      CA: { street: '1 Test Street', houseNumberOrName: '1', city: 'Toronto', postalCode: 'M5H 2N2', stateOrProvince: 'ON', country: 'CA' },
+      AU: { street: '1 Test Street', houseNumberOrName: '1', city: 'Sydney', postalCode: '2000', stateOrProvince: 'NSW', country: 'AU' },
+    };
+    const defaultAddress = ADDRESS_DEFAULTS[cc] || {
+      street: '1 Test Street',
+      houseNumberOrName: '1',
+      city: 'Singapore',
+      postalCode: '123456',
+      stateOrProvince: 'N/A',
+      country: cc,
+    };
+    // Merge frontend-provided address over the default, ignoring empty values,
+    // so missing fields (e.g. stateOrProvince) always fall back to the default.
+    const mergeAddress = (provided) => ({
+      ...defaultAddress,
+      ...Object.fromEntries(
+        Object.entries(provided || {}).filter(([, v]) => v !== '' && v != null)
+      ),
+    });
 
     const payRequest = {
       merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
@@ -185,22 +212,8 @@ app.post('/api/payments', async (req, res) => {
       shopperReference: shopperRef || 'user_shanghai',
       recurringProcessingModel: recurringModel || (paymentMethod?.storedPaymentMethodId ? 'CardOnFile' : undefined),
       ...(storePaymentMethod && { storePaymentMethod: true }),
-      billingAddress: {
-        street: '1 Test Street',
-        houseNumberOrName: '1',
-        city: 'Singapore',
-        postalCode: '123456',
-        stateOrProvince: 'N/A',
-        country: countryCode || 'SG',
-      },
-      deliveryAddress: {
-        street: '1 Test Street',
-        houseNumberOrName: '1',
-        city: 'Singapore',
-        postalCode: '123456',
-        stateOrProvince: 'N/A',
-        country: countryCode || 'SG',
-      },
+      billingAddress: mergeAddress(billingAddress),
+      deliveryAddress: mergeAddress(deliveryAddress),
     };
     const response = await checkout.PaymentsApi.payments(payRequest);
     logPayment('/payments', payRequest, response);

@@ -158,55 +158,128 @@ body {
 }
 
 /* ── Result page ─────────────────────────────────────────────────────────── */
-.result-icon {
-  font-size: 3rem;
-  margin-bottom: 12px;
-}
 .result-card {
   text-align: center;
+  padding-top: 40px;
+}
+.result-badge {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.6rem;
+  line-height: 1;
+  animation: badge-pop 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+}
+@keyframes badge-pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.result-badge.success {
+  background: #e7f6ee;
+  box-shadow: 0 0 0 8px rgba(22, 163, 74, 0.08);
+}
+.result-badge.refused {
+  background: #fdeaec;
+  box-shadow: 0 0 0 8px rgba(225, 29, 72, 0.08);
+}
+.result-badge.pending {
+  background: #fef5e6;
+  box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.08);
+}
+.result-badge.info {
+  background: #eaf3f8;
+  box-shadow: 0 0 0 8px rgba(74, 141, 171, 0.08);
 }
 .result-card h2 {
-  margin-bottom: 8px;
-}
-.result-card p {
-  color: #666;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   margin-bottom: 6px;
-  word-break: break-all;
+}
+.result-sub {
+  color: #6b7280;
+  font-size: 0.92rem;
+  margin-bottom: 24px;
+}
+.result-details {
+  text-align: left;
+  background: #f7f9fb;
+  border: 1px solid #edf1f5;
+  border-radius: 10px;
+  padding: 6px 16px;
+  margin-bottom: 8px;
 }
 .result-card .detail-row {
   display: flex;
   justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid #edf1f5;
   font-size: 0.9rem;
-  text-align: left;
+}
+.result-card .detail-row:last-child {
+  border-bottom: none;
 }
 .result-card .detail-row span:first-child {
   font-weight: 600;
-  color: #555;
+  color: #4A8DAB;
+  white-space: nowrap;
+}
+.result-card .detail-row span:last-child {
+  color: #333;
+  word-break: break-all;
+  text-align: right;
 }
 
 .back-link {
   display: inline-block;
+  width: 100%;
   margin-top: 20px;
+  padding: 13px;
+  background: #4A8DAB;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.back-link:hover {
+  background: #3D7D99;
+}
+.webhook-link {
+  display: inline-block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  background: #fff;
   color: #4A8DAB;
   text-decoration: none;
   font-weight: 600;
+  border: 1.5px solid #4A8DAB;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
 }
-.back-link:hover {
-  text-decoration: underline;
+.webhook-link:hover {
+  background: #eaf3f8;
 }
 
 /* ── Status colours ──────────────────────────────────────────────────────── */
 .status-authorised {
-  color: #4A8DAB;
+  color: #16a34a;
 }
 .status-refused,
 .status-error {
-  color: #e74c3c;
+  color: #e11d48;
 }
 .status-pending {
-  color: #f39c12;
+  color: #f59e0b;
+}
+.status-info {
+  color: #4A8DAB;
 }
 
 /* ── Responsive: mobile (≤ 600px) ────────────────────────────────────────── */
@@ -261,12 +334,23 @@ body {
     margin-top: 10px;
   }
 
-  .result-icon {
-    font-size: 2.4rem;
+  .result-card {
+    padding-top: 28px;
+  }
+  .result-badge {
+    width: 68px;
+    height: 68px;
+    font-size: 2.1rem;
+  }
+  .result-card h2 {
+    font-size: 1.25rem;
   }
   .result-card .detail-row {
     flex-direction: column;
     gap: 2px;
+  }
+  .result-card .detail-row span:last-child {
+    text-align: left;
   }
   .result-card .detail-row span:first-child {
     font-size: 0.8rem;

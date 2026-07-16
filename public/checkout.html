@@ -1101,6 +1101,19 @@
               },
             ],
           },
+          ach: {
+            title: 'ACH Direct Debit Test',
+            fields: [
+              { label: 'Account Type', value: 'Personal checking account', copyable: false },
+              { label: 'Account Holder Name', value: 'Any name', copyable: false },
+              { label: 'Routing Number', value: '011000138' },
+              { label: 'Account Number', value: '1234567890' },
+            ],
+            notes: [
+              { text: '**Routing Number**: any correctly formatted routing number, e.g. **011000138**.' },
+              { text: '**Account Number**: any correctly formatted account number, e.g. **1234567890**.' },
+            ],
+          },
           grabpay_SG: {
             title: 'GrabPay (SG) Test',
             fields: [
@@ -1426,7 +1439,7 @@
           titleEl.textContent = cred.title;
           hintEl.style.display = 'none';
           list.innerHTML = '';
-          (cred.fields || []).forEach((f) => addFieldRow(f));
+          (cred.fields || []).forEach((f) => addFieldRow(f, f.copyable));
           (cred.sections || []).forEach((s) => {
             if (s.title) addSectionTitle(s.title);
             (s.preNotes || []).forEach(addNote);
