@@ -37,6 +37,35 @@
       margin-bottom: 6px;
       color: #333;
     }
+    .tc-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .tc-head h3 {
+      margin-bottom: 0;
+    }
+    .tc-popout {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border: 1.5px solid #d8e5ec;
+      background: #fff;
+      color: #4A8DAB;
+      font-size: 0.85rem;
+      font-weight: 700;
+      line-height: 1;
+      padding: 4px 7px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .tc-popout:hover {
+      background: #f5f9fb;
+      color: #3D7D99;
+      border-color: #cfe0e9;
+    }
     .tc-hint {
       font-size: 0.8rem;
       color: #666;
@@ -126,6 +155,27 @@
       margin: 18px 0 6px;
       padding-bottom: 4px;
       border-bottom: 1.5px solid #eef2f5;
+    }
+    .tc-highlight {
+      background: #eaf3f8;
+      border: 1px solid #cfe2ec;
+      border-left: 3px solid #4A8DAB;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+    }
+    .tc-highlight-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #4A8DAB;
+      margin-bottom: 6px;
+    }
+    .tc-highlight .tc-note {
+      color: #35566a;
+      margin-bottom: 4px;
+    }
+    .tc-highlight .tc-note:last-child {
+      margin-bottom: 0;
     }
     .tc-note {
       font-size: 0.8rem;
@@ -502,7 +552,10 @@
   </div>
 
   <aside id="test-cards-panel" class="test-cards-panel">
-    <h3>Test Cards</h3>
+    <div class="tc-head">
+      <h3>Test Cards</h3>
+      <button id="tc-popout" type="button" class="tc-popout" title="Open in a separate window so it stays visible during redirect">↗</button>
+    </div>
     <p class="tc-hint">Expiry <b>03/30</b> &middot; CVC <b>737</b> (Amex <b>7373</b>)</p>
     <div class="tc-list"></div>
   </aside>
@@ -1155,6 +1208,43 @@
               { label: 'IBAN', value: 'NL98ABNA0410108103' },
             ],
           },
+          facilypay_3x: {
+            title: 'Facily Pay 3x Test',
+            highlight: {
+              title: 'Response by amount (EUR)',
+              notes: [
+                { text: '**Authorised**: between EUR 150.00 and EUR 999.99' },
+                { text: '**Pending**: between EUR 1000.00 and EUR 1499.99' },
+                { text: '**Refused**: between EUR 1500.00 and EUR 2000.00' },
+              ],
+            },
+            sections: [
+              {
+                title: 'Test flow',
+                preNotes: [
+                  { text: '1. Enter shopper details on the checkout page.' },
+                  { text: '2. You will be redirected to the Oney page to confirm shopper information.' },
+                  { text: '**Ville de naissance**: type **P** and select Paris from the dropdown.' },
+                  { text: '**Telephone mobile** : 0666000000'},
+                ],
+           
+                notes: [
+                  { text: '3. Enter card information (see test cards below).' },
+                ],
+              },
+              {
+                title: 'Test cards',
+                fields: [
+                  { label: 'Card 1', value: '4970 1015 1882 0000' },
+                  { label: 'Card 2', value: '4970 1030 6015 0000' },
+                ],
+                notes: [
+                  { text: '**Expiry**: any date within 3 years from now.' },
+                  { text: '**CVV**: any value.' },
+                ],
+              },
+            ],
+          },
           afterpaytouch: {
             title: 'Afterpay Touch Test',
 
@@ -1456,10 +1546,28 @@
           appendRichText(el, n.text);
           list.appendChild(el);
         }
+        function addHighlight(h) {
+          const box = document.createElement('div');
+          box.className = 'tc-highlight';
+          if (h.title) {
+            const t = document.createElement('div');
+            t.className = 'tc-highlight-title';
+            t.textContent = h.title;
+            box.appendChild(t);
+          }
+          (h.notes || []).forEach((n) => {
+            const el = document.createElement('div');
+            el.className = 'tc-note' + (n.bullet ? ' bullet' : '');
+            appendRichText(el, n.text);
+            box.appendChild(el);
+          });
+          list.appendChild(box);
+        }
         function renderLpm(cred) {
           titleEl.textContent = cred.title;
           hintEl.style.display = 'none';
           list.innerHTML = '';
+          if (cred.highlight) addHighlight(cred.highlight);
           (cred.fields || []).forEach((f) => addFieldRow(f, f.copyable));
           (cred.sections || []).forEach((s) => {
             if (s.title) addSectionTitle(s.title);
@@ -1583,6 +1691,38 @@
         window.addEventListener('resize', () => {
           if (panel.classList.contains('visible')) alignPanel();
         });
+
+        function openCredPopout() {
+          const w = window.open('', 'testCreds', 'width=380,height=680,menubar=no,toolbar=no,location=no');
+          if (!w) { alert('Popup blocked. Please allow popups for this site.'); return; }
+          const styles = Array.from(document.querySelectorAll('style')).map((s) => s.outerHTML).join('\n');
+          const title = titleEl.textContent;
+          const hintHtml = hintEl.style.display === 'none' ? '' : '<p class="tc-hint">' + hintEl.innerHTML + '</p>';
+          const copyScript =
+            '<' + 'script>document.querySelectorAll(".tc-copy").forEach(function(b){' +
+            'b.addEventListener("click",function(){' +
+            'var n=b.parentElement.querySelector(".tc-number");' +
+            'var v=n?n.textContent.replace(/\\s+/g,""):"";' +
+            'navigator.clipboard.writeText(v).then(function(){' +
+            'var t=b.textContent;b.textContent="Copied";b.classList.add("copied");' +
+            'setTimeout(function(){b.textContent=t;b.classList.remove("copied");},1200);});' +
+            '});});<' + '/script>';
+          const doc =
+            '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + title + ' \u2014 Test Credentials</title>' +
+            styles +
+            '<style>' +
+            'body{margin:0;background:#f5f7fa;color:#1a1a2e;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;}' +
+            '.popout{padding:20px;}' +
+            '.test-cards-panel{position:static!important;display:block!important;width:auto!important;max-height:none!important;box-shadow:none!important;margin:0!important;left:auto!important;top:auto!important;height:auto!important;}' +
+            '</style></head><body><div class="popout"><aside class="test-cards-panel visible"><h3>' +
+            title + '</h3>' + hintHtml + '<div class="tc-list">' + list.innerHTML + '</div></aside></div>' +
+            copyScript + '</body></html>';
+          w.document.open();
+          w.document.write(doc);
+          w.document.close();
+        }
+        document.getElementById('tc-popout').addEventListener('click', openCredPopout);
+
         update();
       }
 
