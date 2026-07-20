@@ -1349,6 +1349,28 @@
               },
             ],
           },
+          paybybank_AIS_DD: {
+            title: 'Pay by Bank US Test',
+            highlight: {
+              title: 'Failure flow',
+              notes: [
+                { text: 'To test the failure flow, set the amount to **27.53 USD**.' },
+              ],
+            },
+            sections: [
+              {
+                title: 'Test flow',
+                preNotes: [
+                  { text: 'Select **Continue without phone number**.', bullet: true },
+                  { text: 'Select any bank in the list.', bullet: true },
+                  { text: 'On the login page, no username or password is needed — just click **Sign in**.', bullet: true },
+                  { text: 'Click **Get code** and **Submit** — no code needed.', bullet: true },
+                  { text: 'Select any saving or checking account to complete the payment.', bullet: true },
+                  { text: 'Select **Finish without saving**.', bullet: true },
+                ],
+              },
+            ],
+          },
           paysafecard: {
             title: 'paysafecard Test',
             sections: [
