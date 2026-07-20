@@ -123,7 +123,7 @@ app.post('/api/paymentMethods', async (req, res) => {
         value: amount || 10,
       },
       channel: ch,
-      shopperReference: shopperRef || 'user_shanghai',
+      ...(shopperRef && { shopperReference: shopperRef }),
       ...(telephoneNumber && { telephoneNumber }),
     };
     const response = await checkout.PaymentsApi.paymentMethods(pmRequest);
@@ -138,8 +138,14 @@ app.post('/api/paymentMethods', async (req, res) => {
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {
-    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail, billingAddress, deliveryAddress } = req.body;
+    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail, billingAddress, deliveryAddress, chargebackHolderName } = req.body;
     const orderRef = merchantRef || uuid();
+
+    // Chargeback test scenario: override the card holderName with a special
+    // value (e.g. "Chargeback:10.4") that triggers a chargeback in test.
+    if (chargebackHolderName && paymentMethod && paymentMethod.type === 'scheme') {
+      paymentMethod.holderName = chargebackHolderName;
+    }
 
     const origin = `${req.protocol}://${req.get('host')}`;
     const finalReturnUrl =
@@ -209,7 +215,7 @@ app.post('/api/payments', async (req, res) => {
         lastName: 'Shopper',
       },
       ...(telephoneNumber && { telephoneNumber }),
-      shopperReference: shopperRef || 'user_shanghai',
+      ...(shopperRef && { shopperReference: shopperRef }),
       recurringProcessingModel: recurringModel || (paymentMethod?.storedPaymentMethodId ? 'CardOnFile' : undefined),
       ...(storePaymentMethod && { storePaymentMethod: true }),
       billingAddress: mergeAddress(billingAddress),

@@ -820,6 +820,7 @@
       const showStoredPaymentMethods = params.get('showStoredPaymentMethods') !== 'false';
       const shopperLocale = params.get('shopperLocale') || 'en-US';
       const threeDSMode = params.get('threeDSMode') || 'native';
+      const chargebackHolderName = params.get('chargebackHolderName') || '';
 
       // ── Convert major units to minor units ────────────────────────────
       const zeroDecimalCurrencies = ['JPY', 'KRW', 'VND', 'CLP', 'PYG', 'GNF', 'RWF', 'UGX', 'XOF', 'XAF', 'ISK', 'HUF'];
@@ -889,6 +890,7 @@
               ...(shopperEmail && { shopperEmail }),
               ...(recurringModel && { recurringModel }),
               ...(merchantRef && { merchantRef }),
+              ...(chargebackHolderName && { chargebackHolderName }),
             };
             logApi('/payments', 'Request', paymentsRequestBody);
             const res = await fetch('/api/payments', {

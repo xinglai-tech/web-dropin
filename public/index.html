@@ -9,13 +9,146 @@
   <style>
     .logout-btn:hover { background: rgba(255,255,255,0.2); }
 
+    /* ── Compact payment settings ─────────────────────────── */
+    .card { max-width: 480px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { margin-bottom: 4px; font-size: 0.82rem; }
+    .form-group input,
+    .form-group select {
+      height: 38px;
+      padding: 0 12px;
+      font-size: 0.92rem;
+    }
+    .row { gap: 10px; }
+    /* Merchant Reference placeholder is long — shrink so it fits */
+    #merchantRef::placeholder,
+    #shopperRef::placeholder { font-size: 0.78rem; }
+
+    /* ── Test scenario side panel ─────────────────────────── */
+    .preset-panel {
+      position: fixed;
+      top: 140px;
+      left: calc(50% + 260px);
+      width: 270px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 18px;
+      z-index: 50;
+    }
+    .preset-panel h3 {
+      font-size: 1rem;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    .preset-panel .preset-hint {
+      font-size: 0.76rem;
+      color: #8a94a3;
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+    .preset-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: #fafbfc;
+      border: 1.5px solid #e1e8ee;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .preset-btn:hover {
+      border-color: #4A8DAB;
+      background: #f5f9fb;
+    }
+    .preset-btn .preset-btn-title {
+      display: block;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 2px;
+    }
+    .preset-btn .preset-btn-desc {
+      display: block;
+      font-size: 0.72rem;
+      color: #7a869a;
+      line-height: 1.4;
+    }
+    .preset-btn.reset {
+      background: #fff;
+      border-style: dashed;
+      margin-top: 4px;
+    }
+    .preset-btn.reset .preset-btn-title { color: #4A8DAB; }
+    /* Chargeback scenario group */
+    .preset-group {
+      border: 1.5px solid #e1e8ee;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+    .preset-group .preset-btn-title { display: block; font-size: 0.86rem; font-weight: 700; color: #1a1a2e; margin-bottom: 2px; }
+    .preset-group .preset-btn-desc { display: block; font-size: 0.72rem; color: #7a869a; line-height: 1.4; margin-bottom: 8px; }
+    .cb-schemes { display: flex; gap: 6px; }
+    .cb-chip {
+      flex: 1;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: #4A8DAB;
+      background: #fff;
+      border: 1.5px solid #cfe0e9;
+      border-radius: 6px;
+      padding: 6px 4px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .cb-chip:hover { background: #f5f9fb; }
+    .cb-chip.selected { background: #4A8DAB; color: #fff; border-color: #4A8DAB; }
+    .cb-reminder {
+      display: none;
+      font-size: 0.74rem;
+      color: #9a6b00;
+      background: #fff9e6;
+      border: 1px solid #f0dca0;
+      border-radius: 6px;
+      padding: 6px 8px;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+    .cb-reminder.show { display: block; }
+    .cb-reminder b { font-family: 'SFMono-Regular', Consolas, monospace; }
+    /* Highlighted Shopper Reference (remember for reuse test) */
+    #shopperRef.field-highlight {
+      border-color: #e0a800;
+      background: #fff9e6;
+      box-shadow: 0 0 0 3px rgba(224,168,0,0.18);
+    }
+    .remember-note {
+      display: none;
+      font-size: 0.76rem;
+      color: #9a6b00;
+      background: #fff9e6;
+      border: 1px solid #f0dca0;
+      border-radius: 6px;
+      padding: 6px 8px;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+    .remember-note.show { display: block; }
+    .remember-note b { font-family: 'SFMono-Regular', Consolas, monospace; }
+    @media (max-width: 1180px) {
+      .preset-panel { display: none; }
+    }
+
     /* ── Custom Select ──────────────────────────────────── */
     .csel { position: relative; width: 100%; }
     .csel__trigger {
       display: flex; align-items: center; justify-content: space-between;
-      width: 100%; height: 44px; padding: 0 14px;
+      width: 100%; height: 38px; padding: 0 12px;
       border: 1.5px solid #ddd; border-radius: 8px;
-      background: #fafbfc; font-size: 1rem; color: #1a1a2e;
+      background: #fafbfc; font-size: 0.92rem; color: #1a1a2e;
       cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s;
       user-select: none;
     }
@@ -69,6 +202,11 @@
     .csel[data-id="billingAddressMode"] .csel__trigger { height: 30px; }
     .csel[data-id="billingAddressMode"] .csel__trigger span,
     .csel[data-id="billingAddressMode"] .csel__opt { font-size: 0.85rem; }
+    .csel[data-id="billingAddressMode"] .csel__trigger span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
     /* ── Info tooltip ──────────────────────────────────────────────────── */
     .info-tip {
@@ -256,7 +394,7 @@
       <div class="form-group">
         <label for="amount">Amount</label>
         <input type="number" id="amount" value="10" min="0.01" step="0.01" />
-        <span id="amountError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;">Amount must be at least 1</span>
+        <span id="amountError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;">Amount must be at least 0.01</span>
       </div>
     </div>
 
@@ -289,7 +427,9 @@
     <div class="row">
       <div class="form-group">
         <label for="shopperRef">Shopper Reference<span class="info-tip" tabindex="0" data-tip="Your unique identifier for the shopper. &#10;Used to store and retrieve their saved payment methods.">i</span></label>
-        <input type="text" id="shopperRef" value="user_shanghai" />
+        <input type="text" id="shopperRef" value="" placeholder="optional" />
+        <div id="rememberNote" class="remember-note">Remember this Shopper Reference — you'll need it for recurring payment using stored card: <b id="rememberRef"></b></div>
+        <div id="reuseNote" class="remember-note">Enter the Shopper Reference you used in your first-time (tokenization) test, so the stored card can be reused.</div>
       </div>
 
       <div class="form-group">
@@ -307,6 +447,7 @@
       <div class="form-group">
         <label for="shopperEmail">Email<span class="info-tip" tabindex="0" data-tip="Shopper's email sent in the payments request. Used by some payment methods and receipts.">i</span></label>
         <input type="email" id="shopperEmail" value="test@example.com" />
+        <span id="emailError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;">Please enter a valid email address</span>
       </div>
     </div>
 
@@ -315,12 +456,12 @@
         <input type="checkbox" id="billingAddressRequired" />
         <span>Billing Address Required</span>
       </label>
-      <span class="info-tip" tabindex="0" data-tip="Require shopper to enter his billing address">i</span>
-      <div class="csel csel--disabled" data-id="billingAddressMode" data-value="full" style="margin-left:auto;width:auto;min-width:210px;">
-        <div class="csel__trigger"><span>Full (complete address)</span><div class="csel__arrow"></div></div>
+      <span class="info-tip" tabindex="0" data-tip="Require shopper to enter his billing address, for card payment only">i</span>
+      <div class="csel csel--disabled" data-id="billingAddressMode" data-value="full" style="margin-left:auto;flex:0 1 210px;min-width:0;">
+        <div class="csel__trigger"><span>Full address</span><div class="csel__arrow"></div></div>
         <div class="csel__options">
-          <div class="csel__opt selected" data-value="full">Full (complete address)</div>
-          <div class="csel__opt" data-value="partial">Partial (postal code only)</div>
+          <div class="csel__opt selected" data-value="full">Full address</div>
+          <div class="csel__opt" data-value="partial">Postal code only</div>
         </div>
       </div>
     </div>
@@ -368,6 +509,33 @@
 
     <button class="btn" id="startBtn">Continue to Checkout</button>
   </div>
+
+  <aside class="preset-panel">
+    <h3>Test Scenarios</h3>
+    <p class="preset-hint">Quickly configure the parameters for common test flows.</p>
+    <button type="button" class="preset-btn" id="preset-firstpay">
+      <span class="preset-btn-title">1. First-time card tokenization</span>
+      <span class="preset-btn-desc">Generates a new Shopper Reference.<br>Please also check <b></b>"save for my next payment"</b> in the next page.</span>
+    </button>
+    <button type="button" class="preset-btn" id="preset-reuse">
+      <span class="preset-btn-title">2. Pay with a stored card</span>
+      <span class="preset-btn-desc">Enter the previous Shopper Reference.<br>You will see the stored card in the next page.</span>
+    </button>
+    <div class="preset-group" id="preset-chargeback">
+      <span class="preset-btn-title">3. Test chargeback</span>
+      <span class="preset-btn-desc">Sends <b>holderName</b> parameter in /payment request that triggers a chargeback in test.<br>You might need to wait for 2 hours to receive the chargeback webhook:</span>
+      <div class="cb-schemes">
+        <button type="button" class="cb-chip" data-scheme="Visa" data-cb="Chargeback:10.4">Visa</button>
+        <button type="button" class="cb-chip" data-scheme="Mastercard" data-cb="Chargeback:4837">Mastercard</button>
+        <button type="button" class="cb-chip" data-scheme="Amex" data-cb="Chargeback:4534">Amex</button>
+      </div>
+      <p id="cb-reminder" class="cb-reminder"></p>
+    </div>
+    <button type="button" class="preset-btn reset" id="preset-reset">
+      <span class="preset-btn-title">Restore to default</span>
+      <span class="preset-btn-desc">Reset all settings back to their default values.</span>
+    </button>
+  </aside>
 
   <script>
     // ── Custom select logic ──────────────────────────────────────────────
@@ -430,11 +598,25 @@
     document.getElementById('startBtn').addEventListener('click', () => {
       const amountVal = parseFloat(document.getElementById('amount').value);
       const errorEl = document.getElementById('amountError');
+      const emailEl = document.getElementById('shopperEmail');
+      const emailErrEl = document.getElementById('emailError');
+      const emailRaw = emailEl.value.trim();
+      const emailValid = !emailRaw || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw);
+
+      let hasError = false;
       if (isNaN(amountVal) || amountVal < 0.01) {
         errorEl.style.display = 'block';
-        return;
+        hasError = true;
+      } else {
+        errorEl.style.display = 'none';
       }
-      errorEl.style.display = 'none';
+      if (!emailValid) {
+        emailErrEl.style.display = 'block';
+        hasError = true;
+      } else {
+        emailErrEl.style.display = 'none';
+      }
+      if (hasError) return;
       const params = new URLSearchParams({
         country: cselVal('country'),
         currency: cselVal('currency'),
@@ -460,7 +642,110 @@
       params.set('showStoredPaymentMethods', document.getElementById('showStoredPaymentMethods').checked ? 'true' : 'false');
       params.set('shopperLocale', cselVal('shopperLocale'));
       params.set('threeDSMode', cselVal('threeDSMode'));
+      if (chargebackHolderName) params.set('chargebackHolderName', chargebackHolderName);
       window.location.href = '/checkout.html?' + params.toString();
+    });
+
+    // ── Align preset panel top with the settings card ───────────────────
+    const presetPanelEl = document.querySelector('.preset-panel');
+    const cardEl = document.querySelector('.card');
+    function alignPresetPanel() {
+      presetPanelEl.style.top = Math.max(cardEl.getBoundingClientRect().top, 12) + 'px';
+    }
+    alignPresetPanel();
+    window.addEventListener('resize', alignPresetPanel);
+    window.addEventListener('scroll', alignPresetPanel, { passive: true });
+
+    // ── Test scenario presets ────────────────────────────────────────────
+    const shopperRefEl = document.getElementById('shopperRef');
+    const rememberNote = document.getElementById('rememberNote');
+    const rememberRef = document.getElementById('rememberRef');
+    const reuseNote = document.getElementById('reuseNote');
+    const cbReminder = document.getElementById('cb-reminder');
+    const cbChips = document.querySelectorAll('.cb-chip');
+    let chargebackHolderName = '';
+
+    function clearChargeback() {
+      chargebackHolderName = '';
+      cbChips.forEach(c => c.classList.remove('selected'));
+      cbReminder.classList.remove('show');
+    }
+    cbChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        cbChips.forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        chargebackHolderName = chip.dataset.cb;
+        cbReminder.innerHTML = 'holderName = <b>' + chargebackHolderName + '</b><br><br>On the next page, choose a <b>' + chip.dataset.scheme + '</b> test card so the value matches the scheme.'
+          + '<br>For more dispute reason codes, see: '
+          + '<a href="https://docs.adyen.com/risk-management/understanding-disputes/dispute-reason-codes?tab=chargeback_1" target="_blank" rel="noopener">Dispute reason codes</a>';
+        cbReminder.classList.add('show');
+      });
+    });
+
+    function clearRememberNote() {
+      shopperRefEl.classList.remove('field-highlight');
+      rememberNote.classList.remove('show');
+      reuseNote.classList.remove('show');
+    }
+    // Remove the highlight once the user edits the reference themselves.
+    shopperRefEl.addEventListener('input', clearRememberNote);
+
+    // 1. First-time card tokenization
+    document.getElementById('preset-firstpay').addEventListener('click', () => {
+      clearChargeback();
+      const rand = 'user_' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+      shopperRefEl.value = rand;
+      cselSet('shopperInteraction', 'Ecommerce');
+      cselSet('recurringModel', 'CardOnFile');
+      document.getElementById('enableStoreDetails').checked = true;
+      // Highlight so the tester remembers the generated reference.
+      shopperRefEl.classList.add('field-highlight');
+      reuseNote.classList.remove('show');
+      rememberRef.textContent = rand;
+      rememberNote.classList.add('show');
+      shopperRefEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    // 2. Pay with a stored card (reuse)
+    document.getElementById('preset-reuse').addEventListener('click', () => {
+      clearChargeback();
+      shopperRefEl.value = '';
+      cselSet('shopperInteraction', 'ContAuth');
+      cselSet('recurringModel', 'CardOnFile');
+      document.getElementById('showStoredPaymentMethods').checked = true;
+      shopperRefEl.placeholder = 'Enter the previous Shopper Reference';
+      // Highlighted prompt below the field asking for the previous reference.
+      rememberNote.classList.remove('show');
+      shopperRefEl.classList.add('field-highlight');
+      reuseNote.classList.add('show');
+      shopperRefEl.focus();
+      shopperRefEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    // Restore to default
+    document.getElementById('preset-reset').addEventListener('click', () => {
+      clearRememberNote();
+      clearChargeback();
+      cselSet('country', 'SG');
+      cselSet('shopperLocale', 'en-US');
+      cselSet('currency', 'SGD');
+      cselSet('shopperInteraction', 'Ecommerce');
+      cselSet('recurringModel', '');
+      cselSet('threeDSMode', 'native');
+      cselSet('channel', 'Web');
+      cselSet('billingAddressMode', 'full');
+      document.getElementById('amount').value = '10';
+      shopperRefEl.value = '';
+      shopperRefEl.placeholder = '';
+      document.getElementById('merchantRef').value = '';
+      document.getElementById('telephoneNumber').value = '1234567890';
+      document.getElementById('shopperEmail').value = 'test@example.com';
+      document.getElementById('billingAddressRequired').checked = false;
+      billingModeCsel.classList.add('csel--disabled');
+      document.getElementById('enableStoreDetails').checked = true;
+      document.getElementById('showStoredPaymentMethods').checked = true;
+      document.getElementById('amountError').style.display = 'none';
+      document.getElementById('emailError').style.display = 'none';
     });
   </script>
 </body>
