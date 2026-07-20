@@ -321,6 +321,25 @@
     .debug-dock:has(.debug-panel.open) #clear-log {
       display: inline-block;
     }
+    .debug-feedback {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #eef2f5;
+      text-align: center;
+    }
+    .debug-feedback-text {
+      font-size: 0.72rem;
+      color: #7a869a;
+      line-height: 1.4;
+    }
+    .debug-feedback-link {
+      color: #4A8DAB;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+    .debug-feedback-link:hover {
+      color: #3D7D99;
+    }
     .debug-panel {
       display: none;
       width: 100%;
@@ -545,6 +564,10 @@
     </div>
 
     <a id="webhook-cta" class="webhook-link" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">↗ View transaction status in webhook</a>
+
+    <div class="debug-feedback" id="debug-feedback" style="display:none;">
+      <span class="debug-feedback-text">Cannot find the payment method you want? Please <a id="feedback-btn" class="debug-feedback-link" href="mailto:support@adyen.com?subject=New%20Payment%20method%20request%20for%20Demo%20app&body=Payment%20method%EF%BC%9A%0D%0A%0D%0A%0D%0APlease%20kindly%20note%20that%20not%20all%20payment%20methods%20are%20available%20in%20the%20sandbox%20environment%2C%20e.g.%20Alipay%20and%20Wechat%20Pay%20must%20be%20tested%20in%20live%20environment.">feedback</a> to us.</span>
+    </div>
 
     <div style="text-align:center;margin-top:16px;">
       <a href="/" style="color:#4A8DAB;font-size:0.9rem;text-decoration:none;font-weight:500;">← Back to Home</a>
@@ -953,6 +976,7 @@
           document.getElementById('spinner').classList.remove('active');
           document.getElementById('dropin-container').style.display = '';
           debugToggles.style.display = 'flex';
+          document.getElementById('debug-feedback').style.display = 'block';
           setupTestCardsPanel();
         },
         onSelect: (activeComponent) => {
