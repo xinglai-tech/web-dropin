@@ -443,6 +443,16 @@
     .debug-proceed:hover {
       background: #3D7D99;
     }
+    .debug-note {
+      flex-shrink: 0;
+      margin: 0;
+      padding: 10px 16px;
+      background: #fff7e6;
+      border-bottom: 1px solid #f0dca0;
+      color: #8a6d3b;
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
     .debug-empty {
       color: #888;
       font-size: 0.85rem;
@@ -539,6 +549,7 @@
           <span>Freeze redirect (pause before leaving page)</span>
         </label>
       </div>
+      <p class="debug-note">Note: these logs show requests from the <b>frontend to our backend</b>. The parameters sent to Adyen API may differ slightly.</p>
       <div class="debug-body" id="debug-body">
         <p class="debug-empty">No API calls yet. Interact with the payment form to see requests and responses.</p>
       </div>
@@ -890,8 +901,12 @@
               ...(shopperEmail && { shopperEmail }),
               ...(recurringModel && { recurringModel }),
               ...(merchantRef && { merchantRef }),
-              ...(chargebackHolderName && { chargebackHolderName }),
             };
+            // Chargeback test: set the special holderName directly on the card
+            // paymentMethod so the request carries the real Adyen param.
+            if (chargebackHolderName && paymentsRequestBody.paymentMethod && paymentsRequestBody.paymentMethod.type === 'scheme') {
+              paymentsRequestBody.paymentMethod = { ...paymentsRequestBody.paymentMethod, holderName: chargebackHolderName };
+            }
             logApi('/payments', 'Request', paymentsRequestBody);
             const res = await fetch('/api/payments', {
               method: 'POST',

@@ -138,14 +138,8 @@ app.post('/api/paymentMethods', async (req, res) => {
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {
-    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail, billingAddress, deliveryAddress, chargebackHolderName } = req.body;
+    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail, billingAddress, deliveryAddress } = req.body;
     const orderRef = merchantRef || uuid();
-
-    // Chargeback test scenario: override the card holderName with a special
-    // value (e.g. "Chargeback:10.4") that triggers a chargeback in test.
-    if (chargebackHolderName && paymentMethod && paymentMethod.type === 'scheme') {
-      paymentMethod.holderName = chargebackHolderName;
-    }
 
     const origin = `${req.protocol}://${req.get('host')}`;
     const finalReturnUrl =
