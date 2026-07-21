@@ -820,7 +820,7 @@
       const amountMajor = parseFloat(params.get('amount') || '10');
       const channel  = params.get('channel')  || 'Web';
       const merchantRef = params.get('merchantRef') || '';
-      const shopperRef = params.get('shopperRef') || 'user_shanghai';
+      const shopperRef = params.get('shopperRef') || '';
       const shopperInteraction = params.get('shopperInteraction') || 'Ecommerce';
       const telephoneNumber = params.get('telephoneNumber') || '';
       const shopperEmail = params.get('shopperEmail') || '';
@@ -849,7 +849,7 @@
         `${currency} ${amountMajor} — ${country} — ${channel}`;
 
       // ── Fetch config & payment methods in parallel ────────────────────
-      const pmRequestBody = { countryCode: country, currency, amount, channel, shopperRef, ...(telephoneNumber && { telephoneNumber }) };
+      const pmRequestBody = { countryCode: country, currency, amount, channel, ...(shopperRef && { shopperRef }), ...(telephoneNumber && { telephoneNumber }) };
       logApi('/paymentMethods', 'Request', pmRequestBody);
       const [configRes, pmRes] = await Promise.all([
         fetch('/api/config'),
@@ -894,7 +894,7 @@
               countryCode: country,
               channel,
               returnUrl,
-              shopperRef,
+              ...(shopperRef && { shopperRef }),
               shopperInteraction,
               threeDSMode,
               ...(telephoneNumber && { telephoneNumber }),
@@ -966,6 +966,9 @@
         onPaymentCompleted: (result, _component) => {
           logEvent('onPaymentCompleted', result);
           console.log('Payment completed:', result.resultCode);
+          // Hide the "feedback" prompt on the success/result screen; it is only
+          // relevant while the Drop-in payment form is shown.
+          document.getElementById('debug-feedback').style.display = 'none';
           showPsp(lastPspReference);
         },
 
