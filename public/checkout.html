@@ -569,7 +569,6 @@
 <body>
   <div class="header">
     <h1 data-i18n="checkout.title">Checkout</h1>
-    <p id="summary"></p>
   </div>
 
   <div id="cred-hint-banner" class="cred-hint-banner" data-i18n="checkout.hintBanner">Maximize your browser to see all contents</div>
@@ -905,9 +904,6 @@
       } else {
         amount = Math.round(amountMajor * 100);
       }
-
-      document.getElementById('summary').textContent =
-        `${currency} ${amountMajor} — ${country} — ${channel}`;
 
       // ── Fetch config & payment methods in parallel ────────────────────
       const pmRequestBody = { countryCode: country, currency, amount, channel, ...(shopperRef && { shopperRef }), ...(telephoneNumber && { telephoneNumber }) };

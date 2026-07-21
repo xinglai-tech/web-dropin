@@ -8,6 +8,12 @@
   <link rel="stylesheet" href="/style.css" />
   <script src="/i18n.js"></script>
   <style>
+    /* Taller header so the stacked logout + language switch fit inside. */
+    .header { min-height: 96px; box-sizing: border-box; }
+    @media (max-width: 600px) {
+      .header { min-height: 82px !important; }
+    }
+
     /* Logout button + segmented language switch, top-right of the header. */
     .logout-btn {
       position: absolute;
@@ -32,7 +38,7 @@
     /* Segmented EN | 中文 control */
     .lang-switch {
       position: absolute;
-      top: 45px;
+      top: 52px;
       right: 16px;
       display: inline-flex;
       width: 96px;
@@ -68,7 +74,7 @@
       }
       .lang-switch {
         width: 74px !important; border-width: 1.5px !important;
-        right: 8px !important; top: 44px !important;
+        right: 8px !important; top: 50px !important;
       }
       .lang-seg { font-size: 0.7rem !important; }
     }
@@ -375,7 +381,6 @@
       <button type="button" class="lang-seg" data-lang="zh">中文</button>
     </div>
     <h1>Adyen test</h1>
-    <p style="margin-top:12px;" data-i18n="brand.subtitle">Select country, currency &amp; amount to start checkout</p>
   </div>
 
   <div class="card">
