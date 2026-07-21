@@ -563,15 +563,16 @@
       margin: 0;
     }
   </style>
+  <script src="/i18n.js"></script>
   <script src="https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/6.33.0/adyen.js"></script>
 </head>
 <body>
   <div class="header">
-    <h1>Checkout</h1>
+    <h1 data-i18n="checkout.title">Checkout</h1>
     <p id="summary"></p>
   </div>
 
-  <div id="cred-hint-banner" class="cred-hint-banner">Maximize your browser to see all contents</div>
+  <div id="cred-hint-banner" class="cred-hint-banner" data-i18n="checkout.hintBanner">Maximize your browser to see all contents</div>
 
   <div class="card">
     <div class="spinner active" id="spinner"></div>
@@ -579,67 +580,67 @@
     <div id="dropin-container" style="display:none;"></div>
     <div id="psp-info" style="display:none;background:#eef7ee;padding:12px 16px;border-radius:8px;margin-top:12px;font-size:0.9rem;text-align:center;color:#333;word-break:break-all;"></div>
     <div class="debug-dock" id="debug-dock">
-      <span class="debug-dock-title">Debug Console</span>
+      <span class="debug-dock-title" data-i18n="debug.console">Debug Console</span>
       <div class="debug-dock-buttons">
-        <button id="event-toggle" class="debug-toggle event" type="button">SDK Event</button>
-        <button id="debug-toggle" class="debug-toggle" type="button">API Log</button>
+        <button id="event-toggle" class="debug-toggle event" type="button" data-i18n="debug.sdkEvent">SDK Event</button>
+        <button id="debug-toggle" class="debug-toggle" type="button" data-i18n="debug.apiLog">API Log</button>
       </div>
 
     <aside id="debug-panel" class="debug-panel">
       <div class="debug-header">
-        <h3>Backend API</h3>
+        <h3 data-i18n="debug.backendApi">Backend API</h3>
         <div>
-          <button id="debug-clear" class="debug-btn" type="button">Clear</button>
+          <button id="debug-clear" class="debug-btn" type="button" data-i18n="debug.clear">Clear</button>
           <button id="debug-close" class="debug-btn" type="button">✕</button>
         </div>
       </div>
       <div class="debug-toolbar">
         <label class="debug-freeze-label">
           <input type="checkbox" id="freeze-redirect" />
-          <span>Freeze redirect (pause before leaving page)</span>
+          <span data-i18n="debug.freeze">Freeze redirect (pause before leaving page)</span>
         </label>
       </div>
-      <p class="debug-note" id="debug-note">Note: these logs show requests from the <b>frontend to our backend</b>. The parameters sent to Adyen API may differ slightly.</p>
+      <p class="debug-note" id="debug-note" data-i18n-html="debug.note">Note: these logs show requests from the <b>frontend to our backend</b>. The parameters sent to Adyen API may differ slightly.</p>
       <div class="debug-body" id="debug-body">
-        <p class="debug-empty">No API calls yet. Interact with the payment form to see requests and responses.</p>
+        <p class="debug-empty" data-i18n="debug.emptyApi">No API calls yet. Interact with the payment form to see requests and responses.</p>
       </div>
       <div class="debug-footer" id="debug-footer" style="display:none;">
-        <span>⏸ Redirect paused — review the log above.</span>
-        <button id="debug-proceed" class="debug-proceed" type="button">Proceed →</button>
+        <span data-i18n="debug.paused">⏸ Redirect paused — review the log above.</span>
+        <button id="debug-proceed" class="debug-proceed" type="button" data-i18n="debug.proceed">Proceed →</button>
       </div>
     </aside>
 
     <aside id="event-panel" class="debug-panel">
       <div class="debug-header">
-        <h3>SDK Events</h3>
+        <h3 data-i18n="debug.sdkEvents">SDK Events</h3>
         <div>
-          <button id="event-clear" class="debug-btn" type="button">Clear</button>
+          <button id="event-clear" class="debug-btn" type="button" data-i18n="debug.clear">Clear</button>
           <button id="event-close" class="debug-btn" type="button">✕</button>
         </div>
       </div>
       <div class="debug-body" id="event-body">
-        <p class="debug-empty">No SDK events yet. Interact with the payment form to see events.</p>
+        <p class="debug-empty" data-i18n="debug.emptyEvent">No SDK events yet. Interact with the payment form to see events.</p>
       </div>
     </aside>
-    <button id="clear-log" type="button">Clear log</button>
+    <button id="clear-log" type="button" data-i18n="debug.clearLog">Clear log</button>
     </div>
 
-    <a id="webhook-cta" class="webhook-link" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">↗ View transaction status in webhook</a>
+    <a id="webhook-cta" class="webhook-link" href="#" target="_blank" rel="noopener noreferrer" style="display:none;" data-i18n="webhook.view">↗ View transaction status in webhook</a>
 
     <div class="debug-feedback" id="debug-feedback" style="display:none;">
-      <span class="debug-feedback-text">Cannot find the payment method you want? Please <a id="feedback-btn" class="debug-feedback-link" href="mailto:support@adyen.com?subject=New%20Payment%20method%20request%20for%20Demo%20app&body=Payment%20method%EF%BC%9A%0D%0A%0D%0A%0D%0APlease%20kindly%20note%20that%20not%20all%20payment%20methods%20are%20available%20in%20the%20sandbox%20environment%2C%20e.g.%20Alipay%20and%20Wechat%20Pay%20must%20be%20tested%20in%20live%20environment.">feedback</a> to us.</span>
+      <span class="debug-feedback-text" data-i18n-html="feedback.text">Cannot find the payment method you want? Please <a id="feedback-btn" class="debug-feedback-link" href="mailto:support@adyen.com?subject=New%20Payment%20method%20request%20for%20Demo%20app&body=Payment%20method%EF%BC%9A%0D%0A%0D%0A%0D%0APlease%20kindly%20note%20that%20not%20all%20payment%20methods%20are%20available%20in%20the%20sandbox%20environment%2C%20e.g.%20Alipay%20and%20Wechat%20Pay%20must%20be%20tested%20in%20live%20environment.">feedback</a> to us.</span>
     </div>
 
     <div style="text-align:center;margin-top:16px;">
-      <a href="/" style="color:#4A8DAB;font-size:0.9rem;text-decoration:none;font-weight:500;">← Back to Home</a>
+      <a href="/" style="color:#4A8DAB;font-size:0.9rem;text-decoration:none;font-weight:500;" data-i18n="common.backHome">← Back to Home</a>
     </div>
   </div>
 
   <aside id="test-cards-panel" class="test-cards-panel">
     <div class="tc-head">
-      <h3>Test Cards</h3>
+      <h3 data-i18n="testcards.title">Test Cards</h3>
     </div>
-    <p class="tc-hint">Expiry <b>03/30</b> &middot; CVC <b>737</b> (Amex <b>7373</b>)</p>
+    <p class="tc-hint" data-i18n-html="testcards.hint">Expiry <b>03/30</b> &middot; CVC <b>737</b> (Amex <b>7373</b>)</p>
     <div class="tc-list"></div>
   </aside>
 
@@ -690,15 +691,15 @@
     });
     document.getElementById('debug-clear').addEventListener('click', () => {
       debugBody.innerHTML =
-        '<p class="debug-empty">No API calls yet. Interact with the payment form to see requests and responses.</p>';
+        '<p class="debug-empty" data-i18n="debug.emptyApi">' + window.t('debug.emptyApi') + '</p>';
     });
     document.getElementById('clear-log').addEventListener('click', () => {
       if (eventPanel.classList.contains('open')) {
         eventBody.innerHTML =
-          '<p class="debug-empty">No SDK events yet. Interact with the payment form to see events.</p>';
+          '<p class="debug-empty" data-i18n="debug.emptyEvent">' + window.t('debug.emptyEvent') + '</p>';
       } else {
         debugBody.innerHTML =
-          '<p class="debug-empty">No API calls yet. Interact with the payment form to see requests and responses.</p>';
+          '<p class="debug-empty" data-i18n="debug.emptyApi">' + window.t('debug.emptyApi') + '</p>';
       }
     });
 
@@ -720,7 +721,7 @@
       const copyBtn = document.createElement('button');
       copyBtn.className = 'debug-copy';
       copyBtn.type = 'button';
-      copyBtn.textContent = 'Copy';
+      copyBtn.textContent = window.t('debug.copy');
       copyBtn.addEventListener('click', async () => {
         try {
           await navigator.clipboard.writeText(json);
@@ -732,10 +733,10 @@
           document.execCommand('copy');
           document.body.removeChild(ta);
         }
-        copyBtn.textContent = 'Copied!';
+        copyBtn.textContent = window.t('debug.copied');
         copyBtn.classList.add('copied');
         setTimeout(() => {
-          copyBtn.textContent = 'Copy';
+          copyBtn.textContent = window.t('debug.copy');
           copyBtn.classList.remove('copied');
         }, 1200);
       });
@@ -794,7 +795,7 @@
     });
     document.getElementById('event-clear').addEventListener('click', () => {
       eventBody.innerHTML =
-        '<p class="debug-empty">No SDK events yet. Interact with the payment form to see events.</p>';
+        '<p class="debug-empty" data-i18n="debug.emptyEvent">' + window.t('debug.emptyEvent') + '</p>';
     });
 
     const MASKED_KEYS = new Set(['clientData', 'sdkData', 'threeDSCompInd', 'fingerprintResult']);
@@ -838,7 +839,7 @@
       const copyBtn = document.createElement('button');
       copyBtn.className = 'debug-copy';
       copyBtn.type = 'button';
-      copyBtn.textContent = 'Copy';
+      copyBtn.textContent = window.t('debug.copy');
       copyBtn.addEventListener('click', async () => {
         try {
           await navigator.clipboard.writeText(json);
@@ -850,10 +851,10 @@
           document.execCommand('copy');
           document.body.removeChild(ta);
         }
-        copyBtn.textContent = 'Copied!';
+        copyBtn.textContent = window.t('debug.copied');
         copyBtn.classList.add('copied');
         setTimeout(() => {
-          copyBtn.textContent = 'Copy';
+          copyBtn.textContent = window.t('debug.copy');
           copyBtn.classList.remove('copied');
         }, 1200);
       });
@@ -1236,10 +1237,10 @@
             document.execCommand('copy');
             document.body.removeChild(ta);
           }
-          btn.textContent = 'Copied!';
+          btn.textContent = window.t('debug.copied');
           btn.classList.add('copied');
           setTimeout(() => {
-            btn.textContent = 'Copy';
+            btn.textContent = window.t('debug.copy');
             btn.classList.remove('copied');
           }, 1200);
         };
@@ -1602,8 +1603,8 @@
         LPM_CREDENTIALS.paywithgoogle = LPM_CREDENTIALS.googlepay;
 
         function renderCards() {
-          titleEl.textContent = 'Test Cards';
-          hintEl.innerHTML = 'Expiry <b>03/30</b> &middot; CVC <b>737</b> (Amex <b>7373</b>)';
+          titleEl.textContent = window.t('testcards.title');
+          hintEl.innerHTML = window.t('testcards.hint');
           hintEl.style.display = '';
           list.innerHTML = '';
           TEST_CARD_GROUPS.forEach((g) => {
@@ -1642,7 +1643,7 @@
                 '<span class="tc-number"></span>' +
                 '<span class="tc-meta"></span>' +
                 '</div>' +
-                '<button class="tc-copy" type="button">Copy</button>';
+                '<button class="tc-copy" type="button">' + window.t('debug.copy') + '</button>';
               row.querySelector('.tc-brand').textContent = c.label;
               row.querySelector('.tc-number').textContent = display;
               const metaEl = row.querySelector('.tc-meta');
@@ -1667,7 +1668,7 @@
             '<span class="tc-brand"></span>' +
             '<span class="tc-number"></span>' +
             '</div>' +
-            (showCopy ? '<button class="tc-copy" type="button">Copy</button>' : '');
+            (showCopy ? '<button class="tc-copy" type="button">' + window.t('debug.copy') + '</button>' : '');
           row.querySelector('.tc-brand').textContent = f.label;
           const numEl = row.querySelector('.tc-number');
           numEl.textContent = f.value;
@@ -1832,6 +1833,13 @@
           alignPanel();
         };
         refreshCredPanel = update;
+
+        // Re-render the credentials panel when the language changes so its
+        // title/hint (and any copy buttons) pick up the new language.
+        document.addEventListener('langchange', () => {
+          renderedKey = null;
+          update();
+        });
 
         const container = document.getElementById('dropin-container');
         new MutationObserver(update).observe(container, {

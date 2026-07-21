@@ -6,6 +6,7 @@
   <title>Adyen test – Login</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="/style.css" />
+  <script src="/i18n.js"></script>
   <style>
     .login-card {
       background: #fff;
@@ -38,22 +39,22 @@
 <body>
   <div class="header">
     <h1>Adyen test</h1>
-    <p>Please sign in to continue</p>
+    <p data-i18n="login.subtitle">Please sign in to continue</p>
   </div>
 
   <div class="login-card">
-    <h2>Sign In</h2>
-    <div class="error-msg" id="errorMsg">Invalid username or password</div>
+    <h2 data-i18n="login.signin">Sign In</h2>
+    <div class="error-msg" id="errorMsg" data-i18n="login.error">Invalid username or password</div>
     <form action="/auth/login" method="POST">
       <div class="form-group">
-        <label for="username">Username</label>
+        <label for="username" data-i18n="login.username">Username</label>
         <input type="text" id="username" name="username" required autocomplete="username" />
       </div>
       <div class="form-group">
-        <label for="password">Password</label>
+        <label for="password" data-i18n="login.password">Password</label>
         <input type="password" id="password" name="password" required autocomplete="current-password" />
       </div>
-      <button class="btn" type="submit">Login</button>
+      <button class="btn" type="submit" data-i18n="login.button">Login</button>
     </form>
   </div>
 

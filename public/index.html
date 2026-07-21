@@ -6,8 +6,72 @@
   <title>Adyen test</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="/style.css" />
+  <script src="/i18n.js"></script>
   <style>
+    /* Logout button + segmented language switch, top-right of the header. */
+    .logout-btn {
+      position: absolute;
+      top: 8px;
+      right: 16px;
+      width: 96px;
+      box-sizing: border-box;
+      text-align: center;
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 500;
+      background: transparent;
+      padding: 5px 0;
+      border: 2px solid rgba(255,255,255,0.9);
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
     .logout-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* Segmented EN | 中文 control */
+    .lang-switch {
+      position: absolute;
+      top: 45px;
+      right: 16px;
+      display: inline-flex;
+      width: 96px;
+      box-sizing: border-box;
+      border: 2px solid rgba(255,255,255,0.9);
+      border-radius: 6px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.08);
+    }
+    .lang-seg {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 4px 0;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #fff;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background 0.22s ease, color 0.22s ease;
+    }
+    .lang-seg + .lang-seg { border-left: 1px solid rgba(255,255,255,0.55); }
+    .lang-seg:hover:not(.active) { background: rgba(255,255,255,0.18); }
+    .lang-seg.active {
+      background: #fff;
+      color: #4A8DAB;
+      font-weight: 700;
+    }
+    @media (max-width: 600px) {
+      .logout-btn {
+        font-size: 0.75rem !important; padding: 4px 0 !important; width: 74px !important;
+        border-width: 1.5px !important; right: 8px !important; top: 14px !important;
+      }
+      .lang-switch {
+        width: 74px !important; border-width: 1.5px !important;
+        right: 8px !important; top: 44px !important;
+      }
+      .lang-seg { font-size: 0.7rem !important; }
+    }
 
     /* ── Compact payment settings ─────────────────────────── */
     .card { max-width: 480px; }
@@ -305,48 +369,52 @@
 </head>
 <body>
   <div class="header" style="position:relative;">
-    <a href="/auth/logout" class="logout-btn" style="position:absolute;top:8px;right:16px;color:#fff;font-size:0.95rem;font-weight:400;text-decoration:none;padding:5px 6px;border:2px solid rgba(255,255,255,0.9);border-radius:4px;transition:background 0.2s;">Logout</a>
+    <a href="/auth/logout" class="logout-btn" data-i18n="common.logout">Logout</a>
+    <div id="langSwitch" class="lang-switch" role="group" aria-label="Language">
+      <button type="button" class="lang-seg" data-lang="en">EN</button>
+      <button type="button" class="lang-seg" data-lang="zh">中文</button>
+    </div>
     <h1>Adyen test</h1>
-    <p style="margin-top:12px;">Select country, currency &amp; amount to start checkout</p>
+    <p style="margin-top:12px;" data-i18n="brand.subtitle">Select country, currency &amp; amount to start checkout</p>
   </div>
 
   <div class="card">
-    <h2>Payment Settings</h2>
+    <h2 data-i18n="index.title">Payment Settings</h2>
 
     <div class="row">
       <div class="form-group">
-        <label>Country<span class="info-tip" tabindex="0" data-tip="Shopper's country.&#10;​Some payment methods are only available in certain countries.">i</span></label>
+        <label><span data-i18n="label.country">Country</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.country" data-tip="Shopper's country.&#10;​Some payment methods are only available in certain countries.">i</span></label>
         <div class="csel" data-id="country" data-value="SG">
-          <div class="csel__trigger"><span>🇸🇬 Singapore</span><div class="csel__arrow"></div></div>
+          <div class="csel__trigger"><span data-i18n="country.SG">🇸🇬 Singapore</span><div class="csel__arrow"></div></div>
           <div class="csel__options">
-            <div class="csel__opt" data-value="AU">🇦🇺 Australia</div>
-            <div class="csel__opt" data-value="BE">🇧🇪 Belgium</div>
-            <div class="csel__opt" data-value="BR">🇧🇷 Brazil</div>
-            <div class="csel__opt" data-value="CA">🇨🇦 Canada</div>
-            <div class="csel__opt" data-value="DK">🇩🇰 Denmark</div>
-            <div class="csel__opt" data-value="FI">🇫🇮 Finland</div>
-            <div class="csel__opt" data-value="FR">🇫🇷 France</div>
-            <div class="csel__opt" data-value="DE">🇩🇪 Germany</div>
-            <div class="csel__opt" data-value="HK">🇭🇰 Hong Kong</div>
-            <div class="csel__opt" data-value="IT">🇮🇹 Italy</div>
-            <div class="csel__opt" data-value="JP">🇯🇵 Japan</div>
-            <div class="csel__opt" data-value="MY">🇲🇾 Malaysia</div>
-            <div class="csel__opt" data-value="NL">🇳🇱 Netherlands</div>
-            <div class="csel__opt" data-value="NZ">🇳🇿 New Zealand</div>
-            <div class="csel__opt" data-value="NO">🇳🇴 Norway</div>
-            <div class="csel__opt selected" data-value="SG">🇸🇬 Singapore</div>
-            <div class="csel__opt" data-value="KR">🇰🇷 South Korea</div>
-            <div class="csel__opt" data-value="ES">🇪🇸 Spain</div>
-            <div class="csel__opt" data-value="SE">🇸🇪 Sweden</div>
-            <div class="csel__opt" data-value="TH">🇹🇭 Thailand</div>
-            <div class="csel__opt" data-value="GB">🇬🇧 United Kingdom</div>
-            <div class="csel__opt" data-value="US">🇺🇸 United States</div>
+            <div class="csel__opt" data-value="AU" data-i18n="country.AU">🇦🇺 Australia</div>
+            <div class="csel__opt" data-value="BE" data-i18n="country.BE">🇧🇪 Belgium</div>
+            <div class="csel__opt" data-value="BR" data-i18n="country.BR">🇧🇷 Brazil</div>
+            <div class="csel__opt" data-value="CA" data-i18n="country.CA">🇨🇦 Canada</div>
+            <div class="csel__opt" data-value="DK" data-i18n="country.DK">🇩🇰 Denmark</div>
+            <div class="csel__opt" data-value="FI" data-i18n="country.FI">🇫🇮 Finland</div>
+            <div class="csel__opt" data-value="FR" data-i18n="country.FR">🇫🇷 France</div>
+            <div class="csel__opt" data-value="DE" data-i18n="country.DE">🇩🇪 Germany</div>
+            <div class="csel__opt" data-value="HK" data-i18n="country.HK">🇭🇰 Hong Kong</div>
+            <div class="csel__opt" data-value="IT" data-i18n="country.IT">🇮🇹 Italy</div>
+            <div class="csel__opt" data-value="JP" data-i18n="country.JP">🇯🇵 Japan</div>
+            <div class="csel__opt" data-value="MY" data-i18n="country.MY">🇲🇾 Malaysia</div>
+            <div class="csel__opt" data-value="NL" data-i18n="country.NL">🇳🇱 Netherlands</div>
+            <div class="csel__opt" data-value="NZ" data-i18n="country.NZ">🇳🇿 New Zealand</div>
+            <div class="csel__opt" data-value="NO" data-i18n="country.NO">🇳🇴 Norway</div>
+            <div class="csel__opt selected" data-value="SG" data-i18n="country.SG">🇸🇬 Singapore</div>
+            <div class="csel__opt" data-value="KR" data-i18n="country.KR">🇰🇷 South Korea</div>
+            <div class="csel__opt" data-value="ES" data-i18n="country.ES">🇪🇸 Spain</div>
+            <div class="csel__opt" data-value="SE" data-i18n="country.SE">🇸🇪 Sweden</div>
+            <div class="csel__opt" data-value="TH" data-i18n="country.TH">🇹🇭 Thailand</div>
+            <div class="csel__opt" data-value="GB" data-i18n="country.GB">🇬🇧 United Kingdom</div>
+            <div class="csel__opt" data-value="US" data-i18n="country.US">🇺🇸 United States</div>
           </div>
         </div>
       </div>
 
       <div class="form-group">
-        <label>Shopper Locale<span class="info-tip" tabindex="0" data-tip="Language/locale of the Drop-in UI and redirect pages, e.g. en-US, zh-CN.">i</span></label>
+        <label><span data-i18n="label.shopperLocale">Shopper Locale</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.shopperLocale" data-tip="Language/locale of the Drop-in UI and redirect pages, e.g. en-US, zh-CN.">i</span></label>
         <div class="csel" data-id="shopperLocale" data-value="en-US">
           <div class="csel__trigger"><span>English (US)</span><div class="csel__arrow"></div></div>
           <div class="csel__options">
@@ -368,7 +436,7 @@
 
     <div class="row">
       <div class="form-group">
-        <label>Currency<span class="info-tip" tabindex="0" data-tip="Transaction currency.&#10;Must be supported by the chosen payment method, otherwise that method is filtered out.">i</span></label>
+        <label><span data-i18n="label.currency">Currency</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.currency" data-tip="Transaction currency.&#10;Must be supported by the chosen payment method, otherwise that method is filtered out.">i</span></label>
         <div class="csel" data-id="currency" data-value="SGD">
           <div class="csel__trigger"><span>SGD</span><div class="csel__arrow"></div></div>
           <div class="csel__options">
@@ -392,15 +460,15 @@
         </div>
       </div>
       <div class="form-group">
-        <label for="amount">Amount</label>
+        <label for="amount" data-i18n="label.amount">Amount</label>
         <input type="number" id="amount" value="10" min="0.01" step="0.01" />
-        <span id="amountError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;">Amount must be at least 0.01</span>
+        <span id="amountError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;" data-i18n="err.amount">Amount must be at least 0.01</span>
       </div>
     </div>
 
     <div class="row">
       <div class="form-group">
-        <label>Shopper Interaction<span class="info-tip" tabindex="0" data-tip="Indicates if this is a one-time payment (Ecommerce) or a recurring transaction using an existing stored card (ContAuth).">i</span></label>
+        <label>Shopper Interaction<span class="info-tip" tabindex="0" data-i18n-tip="tip.shopperInteraction" data-tip="Indicates if this is a one-time payment (Ecommerce) or a recurring transaction using an existing stored card (ContAuth).">i</span></label>
         <div class="csel" data-id="shopperInteraction" data-value="Ecommerce">
           <div class="csel__trigger"><span>Ecommerce</span><div class="csel__arrow"></div></div>
           <div class="csel__options">
@@ -411,7 +479,7 @@
       </div>
 
       <div class="form-group">
-        <label>RecurringProcessingModel<span class="info-tip" tabindex="0" data-tip="How a stored card is charged:&#10;• CardOnFile (shopper-initiated payment)&#10;• Subscription (fixed schedule such as monthly, merchant-initiated)&#10;• UnscheduledCardOnFile (random schedule or amount, merchant-initiated)">i</span></label>
+        <label>RecurringProcessingModel<span class="info-tip" tabindex="0" data-i18n-tip="tip.recurringModel" data-tip="How a stored card is charged:&#10;• CardOnFile (shopper-initiated payment)&#10;• Subscription (fixed schedule such as monthly, merchant-initiated)&#10;• UnscheduledCardOnFile (random schedule or amount, merchant-initiated)">i</span></label>
         <div class="csel" data-id="recurringModel" data-value="">
           <div class="csel__trigger"><span>None</span><div class="csel__arrow"></div></div>
           <div class="csel__options">
@@ -426,42 +494,42 @@
 
     <div class="row">
       <div class="form-group">
-        <label for="shopperRef">Shopper Reference<span class="info-tip" tabindex="0" data-tip="Your unique identifier for the shopper. &#10;Used to store and retrieve their saved payment methods.">i</span></label>
-        <input type="text" id="shopperRef" value="" placeholder="optional" />
-        <div id="rememberNote" class="remember-note">Remember this Shopper Reference — you'll need it for recurring payment using stored card: <b id="rememberRef"></b></div>
-        <div id="reuseNote" class="remember-note">Enter the Shopper Reference you used in your first-time (tokenization) test, so the stored card can be reused.</div>
+        <label for="shopperRef"><span data-i18n="label.shopperRef">Shopper Reference</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.shopperRef" data-tip="Your unique identifier for the shopper. &#10;Used to store and retrieve their saved payment methods.">i</span></label>
+        <input type="text" id="shopperRef" value="" placeholder="optional" data-i18n-ph="ph.optional" />
+        <div id="rememberNote" class="remember-note"><span data-i18n="note.remember">Remember this Shopper Reference — you'll need it for recurring payment using stored card: </span><b id="rememberRef"></b></div>
+        <div id="reuseNote" class="remember-note" data-i18n="note.reuse">Enter the Shopper Reference you used in your first-time (tokenization) test, so the stored card can be reused.</div>
       </div>
 
       <div class="form-group">
-        <label for="merchantRef">Merchant Reference<span class="info-tip" tabindex="0" data-tip="Your unique reference for this payment used to match the transaction in your own system. Auto-generated if left empty.">i</span></label>
-        <input type="text" id="merchantRef" placeholder="Leave empty to auto-generate" />
+        <label for="merchantRef"><span data-i18n="label.merchantRef">Merchant Reference</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.merchantRef" data-tip="Your unique reference for this payment used to match the transaction in your own system. Auto-generated if left empty.">i</span></label>
+        <input type="text" id="merchantRef" placeholder="Leave empty to auto-generate" data-i18n-ph="ph.autoGenerate" />
       </div>
     </div>
 
     <div class="row">
       <div class="form-group">
-        <label for="telephoneNumber">Telephone Number<span class="info-tip" tabindex="0" data-tip="Shopper's phone number sent in the payments request. Used by some payment methods and risk checks.">i</span></label>
+        <label for="telephoneNumber"><span data-i18n="label.telephone">Telephone Number</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.telephone" data-tip="Shopper's phone number sent in the payments request. Used by some payment methods and risk checks.">i</span></label>
         <input type="text" id="telephoneNumber" value="1234567890" />
       </div>
 
       <div class="form-group">
-        <label for="shopperEmail">Email<span class="info-tip" tabindex="0" data-tip="Shopper's email sent in the payments request. Used by some payment methods and receipts.">i</span></label>
+        <label for="shopperEmail"><span data-i18n="label.email">Email</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.email" data-tip="Shopper's email sent in the payments request. Used by some payment methods and receipts.">i</span></label>
         <input type="email" id="shopperEmail" value="test@example.com" />
-        <span id="emailError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;">Please enter a valid email address</span>
+        <span id="emailError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;" data-i18n="err.email">Please enter a valid email address</span>
       </div>
     </div>
 
     <div class="form-group" id="billingModeGroup" style="display:flex;align-items:center;gap:10px;">
       <label class="checkbox-label" style="flex:0 0 auto;">
         <input type="checkbox" id="billingAddressRequired" />
-        <span>Billing Address Required</span>
+        <span data-i18n="label.billingRequired">Billing Address Required</span>
       </label>
-      <span class="info-tip" tabindex="0" data-tip="Require shopper to enter his billing address, for card payment only">i</span>
+      <span class="info-tip" tabindex="0" data-i18n-tip="tip.billingRequired" data-tip="Require shopper to enter his billing address, for card payment only">i</span>
       <div class="csel csel--disabled" data-id="billingAddressMode" data-value="full" style="margin-left:auto;flex:0 1 210px;min-width:0;">
-        <div class="csel__trigger"><span>Full address</span><div class="csel__arrow"></div></div>
+        <div class="csel__trigger"><span data-i18n="opt.fullAddress">Full address</span><div class="csel__arrow"></div></div>
         <div class="csel__options">
-          <div class="csel__opt selected" data-value="full">Full address</div>
-          <div class="csel__opt" data-value="partial">Postal code only</div>
+          <div class="csel__opt selected" data-value="full" data-i18n="opt.fullAddress">Full address</div>
+          <div class="csel__opt" data-value="partial" data-i18n="opt.postalOnly">Postal code only</div>
         </div>
       </div>
     </div>
@@ -469,22 +537,22 @@
     <div class="form-group" style="display:flex;align-items:center;">
       <label class="checkbox-label">
         <input type="checkbox" id="enableStoreDetails" checked />
-        <span>Enable Store Details</span>
+        <span data-i18n="label.enableStore">Enable Store Details</span>
       </label>
-      <span class="info-tip" tabindex="0" data-tip="Show &quot;save payment details&quot; checkbox in the card form so the shopper can store their card.">i</span>
+      <span class="info-tip" tabindex="0" data-i18n-tip="tip.enableStore" data-tip="Show &quot;save payment details&quot; checkbox in the card form so the shopper can store their card.">i</span>
     </div>
 
     <div class="form-group" style="display:flex;align-items:center;">
       <label class="checkbox-label">
         <input type="checkbox" id="showStoredPaymentMethods" checked />
-        <span>Show Stored Payment Methods</span>
+        <span data-i18n="label.showStored">Show Stored Payment Methods</span>
       </label>
-      <span class="info-tip" tabindex="0" data-tip="Show the shopper's saved payment methods (stored cards) in Drop-in.">i</span>
+      <span class="info-tip" tabindex="0" data-i18n-tip="tip.showStored" data-tip="Show the shopper's saved payment methods (stored cards) in Drop-in.">i</span>
     </div>
 
     <div class="row">
       <div class="form-group">
-        <label>3DS Mode<span class="info-tip" tabindex="0" data-tip="• Native = 3DS2 rendered in merchant's page.&#10;• Redirect = shopper is redirected to the issuer's authentication page.">i</span></label>
+        <label><span data-i18n="label.threeDS">3DS Mode</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.threeDS" data-tip="• Native = 3DS2 rendered in merchant's page.&#10;• Redirect = shopper is redirected to the issuer's authentication page.">i</span></label>
         <div class="csel" data-id="threeDSMode" data-value="native">
           <div class="csel__trigger"><span>Native</span><div class="csel__arrow"></div></div>
           <div class="csel__options">
@@ -495,7 +563,7 @@
       </div>
 
       <div class="form-group">
-        <label>Channel<span class="info-tip" tabindex="0" data-tip="Platform where the payment happens (Web, iOS, Android). &#10;Affects which payment methods are returned and data used for 3DS flow (native or web).">i</span></label>
+        <label><span data-i18n="label.channel">Channel</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.channel" data-tip="Platform where the payment happens (Web, iOS, Android). &#10;Affects which payment methods are returned and data used for 3DS flow (native or web).">i</span></label>
         <div class="csel" data-id="channel" data-value="Web">
           <div class="csel__trigger"><span>Web</span><div class="csel__arrow"></div></div>
           <div class="csel__options">
@@ -507,23 +575,23 @@
       </div>
     </div>
 
-    <button class="btn" id="startBtn">Continue to Checkout</button>
+    <button class="btn" id="startBtn" data-i18n="btn.continue">Start Checkout</button>
   </div>
 
   <aside class="preset-panel">
-    <h3>Test Scenarios</h3>
-    <p class="preset-hint">Quickly configure the parameters for common test flows.</p>
+    <h3 data-i18n="preset.title">Test Scenarios</h3>
+    <p class="preset-hint" data-i18n="preset.hint">Quickly configure the parameters for common test flows. Please select one for testing and click Start Checkout.</p>
     <button type="button" class="preset-btn" id="preset-firstpay">
-      <span class="preset-btn-title">1. First-time card tokenization</span>
-      <span class="preset-btn-desc">Generates a new Shopper Reference.<br>Please also check <b></b>"save for my next payment"</b> in the next page.</span>
+      <span class="preset-btn-title" data-i18n="preset.firstpay.title">1. First-time card tokenization</span>
+      <span class="preset-btn-desc" data-i18n-html="preset.firstpay.desc">Generates a new Shopper Reference.<br>Please also check "save for my next payment" in the next page.</span>
     </button>
     <button type="button" class="preset-btn" id="preset-reuse">
-      <span class="preset-btn-title">2. Pay with a stored card</span>
-      <span class="preset-btn-desc">Enter the previous Shopper Reference.<br>You will see the stored card in the next page.</span>
+      <span class="preset-btn-title" data-i18n="preset.reuse.title">2. Pay with a stored card</span>
+      <span class="preset-btn-desc" data-i18n-html="preset.reuse.desc">Enter the previous Shopper Reference.<br>You will see the stored card in the next page.</span>
     </button>
     <div class="preset-group" id="preset-chargeback">
-      <span class="preset-btn-title">3. Test chargeback</span>
-      <span class="preset-btn-desc">Sends <b>holderName</b> parameter in /payment request that triggers a chargeback in test.<br>You might need to wait for hours to receive the chargeback webhook:</span>
+      <span class="preset-btn-title" data-i18n="preset.chargeback.title">3. Test chargeback</span>
+      <span class="preset-btn-desc" data-i18n-html="preset.chargeback.desc">Sends <b>holderName</b> parameter in /payment request that triggers a chargeback in test.<br>You might need to wait for hours to receive the chargeback webhook:</span>
       <div class="cb-schemes">
         <button type="button" class="cb-chip" data-scheme="Visa" data-cb="Chargeback:10.4">Visa</button>
         <button type="button" class="cb-chip" data-scheme="Mastercard" data-cb="Chargeback:4837">Mastercard</button>
@@ -532,8 +600,8 @@
       <p id="cb-reminder" class="cb-reminder"></p>
     </div>
     <button type="button" class="preset-btn reset" id="preset-reset">
-      <span class="preset-btn-title">Restore to default</span>
-      <span class="preset-btn-desc">Reset all settings back to their default values.</span>
+      <span class="preset-btn-title" data-i18n="preset.reset.title">Restore to default</span>
+      <span class="preset-btn-desc" data-i18n="preset.reset.desc">Reset all settings back to their default values.</span>
     </button>
   </aside>
 
@@ -665,20 +733,28 @@
     const cbChips = document.querySelectorAll('.cb-chip');
     let chargebackHolderName = '';
 
+    let selectedCbChip = null;
     function clearChargeback() {
       chargebackHolderName = '';
+      selectedCbChip = null;
       cbChips.forEach(c => c.classList.remove('selected'));
       cbReminder.classList.remove('show');
+    }
+    function renderCbReminder() {
+      if (!selectedCbChip) return;
+      const tpl = (window.t ? window.t('cb.reminder') : '');
+      cbReminder.innerHTML = tpl
+        .replace('{name}', selectedCbChip.dataset.cb)
+        .replace('{scheme}', selectedCbChip.dataset.scheme);
+      cbReminder.classList.add('show');
     }
     cbChips.forEach(chip => {
       chip.addEventListener('click', () => {
         cbChips.forEach(c => c.classList.remove('selected'));
         chip.classList.add('selected');
         chargebackHolderName = chip.dataset.cb;
-        cbReminder.innerHTML = 'holderName = <b>' + chargebackHolderName + '</b><br><br>On the next page, choose a <b>' + chip.dataset.scheme + '</b> test card so the value matches the scheme.'
-          + '<br>For more dispute reason codes, see: '
-          + '<a href="https://docs.adyen.com/risk-management/understanding-disputes/dispute-reason-codes?tab=chargeback_1" target="_blank" rel="noopener">Dispute reason codes</a>';
-        cbReminder.classList.add('show');
+        selectedCbChip = chip;
+        renderCbReminder();
       });
     });
 
@@ -713,7 +789,7 @@
       cselSet('shopperInteraction', 'ContAuth');
       cselSet('recurringModel', 'CardOnFile');
       document.getElementById('showStoredPaymentMethods').checked = true;
-      shopperRefEl.placeholder = 'Enter the previous Shopper Reference';
+      shopperRefEl.placeholder = window.t ? window.t('ph.reusePrev') : 'Enter the previous Shopper Reference';
       // Highlighted prompt below the field asking for the previous reference.
       rememberNote.classList.remove('show');
       shopperRefEl.classList.add('field-highlight');
@@ -736,7 +812,7 @@
       cselSet('billingAddressMode', 'full');
       document.getElementById('amount').value = '10';
       shopperRefEl.value = '';
-      shopperRefEl.placeholder = 'optional';
+      shopperRefEl.placeholder = window.t ? window.t('ph.optional') : 'optional';
       document.getElementById('merchantRef').value = '';
       document.getElementById('telephoneNumber').value = '1234567890';
       document.getElementById('shopperEmail').value = 'test@example.com';
@@ -747,6 +823,10 @@
       document.getElementById('amountError').style.display = 'none';
       document.getElementById('emailError').style.display = 'none';
     });
+
+    // ── Language toggle ──────────────────────────────────────────────────
+    if (window.initLangSwitch) initLangSwitch('#langSwitch');
+    document.addEventListener('langchange', renderCbReminder);
   </script>
 </body>
 </html>

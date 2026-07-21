@@ -6,11 +6,12 @@
   <title>Payment Result</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="/style.css" />
+  <script src="/i18n.js"></script>
 </head>
 <body>
   <div class="header">
-    <h1>Payment Result</h1>
-    <p>See the outcome of your payment below</p>
+    <h1 data-i18n="result.title">Payment Result</h1>
+    <p data-i18n="result.subtitle">See the outcome of your payment below</p>
   </div>
 
   <div class="card result-card" id="resultCard">
@@ -71,14 +72,10 @@
           Refused: '✕', Cancelled: '⊘', Error: '!',
         }[code] || 'ℹ';
 
-        const subtitle = {
-          Authorised: 'Your payment was successful.',
-          Received: 'Your payment has been received and is being processed.',
-          Pending: 'Your payment is pending confirmation.',
-          Refused: 'Your payment was refused. Please try another method.',
-          Cancelled: 'The payment was cancelled.',
-          Error: 'Something went wrong while processing your payment.',
-        }[code] || 'We could not determine the payment status.';
+        const subKey = ['Authorised','Received','Pending','Refused','Cancelled','Error'].includes(code)
+          ? 'result.sub.' + code
+          : 'result.sub.Unknown';
+        const subtitle = window.t ? window.t(subKey) : code;
 
         const tone = code === 'Authorised'
           ? { badge: 'success', status: 'status-authorised' }
@@ -95,12 +92,13 @@
         `;
 
         // Show available detail fields
+        const tr = (k, fallback) => (window.t ? window.t(k) : fallback);
         const fields = [
-          ['PSP Reference',  data.pspReference],
-          ['Merchant Reference', data.merchantReference],
-          ['Result Code',    data.resultCode],
-          ['Refusal Reason', data.refusalReason],
-          ['Error', data.error],
+          [tr('result.field.psp', 'PSP Reference'),  data.pspReference],
+          [tr('result.field.merchant', 'Merchant Reference'), data.merchantReference],
+          [tr('result.field.code', 'Result Code'),    data.resultCode],
+          [tr('result.field.refusal', 'Refusal Reason'), data.refusalReason],
+          [tr('result.field.error', 'Error'), data.error],
         ];
         const rows = fields
           .filter(([, value]) => value)
@@ -113,9 +111,9 @@
           html += `<div class="result-details">${rows}</div>`;
         }
 
-        html += `<a class="back-link" href="/">Start a new payment</a>`;
+        html += `<a class="back-link" href="/">${tr('result.newPayment', 'Start a new payment')}</a>`;
         if (webhookStatusUrl) {
-          html += `<a class="webhook-link" href="${webhookStatusUrl}" target="_blank" rel="noopener noreferrer">↗ View transaction status in webhook</a>`;
+          html += `<a class="webhook-link" href="${webhookStatusUrl}" target="_blank" rel="noopener noreferrer">${tr('webhook.view', '↗ View transaction status in webhook')}</a>`;
         }
         card.innerHTML = html;
       }

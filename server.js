@@ -84,7 +84,7 @@ app.get('/auth/logout', (req, res) => {
 
 // ── Auth middleware (protect everything below) ───────────────────────────────
 app.use((req, res, next) => {
-  if (req.path === '/style.css') return next();
+  if (req.path === '/style.css' || req.path === '/i18n.js' || req.path === '/favicon.svg') return next();
   if (verifyToken(req.cookies[AUTH_COOKIE])) return next();
   if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Unauthorized' });
   res.redirect('/login.html');
