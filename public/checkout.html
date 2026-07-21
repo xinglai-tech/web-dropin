@@ -129,6 +129,11 @@
       color: #1a1a2e;
       letter-spacing: 0.02em;
     }
+    .tc-number--sm {
+      font-size: 0.72rem;
+      letter-spacing: 0;
+      word-break: break-all;
+    }
     .tc-copy {
       border: none;
       background: #eef2f5;
@@ -207,6 +212,38 @@
     @media (max-width: 1280px) {
       .test-cards-panel.visible {
         display: none;
+      }
+    }
+
+    /* Horizontal blinking banner shown at the top of the drop-in when the
+       test-cred panel is hidden due to a narrow window. Toggled by JS. */
+    .cred-hint-banner {
+      display: none;
+      color: #4A8DAB;
+      margin-top: 20px;
+      padding: 4px 16px 6px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-align: center;
+      animation: credHintBlink 1s ease-in-out infinite;
+    }
+    .cred-hint-banner.show {
+      display: block;
+    }
+    @keyframes credHintBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+    /* Phone portrait: no room, so do not show the banner. */
+    @media (max-width: 600px) and (orientation: portrait) {
+      .cred-hint-banner.show {
+        display: none;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cred-hint-banner {
+        animation: none;
       }
     }
 
@@ -452,6 +489,17 @@
       color: #8a6d3b;
       font-size: 0.78rem;
       line-height: 1.45;
+      overflow: hidden;
+      max-height: 200px;
+      opacity: 1;
+      transition: opacity 0.4s ease, max-height 0.4s ease, padding 0.4s ease, border-width 0.4s ease;
+    }
+    .debug-note.debug-note--hide {
+      opacity: 0;
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-bottom-width: 0;
     }
     .debug-empty {
       color: #888;
@@ -523,6 +571,8 @@
     <p id="summary"></p>
   </div>
 
+  <div id="cred-hint-banner" class="cred-hint-banner">Maximize your browser to see all contents</div>
+
   <div class="card">
     <div class="spinner active" id="spinner"></div>
     <div id="error-banner" style="display:none;background:#fdecea;color:#c0392b;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-size:0.9rem;word-break:break-all;"></div>
@@ -549,7 +599,7 @@
           <span>Freeze redirect (pause before leaving page)</span>
         </label>
       </div>
-      <p class="debug-note">Note: these logs show requests from the <b>frontend to our backend</b>. The parameters sent to Adyen API may differ slightly.</p>
+      <p class="debug-note" id="debug-note">Note: these logs show requests from the <b>frontend to our backend</b>. The parameters sent to Adyen API may differ slightly.</p>
       <div class="debug-body" id="debug-body">
         <p class="debug-empty">No API calls yet. Interact with the payment form to see requests and responses.</p>
       </div>
@@ -588,7 +638,6 @@
   <aside id="test-cards-panel" class="test-cards-panel">
     <div class="tc-head">
       <h3>Test Cards</h3>
-      <button id="tc-popout" type="button" class="tc-popout" title="Open in a separate window so it stays visible during redirect">↗</button>
     </div>
     <p class="tc-hint">Expiry <b>03/30</b> &middot; CVC <b>737</b> (Amex <b>7373</b>)</p>
     <div class="tc-list"></div>
@@ -623,7 +672,18 @@
       eventToggle.classList.remove('active');
       debugPanel.classList.add('open');
       debugToggle.classList.add('active');
+      scheduleNoteAutoHide();
     });
+
+    // Show the yellow note when the panel opens, then auto-hide it after a delay.
+    let noteHideTimer = null;
+    function scheduleNoteAutoHide() {
+      const note = document.getElementById('debug-note');
+      if (!note) return;
+      note.classList.remove('debug-note--hide');
+      clearTimeout(noteHideTimer);
+      noteHideTimer = setTimeout(() => note.classList.add('debug-note--hide'), 6000);
+    }
     document.getElementById('debug-close').addEventListener('click', () => {
       debugPanel.classList.remove('open');
       debugToggle.classList.remove('active');
@@ -886,6 +946,10 @@
         // Called when the shopper submits payment
         onSubmit: async (state, component, actions) => {
           logEvent('onSubmit', { paymentMethod: component?.props?.type, isValid: state.isValid });
+          // Auto-open credentials popout for redirect-based LPMs. onSubmit only
+          // fires when the form is valid, so methods that require details before
+          // redirecting (e.g. Facily Pay) won't trigger it on an empty form.
+          if (autoOpenCredPopout) autoOpenCredPopout();
           try {
             const paymentsRequestBody = {
               ...state.data,
@@ -990,6 +1054,7 @@
       // ── Mount Drop-in ───────────────────────────────────────────────────
       let lastSelectedType = null;
       let refreshCredPanel = null;
+      let autoOpenCredPopout = null;
       const dropin = new Dropin(adyenCheckout, {
         onReady: () => {
           logEvent('onReady', { component: 'dropin' });
@@ -1521,6 +1586,17 @@
               },
             ],
           },
+          zip: {
+            title: 'Zip Test',
+            fields: [
+              { label: 'Username', value: 'zp_1693399094062@mailinator.com', small: true },
+              { label: 'Password', value: 'test1234' },
+            ],
+            notesTitle: 'Test flow',
+            notes: [
+              { text: 'After redirect, log in to the Zip sandbox with the credentials above to complete the payment.\n Please skip the creation of passkey.' },
+            ],
+          },
         };
         // Older SDK naming for Google Pay.
         LPM_CREDENTIALS.paywithgoogle = LPM_CREDENTIALS.googlepay;
@@ -1593,7 +1669,9 @@
             '</div>' +
             (showCopy ? '<button class="tc-copy" type="button">Copy</button>' : '');
           row.querySelector('.tc-brand').textContent = f.label;
-          row.querySelector('.tc-number').textContent = f.value;
+          const numEl = row.querySelector('.tc-number');
+          numEl.textContent = f.value;
+          if (f.small) numEl.classList.add('tc-number--sm');
           if (showCopy) {
             const btn = row.querySelector('.tc-copy');
             btn.addEventListener('click', copyHandler(btn, f.value));
@@ -1723,6 +1801,15 @@
           panel.style.left = Math.max(12, left) + 'px';
         };
 
+        // Banner shown at the top of the drop-in when the panel has content but
+        // is hidden due to a narrow window (panel is display:none at <=1280px).
+        const credHint = document.getElementById('cred-hint-banner');
+        let panelShouldShow = false;
+        const updateCredHint = () => {
+          const narrow = window.matchMedia('(max-width: 1280px)').matches;
+          credHint.classList.toggle('show', panelShouldShow && narrow);
+        };
+
         let renderedKey = null;
         const update = () => {
           const type = getSelectedType();
@@ -1730,6 +1817,8 @@
           const cred = type ? LPM_CREDENTIALS[type] : null;
           const show = isCard || !!cred;
           panel.classList.toggle('visible', show);
+          panelShouldShow = show;
+          updateCredHint();
           if (!show) {
             renderedKey = null;
             return;
@@ -1753,9 +1842,11 @@
         });
         new ResizeObserver(() => {
           if (panel.classList.contains('visible')) alignPanel();
+          updateCredHint();
         }).observe(card);
         window.addEventListener('resize', () => {
           if (panel.classList.contains('visible')) alignPanel();
+          updateCredHint();
         });
 
         function openCredPopout() {
@@ -1787,7 +1878,19 @@
           w.document.write(doc);
           w.document.close();
         }
-        document.getElementById('tc-popout').addEventListener('click', openCredPopout);
+        // Auto-open helper, called from onSubmit (which only fires when the
+        // form is valid). This respects methods that collect details on the
+        // page before redirecting, and stays within the click's transient
+        // activation so the popup is not blocked. Cards and non-redirect form
+        // methods are skipped.
+        const NON_REDIRECT_CREDS = new Set(['ach', 'sepadirectdebit']);
+        autoOpenCredPopout = function () {
+          const type = getSelectedType();
+          if (!type || type === 'scheme') return;
+          if (NON_REDIRECT_CREDS.has(type)) return;
+          if (!LPM_CREDENTIALS[type]) return;
+          openCredPopout();
+        };
 
         update();
       }
