@@ -106,6 +106,20 @@ const LOGIN_FAIL_THRESHOLD = 10;      // failures that trigger a lock
 const LOCK_DURATION_MS = 60 * 1000;   // how long the lock lasts, from lock time
 const loginState = new Map(); // ip -> { count, windowTs, lockedUntil }
 
+// Normalize the client IP for use as a throttling key. Azure's X-Forwarded-For
+// header appends the client port (e.g. "1.2.3.4:56789"); the port changes per
+// connection, so it must be stripped or each connection would get its own
+// counter. Also unwraps bracketed IPv6 and the IPv4-mapped IPv6 prefix.
+function clientIp(req) {
+  let ip = req.ip || '';
+  const v4 = ip.match(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/); // IPv4 with :port
+  if (v4) return v4[1];
+  const v6 = ip.match(/^\[(.+)\]:\d+$/); // [IPv6]:port
+  if (v6) ip = v6[1];
+  if (ip.startsWith('::ffff:')) ip = ip.slice(7); // IPv4-mapped IPv6
+  return ip;
+}
+
 function getLoginState(ip) {
   let s = loginState.get(ip);
   if (!s) {
@@ -117,13 +131,14 @@ function getLoginState(ip) {
 
 // Public: return the caller's IP (used by the login page to display it).
 app.get('/whoami', (req, res) => {
-  res.json({ ip: req.ip });
+  res.json({ ip: clientIp(req) });
 });
 
 app.post('/auth/login', async (req, res) => {
   const now = Date.now();
-  const s = getLoginState(req.ip);
-  console.log(`[LOGIN] pid=${process.pid} ip=${req.ip} failures=${s.count} locked=${now < s.lockedUntil}`);
+  const ip = clientIp(req);
+  const s = getLoginState(ip);
+  console.log(`[LOGIN] pid=${process.pid} ip=${ip} failures=${s.count} locked=${now < s.lockedUntil}`);
 
   // Currently locked → reject everything, including the correct code.
   if (now < s.lockedUntil) {
@@ -139,7 +154,7 @@ app.post('/auth/login', async (req, res) => {
   const { code } = req.body;
   const ok = code && await bcrypt.compare(code, process.env.ACCESS_CODE_HASH || '');
   if (ok) {
-    loginState.delete(req.ip); // clear state on success
+    loginState.delete(ip); // clear state on success
     res.setHeader('Set-Cookie', `${AUTH_COOKIE}=${makeToken()}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${FOUR_HOURS / 1000}`);
     return res.redirect('/');
   }
