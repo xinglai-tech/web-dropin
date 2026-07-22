@@ -304,6 +304,7 @@ app.post('/api/payments', async (req, res) => {
       ...(storePaymentMethod && { storePaymentMethod: true }),
       billingAddress: mergeAddress(billingAddress),
       deliveryAddress: mergeAddress(deliveryAddress),
+      shopperIP: clientIp(req),
       applicationInfo: {
         merchantApplication: { name: 'Web Dropin test app', version: '1.0.0' },
       },
