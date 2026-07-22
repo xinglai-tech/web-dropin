@@ -1605,12 +1605,20 @@
         // Older SDK naming for Google Pay.
         LPM_CREDENTIALS.paywithgoogle = LPM_CREDENTIALS.googlepay;
 
-        function renderCards() {
+        function renderCards(filterScheme) {
           titleEl.textContent = window.t('testcards.title');
-          hintEl.innerHTML = window.t('testcards.hint');
+          let hint = window.t('testcards.hint');
+          if (filterScheme) {
+            // Drop the "(Amex ...)" note for single-scheme views like Bancontact.
+            hint = hint.replace(/\s*[（(][^（()）]*Amex[^（()）]*[)）]\s*/i, '');
+          }
+          hintEl.innerHTML = hint;
           hintEl.style.display = '';
           list.innerHTML = '';
-          TEST_CARD_GROUPS.forEach((g) => {
+          const groups = filterScheme
+            ? TEST_CARD_GROUPS.filter((g) => g.scheme === filterScheme)
+            : TEST_CARD_GROUPS;
+          groups.forEach((g) => {
             const title = document.createElement('div');
             title.className = 'tc-group-title';
             const logo = SCHEME_LOGOS[g.scheme];
@@ -1818,8 +1826,9 @@
         const update = () => {
           const type = getSelectedType();
           const isCard = type === 'scheme';
+          const isBcmc = type === 'bcmc';
           const cred = type ? LPM_CREDENTIALS[type] : null;
-          const show = isCard || !!cred;
+          const show = isCard || isBcmc || !!cred;
           panel.classList.toggle('visible', show);
           panelShouldShow = show;
           updateCredHint();
@@ -1830,6 +1839,7 @@
           const key = isCard ? 'scheme' : type;
           if (renderedKey !== key) {
             if (isCard) renderCards();
+            else if (isBcmc) renderCards('Bancontact');
             else renderLpm(cred);
             renderedKey = key;
           }
