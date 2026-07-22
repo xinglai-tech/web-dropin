@@ -95,23 +95,24 @@ app.get('/login.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-// ── Login failure tracking (per client IP, 1-minute sliding window) ──────────
-//  - Up to 9 failures / minute are allowed; the 10th+ attempt is rate-limited.
-//  - Once failures reach 10 within the window, the login page reveals the
-//    client IP (via ?showip=1) so the user can see who is being throttled.
-const LOGIN_WINDOW_MS = 60 * 1000;
-const LOGIN_MAX_FAILURES = 9;
-const LOGIN_SHOW_IP_AT = 10;
-const loginFailures = new Map(); // ip -> { count, ts }
+// ── Login throttling (per client IP) ─────────────────────────────────────────
+//  - Failures are counted within a rolling 1-minute window.
+//  - Reaching LOGIN_FAIL_THRESHOLD failures locks the IP for LOCK_DURATION_MS,
+//    measured from the moment of locking (NOT from the first failure).
+//  - While locked, EVERY attempt is rejected — including the correct code —
+//    until the lock expires, and the login page reveals the client IP.
+const LOGIN_WINDOW_MS = 60 * 1000;    // window for counting failures
+const LOGIN_FAIL_THRESHOLD = 10;      // failures that trigger a lock
+const LOCK_DURATION_MS = 60 * 1000;   // how long the lock lasts, from lock time
+const loginState = new Map(); // ip -> { count, windowTs, lockedUntil }
 
-function getFailureBucket(ip) {
-  const now = Date.now();
-  let bucket = loginFailures.get(ip);
-  if (!bucket || now - bucket.ts > LOGIN_WINDOW_MS) {
-    bucket = { count: 0, ts: now };
-    loginFailures.set(ip, bucket);
+function getLoginState(ip) {
+  let s = loginState.get(ip);
+  if (!s) {
+    s = { count: 0, windowTs: Date.now(), lockedUntil: 0 };
+    loginState.set(ip, s);
   }
-  return bucket;
+  return s;
 }
 
 // Public: return the caller's IP (used by the login page to display it).
@@ -120,29 +121,33 @@ app.get('/whoami', (req, res) => {
 });
 
 app.post('/auth/login', async (req, res) => {
-  const bucket = getFailureBucket(req.ip);
+  const now = Date.now();
+  const s = getLoginState(req.ip);
+  console.log(`[LOGIN] pid=${process.pid} ip=${req.ip} failures=${s.count} locked=${now < s.lockedUntil}`);
 
-  // Already over the failure limit within this window → block without checking.
-  if (bucket.count > LOGIN_MAX_FAILURES) {
-    bucket.count += 1;
-    const extra = bucket.count >= LOGIN_SHOW_IP_AT ? '&showip=1' : '';
-    return res.redirect(`/login.html?error=locked${extra}`);
+  // Currently locked → reject everything, including the correct code.
+  if (now < s.lockedUntil) {
+    return res.redirect('/login.html?error=locked&showip=1');
+  }
+
+  // Reset the failure counter once the counting window has elapsed.
+  if (now - s.windowTs > LOGIN_WINDOW_MS) {
+    s.count = 0;
+    s.windowTs = now;
   }
 
   const { code } = req.body;
   const ok = code && await bcrypt.compare(code, process.env.ACCESS_CODE_HASH || '');
   if (ok) {
-    loginFailures.delete(req.ip); // reset on success
+    loginState.delete(req.ip); // clear state on success
     res.setHeader('Set-Cookie', `${AUTH_COOKIE}=${makeToken()}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${FOUR_HOURS / 1000}`);
     return res.redirect('/');
   }
 
-  bucket.count += 1;
-  if (bucket.count >= LOGIN_SHOW_IP_AT) {
+  s.count += 1;
+  if (s.count >= LOGIN_FAIL_THRESHOLD) {
+    s.lockedUntil = now + LOCK_DURATION_MS; // start the lock
     return res.redirect('/login.html?error=locked&showip=1');
-  }
-  if (bucket.count > LOGIN_MAX_FAILURES) {
-    return res.redirect('/login.html?error=locked');
   }
   res.redirect('/login.html?error=1');
 });
