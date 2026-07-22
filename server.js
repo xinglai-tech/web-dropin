@@ -304,6 +304,9 @@ app.post('/api/payments', async (req, res) => {
       ...(storePaymentMethod && { storePaymentMethod: true }),
       billingAddress: mergeAddress(billingAddress),
       deliveryAddress: mergeAddress(deliveryAddress),
+      applicationInfo: {
+        merchantApplication: { name: 'Web Dropin test app', version: '1.0.0' },
+      },
     };
     const response = await checkout.PaymentsApi.payments(payRequest);
     logPayment('/payments', payRequest, response);
