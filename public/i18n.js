@@ -29,7 +29,10 @@
       // ── Login page ──
       'login.subtitle': 'Please sign in to continue',
       'login.signin': 'Sign In',
-      'login.error': 'Invalid username or password',
+      'login.error': 'Invalid access code',
+      'login.accessCode': 'Access Code',
+      'login.locked': 'Too many failed attempts. Please try again later.',
+      'login.yourIp': 'Your IP address:',
       'login.username': 'Username',
       'login.password': 'Password',
       'login.button': 'Login',
@@ -159,7 +162,10 @@
       // ── Login page ──
       'login.subtitle': '请登录以继续',
       'login.signin': '登录',
-      'login.error': '用户名或密码错误',
+      'login.error': '访问代码错误',
+      'login.accessCode': '访问代码',
+      'login.locked': '失败次数过多，请稍后再试。',
+      'login.yourIp': '你的 IP 地址：',
       'login.username': '用户名',
       'login.password': '密码',
       'login.button': '登录',

@@ -34,6 +34,18 @@
       text-align: center;
     }
     .error-msg.show { display: block; }
+    .ip-msg {
+      background: #fff7ed;
+      color: #9a3412;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: none;
+      text-align: center;
+      word-break: break-all;
+    }
+    .ip-msg.show { display: block; }
   </style>
 </head>
 <body>
@@ -44,24 +56,45 @@
 
   <div class="login-card">
     <h2 data-i18n="login.signin">Sign In</h2>
-    <div class="error-msg" id="errorMsg" data-i18n="login.error">Invalid username or password</div>
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="ip-msg" id="ipMsg"></div>
     <form action="/auth/login" method="POST">
       <div class="form-group">
-        <label for="username" data-i18n="login.username">Username</label>
-        <input type="text" id="username" name="username" required autocomplete="username" />
-      </div>
-      <div class="form-group">
-        <label for="password" data-i18n="login.password">Password</label>
-        <input type="password" id="password" name="password" required autocomplete="current-password" />
+        <label for="code" data-i18n="login.accessCode">Access Code</label>
+        <input type="password" id="code" name="code" required autocomplete="one-time-code" inputmode="numeric" />
       </div>
       <button class="btn" type="submit" data-i18n="login.button">Login</button>
     </form>
   </div>
 
   <script>
-    if (new URLSearchParams(window.location.search).has('error')) {
-      document.getElementById('errorMsg').classList.add('show');
-    }
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const err = params.get('error');
+      const errorMsg = document.getElementById('errorMsg');
+      if (err === 'locked') {
+        errorMsg.textContent = (window.t && t('login.locked')) || 'Too many failed attempts. Please try again later.';
+        errorMsg.classList.add('show');
+      } else if (err) {
+        errorMsg.textContent = (window.t && t('login.error')) || 'Invalid access code';
+        errorMsg.classList.add('show');
+      }
+      if (params.get('showip') === '1') {
+        fetch('/whoami')
+          .then((r) => r.json())
+          .then((d) => {
+            const label = (window.t && t('login.yourIp')) || 'Your IP address:';
+            const ipMsg = document.getElementById('ipMsg');
+            ipMsg.textContent = ''; // safe: build via text nodes
+            const strong = document.createElement('strong');
+            strong.textContent = d.ip || 'unknown';
+            ipMsg.appendChild(document.createTextNode(label + ' '));
+            ipMsg.appendChild(strong);
+            ipMsg.classList.add('show');
+          })
+          .catch(() => {});
+      }
+    })();
   </script>
 </body>
 </html>

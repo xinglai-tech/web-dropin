@@ -32,6 +32,36 @@ function logPayment(endpoint, request, response) {
 
 const app = express();
 app.set('trust proxy', true);
+
+// ── Security headers (applied to every response) ─────────────────────────────
+// Content-Security-Policy is scoped to work with the Adyen Drop-in/Components:
+//  - script/style/connect/img/font: self + Adyen checkoutshopper domains.
+//  - frame-src & form-action allow any https origin because 3DS challenge
+//    iframes and redirect payment methods target unpredictable issuer/bank URLs.
+//  - 'unsafe-inline'/'unsafe-eval' are required by the inline page scripts and
+//    the Adyen SDK.
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.adyen.com https://pay.google.com https://applepay.cdn-apple.com",
+  "style-src 'self' 'unsafe-inline' https://*.adyen.com",
+  "img-src 'self' data: blob: https://*.adyen.com https://*.gstatic.com https://*.google.com",
+  "font-src 'self' data: https://*.adyen.com",
+  "connect-src 'self' https://*.adyen.com https://pay.google.com https://google.com",
+  "frame-src 'self' https:",
+  "frame-ancestors 'self'",
+  "form-action 'self' https:",
+  "object-src 'none'",
+  "base-uri 'self'",
+].join('; ');
+
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Content-Security-Policy', CSP);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -65,14 +95,54 @@ app.get('/login.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+// ── Login failure tracking (per client IP, 1-minute sliding window) ──────────
+//  - Up to 9 failures / minute are allowed; the 10th+ attempt is rate-limited.
+//  - Once failures reach 10 within the window, the login page reveals the
+//    client IP (via ?showip=1) so the user can see who is being throttled.
+const LOGIN_WINDOW_MS = 60 * 1000;
+const LOGIN_MAX_FAILURES = 9;
+const LOGIN_SHOW_IP_AT = 10;
+const loginFailures = new Map(); // ip -> { count, ts }
+
+function getFailureBucket(ip) {
+  const now = Date.now();
+  let bucket = loginFailures.get(ip);
+  if (!bucket || now - bucket.ts > LOGIN_WINDOW_MS) {
+    bucket = { count: 0, ts: now };
+    loginFailures.set(ip, bucket);
+  }
+  return bucket;
+}
+
+// Public: return the caller's IP (used by the login page to display it).
+app.get('/whoami', (req, res) => {
+  res.json({ ip: req.ip });
+});
+
 app.post('/auth/login', async (req, res) => {
-  const { username, password } = req.body;
-  if (
-    username === process.env.AUTH_USERNAME &&
-    await bcrypt.compare(password, process.env.AUTH_PASSWORD_HASH)
-  ) {
+  const bucket = getFailureBucket(req.ip);
+
+  // Already over the failure limit within this window → block without checking.
+  if (bucket.count > LOGIN_MAX_FAILURES) {
+    bucket.count += 1;
+    const extra = bucket.count >= LOGIN_SHOW_IP_AT ? '&showip=1' : '';
+    return res.redirect(`/login.html?error=locked${extra}`);
+  }
+
+  const { code } = req.body;
+  const ok = code && await bcrypt.compare(code, process.env.ACCESS_CODE_HASH || '');
+  if (ok) {
+    loginFailures.delete(req.ip); // reset on success
     res.setHeader('Set-Cookie', `${AUTH_COOKIE}=${makeToken()}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${FOUR_HOURS / 1000}`);
     return res.redirect('/');
+  }
+
+  bucket.count += 1;
+  if (bucket.count >= LOGIN_SHOW_IP_AT) {
+    return res.redirect('/login.html?error=locked&showip=1');
+  }
+  if (bucket.count > LOGIN_MAX_FAILURES) {
+    return res.redirect('/login.html?error=locked');
   }
   res.redirect('/login.html?error=1');
 });
