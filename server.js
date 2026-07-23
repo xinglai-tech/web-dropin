@@ -228,7 +228,7 @@ app.post('/api/paymentMethods', async (req, res) => {
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {
-    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail, billingAddress, deliveryAddress } = req.body;
+    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail, billingAddress, deliveryAddress, installments } = req.body;
     const orderRef = merchantRef || uuid();
 
     const origin = `${req.protocol}://${req.get('host')}`;
@@ -302,6 +302,7 @@ app.post('/api/payments', async (req, res) => {
       ...(shopperRef && { shopperReference: shopperRef }),
       recurringProcessingModel: recurringModel || (paymentMethod?.storedPaymentMethodId ? 'CardOnFile' : undefined),
       ...(storePaymentMethod && { storePaymentMethod: true }),
+      ...(installments && { installments }),
       billingAddress: mergeAddress(billingAddress),
       deliveryAddress: mergeAddress(deliveryAddress),
       shopperIP: clientIp(req),

@@ -892,6 +892,33 @@
       const shopperLocale = params.get('shopperLocale') || 'en-US';
       const threeDSMode = params.get('threeDSMode') || 'native';
       const chargebackHolderName = params.get('chargebackHolderName') || '';
+      const installmentsEnabled = params.get('installments') === 'on';
+
+      // Country-specific installment plans applied to the card component.
+      // For JP, `values` apply to the regular plan; revolving/bonus always send
+      // value 1, which the component handles automatically.
+      const INSTALLMENT_VALUES = {
+        MX: [3, 6, 9, 12, 18],
+        BR: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        JP: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      };
+      const INSTALLMENT_PLANS = {
+        MX: ['regular'],
+        BR: ['regular'],
+        JP: ['regular', 'revolving', 'bonus'],
+      };
+      let cardInstallmentConfig = {};
+      if (installmentsEnabled && INSTALLMENT_VALUES[country]) {
+        cardInstallmentConfig = {
+          installmentOptions: {
+            card: {
+              values: INSTALLMENT_VALUES[country],
+              plans: INSTALLMENT_PLANS[country] || ['regular'],
+            },
+          },
+          showInstallmentAmounts: true,
+        };
+      }
 
       // ── Convert major units to minor units ────────────────────────────
       const zeroDecimalCurrencies = ['JPY', 'KRW', 'VND', 'CLP', 'PYG', 'GNF', 'RWF', 'UGX', 'XOF', 'XAF', 'ISK', 'HUF'];
@@ -984,6 +1011,13 @@
             }
             if (result.pspReference) lastPspReference = result.pspReference;
 
+            // Hide the "feedback" prompt once an inline action UI (QR / await /
+            // SDK, e.g. BCMC mobile) is shown, since a payment method is already
+            // selected and in progress.
+            if (result.action && ['qrCode', 'await', 'sdk'].includes(result.action.type)) {
+              document.getElementById('debug-feedback').style.display = 'none';
+            }
+
             if (freezeChk.checked && result.action && result.action.type === 'redirect') {
               freezeRedirect(() => actions.resolve(result));
               return;
@@ -1074,6 +1108,7 @@
             enableStoreDetails,
             billingAddressRequired,
             ...(billingAddressRequired && { billingAddressMode }),
+            ...cardInstallmentConfig,
             onBrand: (d) => logEvent('card.onBrand', { brand: d?.brand, type: d?.type }),
             onBinLookup: (d) => logEvent('card.onBinLookup', d),
             onFieldValid: (d) => logEvent('card.onFieldValid', { fieldType: d?.fieldType, valid: d?.valid, endDigits: d?.endDigits }),
@@ -1257,6 +1292,40 @@
 
         // Test credentials for local payment methods, keyed by txVariant.
         const LPM_CREDENTIALS = {
+          bcmc_mobile: {
+            title: 'Bancontact Mobile Test',
+            sections: [
+              {
+                title: 'Setup',
+                notes: [
+                  { text: '1. Please request access to the [Bancontact Pay](https://tally.so/r/nP8P1Q) app in sandbox.' },
+                  { text: '2. Once it is approved by BCMC, you will receive an email with the download link from the iOS or Google Play store.' },
+                  { text: '3. Open the link on your mobile phone to download the app.' },
+                  { text: '4. Open the app and select "I don\'t have itsme".' },
+                  { text: '5. Complete registration:' },
+                  { text: 'Enter your email address', bullet: true },
+                  { text: 'Enter the code 123456 (no OTP code will be sent by email)', bullet: true },
+                  { text: 'Enter your first name and last name', bullet: true },
+                  { text: 'Enter your phone number (must be an EU phone number, you can use a fake number)', bullet: true },
+                  { text: 'Enter the code 123456 (no OTP code will be sent by SMS)', bullet: true },
+                  { text: 'Set a PIN code. You can also enable Biometric or skip the step.', bullet: true },
+                ],
+              },
+              {
+                title: 'Add a test card',
+                preNotes: [
+                  { text: '6. Select KBC bank to add a test card like below:' },
+                ],
+                fields: [
+                  { label: 'Card Number', value: '5127 8829 9999 9715' },
+                  { label: 'Expiry', value: 'Nov-29', copyable: false },
+                ],
+              },
+            ],
+            notes: [
+              { text: '7. Please note there might be an intermittent error in the last step to complete the payment, while it is still helpful to test the mobile flow.', warn: true },
+            ],
+          },
           googlepay: {
             title: 'Google Pay Test',
             sections: [
@@ -1736,6 +1805,24 @@
         }
 
         function appendRichText(el, text) {
+          // Handle [text](url) markdown links first, then bold + raw URLs.
+          const linkRe = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+          let last = 0;
+          let m;
+          while ((m = linkRe.exec(text)) !== null) {
+            if (m.index > last) appendBoldAndLinks(el, text.slice(last, m.index));
+            const a = document.createElement('a');
+            a.href = m[2];
+            a.textContent = m[1];
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            el.appendChild(a);
+            last = m.index + m[0].length;
+          }
+          if (last < text.length) appendBoldAndLinks(el, text.slice(last));
+        }
+
+        function appendBoldAndLinks(el, text) {
           const boldRe = /\*\*(.+?)\*\*/g;
           let last = 0;
           let m;
@@ -1791,7 +1878,14 @@
         ]);
         const getSelectedType = () => {
           const sel = document.querySelector('.adyen-checkout__payment-method--selected');
-          if (!sel) return null;
+          if (!sel) {
+            // During an inline action (QR / await, e.g. BCMC mobile) the payment
+            // method list is replaced by the action UI, so keep showing the last
+            // selected method's credentials on the left.
+            const actionUi = document.querySelector('.adyen-checkout__qr-loader, .adyen-checkout__await');
+            if (actionUi && lastSelectedType) return lastSelectedType;
+            return null;
+          }
           if (lastSelectedType) return lastSelectedType;
           const prefix = 'adyen-checkout__payment-method--';
           for (const cls of sel.classList) {
@@ -1904,7 +1998,7 @@
         // page before redirecting, and stays within the click's transient
         // activation so the popup is not blocked. Cards and non-redirect form
         // methods are skipped.
-        const NON_REDIRECT_CREDS = new Set(['ach', 'sepadirectdebit']);
+        const NON_REDIRECT_CREDS = new Set(['ach', 'sepadirectdebit', 'bcmc_mobile']);
         autoOpenCredPopout = function () {
           const type = getSelectedType();
           if (!type || type === 'scheme') return;

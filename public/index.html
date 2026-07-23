@@ -105,6 +105,8 @@
       box-shadow: 0 4px 24px rgba(0,0,0,0.08);
       padding: 18px;
       z-index: 50;
+      box-sizing: border-box;
+      overflow-y: auto;
     }
     .preset-panel h3 {
       font-size: 1rem;
@@ -150,6 +152,7 @@
       background: #fff;
       border-style: dashed;
       margin-top: 4px;
+      text-align: center;
     }
     .preset-btn.reset .preset-btn-title { color: #4A8DAB; }
     /* Chargeback scenario group */
@@ -404,6 +407,7 @@
             <div class="csel__opt" data-value="IT" data-i18n="country.IT">🇮🇹 Italy</div>
             <div class="csel__opt" data-value="JP" data-i18n="country.JP">🇯🇵 Japan</div>
             <div class="csel__opt" data-value="MY" data-i18n="country.MY">🇲🇾 Malaysia</div>
+            <div class="csel__opt" data-value="MX" data-i18n="country.MX">🇲🇽 Mexico</div>
             <div class="csel__opt" data-value="NL" data-i18n="country.NL">🇳🇱 Netherlands</div>
             <div class="csel__opt" data-value="NZ" data-i18n="country.NZ">🇳🇿 New Zealand</div>
             <div class="csel__opt" data-value="NO" data-i18n="country.NO">🇳🇴 Norway</div>
@@ -454,6 +458,7 @@
             <div class="csel__opt" data-value="HKD">HKD</div>
             <div class="csel__opt" data-value="JPY">JPY</div>
             <div class="csel__opt" data-value="KRW">KRW</div>
+            <div class="csel__opt" data-value="MXN">MXN</div>
             <div class="csel__opt" data-value="MYR">MYR</div>
             <div class="csel__opt" data-value="NOK">NOK</div>
             <div class="csel__opt" data-value="NZD">NZD</div>
@@ -568,13 +573,12 @@
       </div>
 
       <div class="form-group">
-        <label><span data-i18n="label.channel">Channel</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.channel" data-tip="Platform where the payment happens (Web, iOS, Android). &#10;Affects which payment methods are returned and data used for 3DS flow (native or web).">i</span></label>
-        <div class="csel" data-id="channel" data-value="Web">
-          <div class="csel__trigger"><span>Web</span><div class="csel__arrow"></div></div>
+        <label><span data-i18n="label.installments">Installments</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.installments" data-tip="Enable installment options in the card form. Available values depend on the selected country (e.g. Mexico: 3/6/9/12/18, Brazil: 2-12, Japan: 2-12 + revolving/bonus).">i</span></label>
+        <div class="csel" data-id="installments" data-value="off">
+          <div class="csel__trigger"><span data-i18n="installments.off">Disabled</span><div class="csel__arrow"></div></div>
           <div class="csel__options">
-            <div class="csel__opt selected" data-value="Web">Web</div>
-            <div class="csel__opt" data-value="iOS">iOS</div>
-            <div class="csel__opt" data-value="Android">Android</div>
+            <div class="csel__opt selected" data-value="off" data-i18n="installments.off">Disabled</div>
+            <div class="csel__opt" data-value="on" data-i18n="installments.on">Enabled</div>
           </div>
         </div>
       </div>
@@ -604,6 +608,10 @@
       </div>
       <p id="cb-reminder" class="cb-reminder"></p>
     </div>
+    <button type="button" class="preset-btn" id="preset-installments">
+      <span class="preset-btn-title" data-i18n="preset.installments.title">4. Test credit card installments</span>
+      <span class="preset-btn-desc" data-i18n-html="preset.installments.desc">Sets amount to 100, country to Brazil, and enables installments. Click <b>Start Checkout</b>, then choose the number of installments on the checkout page.</span>
+    </button>
     <button type="button" class="preset-btn reset" id="preset-reset">
       <span class="preset-btn-title" data-i18n="preset.reset.title">Restore to default</span>
       <span class="preset-btn-desc" data-i18n="preset.reset.desc">Reset all settings back to their default values.</span>
@@ -653,11 +661,26 @@
       AU: 'AUD', JP: 'JPY', HK: 'HKD', SE: 'SEK', NO: 'NOK',
       FI: 'EUR', DK: 'DKK', CA: 'CAD', BR: 'BRL', MY: 'MYR',
       TH: 'THB', KR: 'KRW', IT: 'EUR', ES: 'EUR', BE: 'EUR', NZ: 'NZD',
+      MX: 'MXN',
     };
+    // ── Installments availability by country (MX / BR / JP) ─────────────
+    const INSTALLMENT_COUNTRIES = ['MX', 'BR', 'JP'];
+    const installmentsCsel = document.querySelector('.csel[data-id="installments"]');
+    function updateInstallmentsAvailability() {
+      const supported = INSTALLMENT_COUNTRIES.includes(cselVal('country'));
+      installmentsCsel.classList.toggle('csel--disabled', !supported);
+      if (!supported) {
+        installmentsCsel.classList.remove('open');
+        if (cselVal('installments') !== 'off') cselSet('installments', 'off');
+      }
+    }
+
     document.querySelector('.csel[data-id="country"]').addEventListener('change', () => {
       const mapped = countryCurrency[cselVal('country')];
       if (mapped) cselSet('currency', mapped);
+      updateInstallmentsAvailability();
     });
+    updateInstallmentsAvailability();
 
     // ── Billing address required → enable/disable mode select ────────────
     const billingReqEl = document.getElementById('billingAddressRequired');
@@ -694,8 +717,8 @@
         country: cselVal('country'),
         currency: cselVal('currency'),
         amount: amountVal,
-        channel: cselVal('channel'),
       });
+      if (cselVal('installments') === 'on') params.set('installments', 'on');
       params.set('shopperInteraction', cselVal('shopperInteraction'));
       const recurringModel = cselVal('recurringModel');
       if (recurringModel) params.set('recurringModel', recurringModel);
@@ -719,11 +742,14 @@
       window.location.href = '/checkout.html?' + params.toString();
     });
 
-    // ── Align preset panel top with the settings card ───────────────────
+    // ── Align preset panel top & bottom with the settings card ──────────
     const presetPanelEl = document.querySelector('.preset-panel');
     const cardEl = document.querySelector('.card');
     function alignPresetPanel() {
-      presetPanelEl.style.top = Math.max(cardEl.getBoundingClientRect().top, 12) + 'px';
+      const rect = cardEl.getBoundingClientRect();
+      const top = Math.max(rect.top, 12);
+      presetPanelEl.style.top = top + 'px';
+      presetPanelEl.style.height = Math.max(rect.bottom - top, 0) + 'px';
     }
     alignPresetPanel();
     window.addEventListener('resize', alignPresetPanel);
@@ -803,6 +829,17 @@
       shopperRefEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
 
+    // 4. Test credit card installments (Brazil)
+    document.getElementById('preset-installments').addEventListener('click', () => {
+      clearChargeback();
+      clearRememberNote();
+      cselSet('country', 'BR');
+      cselSet('currency', 'BRL');
+      document.getElementById('amount').value = '100';
+      updateInstallmentsAvailability();
+      cselSet('installments', 'on');
+    });
+
     // Restore to default
     document.getElementById('preset-reset').addEventListener('click', () => {
       clearRememberNote();
@@ -813,7 +850,8 @@
       cselSet('shopperInteraction', 'Ecommerce');
       cselSet('recurringModel', '');
       cselSet('threeDSMode', 'native');
-      cselSet('channel', 'Web');
+      cselSet('installments', 'off');
+      updateInstallmentsAvailability();
       cselSet('billingAddressMode', 'full');
       document.getElementById('amount').value = '10';
       shopperRefEl.value = '';
