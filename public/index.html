@@ -6,8 +6,6 @@
   <title>Adyen test</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="/style.css" />
-  <link rel="stylesheet" href="/vendor/tom-select/css/tom-select.css" />
-  <link rel="stylesheet" href="/vendor/flag-icons/css/flag-icons.min.css" />
   <script src="/i18n.js"></script>
   <style>
     /* Taller header so the stacked logout + language switch fit inside. */
@@ -374,201 +372,208 @@
         min-width: 0 !important;
         width: 100% !important;
       }
-      .info-tip {
-        display: inline-flex !important;
-      }
-      .info-tip::after {
-        left: auto;
-        right: -8px;
-        transform: none;
-        width: min(280px, calc(100vw - 32px));
-      }
-      .info-tip::before {
-        left: auto;
-        right: -2px;
-        transform: none;
-      }
+      .info-tip { display: none !important; }
     }
+  </style>
+</head>
+<body>
+  <div class="header" style="position:relative;">
+    <a href="/auth/logout" class="logout-btn" data-i18n="common.logout">Logout</a>
+    <div id="langSwitch" class="lang-switch" role="group" aria-label="Language">
+      <button type="button" class="lang-seg" data-lang="en">EN</button>
+      <button type="button" class="lang-seg" data-lang="zh">中文</button>
+    </div>
+    <h1>Adyen test</h1>
+  </div>
 
-    /* ── Payment settings experience ───────────────────────────────────── */
-    .settings-shell {
-      display: grid;
-      grid-template-columns: minmax(0, 520px) minmax(250px, 280px);
-      align-items: start;
-      gap: 24px;
-      width: min(100% - 32px, 856px);
-      margin: 32px auto;
-    }
-    .settings-card.card { max-width: none; margin: 0; }
-    .settings-card > h2 { margin-bottom: 6px; }
-    .settings-card h2.basic-settings__heading {
-      padding: 0 0 6px;
-      margin: 0;
-      color: #6d8290;
-      font-size: .8rem;
-      font-weight: 700;
-      letter-spacing: .08em;
-    }
-    .settings-section {
-      position: relative;
-      z-index: 2;
-      overflow: visible;
-      border: 1px solid #e4ecf1;
-      border-radius: 14px;
-      background: linear-gradient(145deg, #fbfdfe, #f5f9fb);
-      padding: 16px;
-      margin-bottom: 16px;
-      animation: settings-enter .42s ease both;
-    }
-    .advanced-settings {
-      position: relative;
-      z-index: 1;
-      border: 1px solid #e4ecf1;
-      border-radius: 14px;
-      background: #fff;
-      margin-bottom: 16px;
-    }
-    .advanced-settings__heading {
-      padding: 0 0 6px;
-      margin: 0;
-      color: #6d8290;
-      font-size: .8rem;
-      font-weight: 700;
-      letter-spacing: .08em;
-    }
-    .advanced-settings__body {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px 10px;
-      padding: 8px 12px 10px;
-      animation: reveal-settings .24s ease both;
-    }
-    .advanced-settings__body .row { display: contents; }
-    .advanced-settings__body .form-group { min-width: 0; margin-bottom: 0; }
-    .advanced-settings__body > #billingModeGroup { grid-column: 1 / -1; }
-    .action-area { display: grid; gap: 10px; }
-    .btn {
-      box-shadow: 0 8px 16px rgba(74, 141, 171, 0.18);
-      transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
-    }
-    .btn:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(74, 141, 171, 0.25); }
-    .btn:active { transform: translateY(0); }
+  <div class="card">
+    <h2 data-i18n="index.title">Payment Settings</h2>
 
-    .ts-wrapper { width: 100%; }
-    .ts-wrapper.single .ts-control,
-    .ts-control {
-      min-height: 38px;
-      padding: 8px 32px 8px 12px;
-      border: 1.5px solid #ddd;
-      border-radius: 8px;
-      background: #fafbfc;
-      box-shadow: none;
-      color: #1a1a2e;
-      font-size: .92rem;
-    }
-    .ts-wrapper.single .ts-control::after { border-color: #667788 transparent transparent; }
-    .ts-wrapper.focus .ts-control {
-      border-color: #4a8dab;
-      box-shadow: 0 0 0 3px rgba(74,141,171,.12);
-    }
-    .ts-dropdown {
-      border: 1px solid #dce6ec;
-      border-radius: 10px;
-      box-shadow: 0 14px 30px rgba(30, 57, 73, .14);
-      overflow: hidden;
-    }
-    /* Menus float above the form so opening one never changes the page layout. */
-    .ts-wrapper .ts-dropdown {
-      position: absolute;
-      width: 100%;
-      margin-top: 6px;
-      z-index: 220;
-    }
-    .ts-dropdown-content { max-height: 280px; }
-    .ts-dropdown .option { display: flex; align-items: center; gap: 9px; padding: 9px 12px; }
-    .ts-dropdown .active { background: #edf7fa; color: #285d75; }
-    .ts-dropdown .create { color: #64748b; }
-    .flag-icon { flex: 0 0 20px; border-radius: 2px; box-shadow: 0 1px 2px rgba(15, 23, 42, .18); }
-    .ts-control .item { display: inline-flex; align-items: center; gap: 9px; }
+    <div class="row">
+      <div class="form-group">
+        <label><span data-i18n="label.country">Country</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.country" data-tip="Shopper's country.&#10;​Some payment methods are only available in certain countries.">i</span></label>
+        <div class="csel" data-id="country" data-value="SG">
+          <div class="csel__trigger"><span data-i18n="country.SG">🇸🇬 Singapore</span><div class="csel__arrow"></div></div>
+          <div class="csel__options">
+            <div class="csel__opt" data-value="AU" data-i18n="country.AU">🇦🇺 Australia</div>
+            <div class="csel__opt" data-value="BE" data-i18n="country.BE">🇧🇪 Belgium</div>
+            <div class="csel__opt" data-value="BR" data-i18n="country.BR">🇧🇷 Brazil</div>
+            <div class="csel__opt" data-value="CA" data-i18n="country.CA">🇨🇦 Canada</div>
+            <div class="csel__opt" data-value="DK" data-i18n="country.DK">🇩🇰 Denmark</div>
+            <div class="csel__opt" data-value="FI" data-i18n="country.FI">🇫🇮 Finland</div>
+            <div class="csel__opt" data-value="FR" data-i18n="country.FR">🇫🇷 France</div>
+            <div class="csel__opt" data-value="DE" data-i18n="country.DE">🇩🇪 Germany</div>
+            <div class="csel__opt" data-value="HK" data-i18n="country.HK">🇭🇰 Hong Kong</div>
+            <div class="csel__opt" data-value="IT" data-i18n="country.IT">🇮🇹 Italy</div>
+            <div class="csel__opt" data-value="JP" data-i18n="country.JP">🇯🇵 Japan</div>
+            <div class="csel__opt" data-value="MY" data-i18n="country.MY">🇲🇾 Malaysia</div>
+            <div class="csel__opt" data-value="MX" data-i18n="country.MX">🇲🇽 Mexico</div>
+            <div class="csel__opt" data-value="NL" data-i18n="country.NL">🇳🇱 Netherlands</div>
+            <div class="csel__opt" data-value="NZ" data-i18n="country.NZ">🇳🇿 New Zealand</div>
+            <div class="csel__opt" data-value="NO" data-i18n="country.NO">🇳🇴 Norway</div>
+            <div class="csel__opt selected" data-value="SG" data-i18n="country.SG">🇸🇬 Singapore</div>
+            <div class="csel__opt" data-value="KR" data-i18n="country.KR">🇰🇷 South Korea</div>
+            <div class="csel__opt" data-value="ES" data-i18n="country.ES">🇪🇸 Spain</div>
+            <div class="csel__opt" data-value="SE" data-i18n="country.SE">🇸🇪 Sweden</div>
+            <div class="csel__opt" data-value="TH" data-i18n="country.TH">🇹🇭 Thailand</div>
+            <div class="csel__opt" data-value="GB" data-i18n="country.GB">🇬🇧 United Kingdom</div>
+            <div class="csel__opt" data-value="US" data-i18n="country.US">🇺🇸 United States</div>
+          </div>
+        </div>
+      </div>
 
-    #presetMount { min-width: 0; }
-    .preset-panel {
-      position: sticky;
-      top: 20px;
-      left: auto;
-      width: auto;
-      height: auto !important;
-      max-height: calc(100vh - 40px);
-      border: 1px solid #e5edf2;
-      box-shadow: 0 14px 30px rgba(30, 57, 73, .1);
-      animation: panel-enter .45s .08s ease both;
-    }
-    .scenario-toggle { display: none; }
-    .preset-dialog {
-      width: min(100% - 24px, 520px);
-      max-height: 82vh;
-      margin: auto 12px 12px;
-      padding: 0;
-      border: 0;
-      border-radius: 18px;
-      background: #fff;
-      box-shadow: 0 18px 42px rgba(15, 23, 42, .24);
-    }
-    .preset-dialog::backdrop { background: rgba(15, 32, 42, .42); backdrop-filter: blur(2px); }
-    .preset-dialog__header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 16px;
-      color: #243746;
-      font-size: .95rem;
-      font-weight: 750;
-      border-bottom: 1px solid #edf2f5;
-    }
-    .dialog-close {
-      width: 32px;
-      height: 32px;
-      border: 0;
-      border-radius: 50%;
-      background: #eef5f8;
-      color: #33556a;
-      font-size: 1.35rem;
-      line-height: 1;
-      cursor: pointer;
-    }
-    .preset-dialog .preset-panel {
-      display: block;
-      position: static;
-      max-height: none;
-      border: 0;
-      border-radius: 0;
-      box-shadow: none;
-      animation: none;
-    }
-    @keyframes settings-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-    @keyframes reveal-settings { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
-    @keyframes panel-enter { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
+      <div class="form-group">
+        <label><span data-i18n="label.shopperLocale">Shopper Locale</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.shopperLocale" data-tip="Language/locale of the Drop-in UI and redirect pages, e.g. en-US, zh-CN.">i</span></label>
+        <div class="csel" data-id="shopperLocale" data-value="en-US">
+          <div class="csel__trigger"><span>English (US)</span><div class="csel__arrow"></div></div>
+          <div class="csel__options">
+            <div class="csel__opt selected" data-value="en-US">English (US)</div>
+            <div class="csel__opt" data-value="zh-CN">简体中文</div>
+            <div class="csel__opt" data-value="zh-TW">繁體中文</div>
+            <div class="csel__opt" data-value="ja-JP">日本語</div>
+            <div class="csel__opt" data-value="ko-KR">한국어</div>
+            <div class="csel__opt" data-value="de-DE">Deutsch</div>
+            <div class="csel__opt" data-value="fr-FR">Français</div>
+            <div class="csel__opt" data-value="es-ES">Español</div>
+            <div class="csel__opt" data-value="it-IT">Italiano</div>
+            <div class="csel__opt" data-value="nl-NL">Nederlands</div>
+            <div class="csel__opt" data-value="pt-BR">Português (BR)</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    @media (max-width: 1180px) {
-      .settings-shell { grid-template-columns: minmax(0, 560px); justify-content: center; }
-      #presetMount .preset-panel { display: none; }
-      .scenario-toggle {
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 40px;
-        border: 1px solid #cfe0e9;
-        border-radius: 8px;
-        color: #3d7d99;
-        background: #f5f9fb;
-        font-weight: 700;
-        cursor: pointer;
-      }
-    }
-    @media (min-width: 1181px) {
-      .settings-shell { zoom: .9; }
-      #presetMount { display: flex; align-self: stretch; }
-      #presetMount .preset-panel { align-self: stretch; …4529 tokens truncated…
+    <div class="row">
+      <div class="form-group">
+        <label><span data-i18n="label.currency">Currency</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.currency" data-tip="Transaction currency.&#10;Must be supported by the chosen payment method, otherwise that method is filtered out.">i</span></label>
+        <div class="csel" data-id="currency" data-value="SGD">
+          <div class="csel__trigger"><span>SGD</span><div class="csel__arrow"></div></div>
+          <div class="csel__options">
+            <div class="csel__opt" data-value="AUD">AUD</div>
+            <div class="csel__opt" data-value="BRL">BRL</div>
+            <div class="csel__opt" data-value="CAD">CAD</div>
+            <div class="csel__opt" data-value="DKK">DKK</div>
+            <div class="csel__opt" data-value="EUR">EUR</div>
+            <div class="csel__opt" data-value="GBP">GBP</div>
+            <div class="csel__opt" data-value="HKD">HKD</div>
+            <div class="csel__opt" data-value="JPY">JPY</div>
+            <div class="csel__opt" data-value="KRW">KRW</div>
+            <div class="csel__opt" data-value="MXN">MXN</div>
+            <div class="csel__opt" data-value="MYR">MYR</div>
+            <div class="csel__opt" data-value="NOK">NOK</div>
+            <div class="csel__opt" data-value="NZD">NZD</div>
+            <div class="csel__opt" data-value="SEK">SEK</div>
+            <div class="csel__opt selected" data-value="SGD">SGD</div>
+            <div class="csel__opt" data-value="THB">THB</div>
+            <div class="csel__opt" data-value="USD">USD</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="amount" data-i18n="label.amount">Amount</label>
+        <input type="number" id="amount" value="10" min="0.01" step="0.01" />
+        <span id="amountError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;" data-i18n="err.amount">Amount must be at least 0.01</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="form-group">
+        <label>Shopper Interaction<span class="info-tip" tabindex="0" data-i18n-tip="tip.shopperInteraction" data-tip="Indicates if this is a one-time payment (Ecommerce) or a recurring transaction using an existing stored card (ContAuth).">i</span></label>
+        <div class="csel" data-id="shopperInteraction" data-value="Ecommerce">
+          <div class="csel__trigger"><span>Ecommerce</span><div class="csel__arrow"></div></div>
+          <div class="csel__options">
+            <div class="csel__opt selected" data-value="Ecommerce">Ecommerce</div>
+            <div class="csel__opt" data-value="ContAuth">ContAuth</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>RecurringProcessingModel<span class="info-tip" tabindex="0" data-i18n-tip="tip.recurringModel" data-tip="How a stored card is charged:&#10;• CardOnFile (shopper-initiated payment)&#10;• Subscription (fixed schedule such as monthly, merchant-initiated)&#10;• UnscheduledCardOnFile (random schedule or amount, merchant-initiated)">i</span></label>
+        <div class="csel" data-id="recurringModel" data-value="">
+          <div class="csel__trigger"><span>None</span><div class="csel__arrow"></div></div>
+          <div class="csel__options">
+            <div class="csel__opt selected" data-value="">None</div>
+            <div class="csel__opt" data-value="CardOnFile">CardOnFile</div>
+            <div class="csel__opt" data-value="Subscription">Subscription</div>
+            <div class="csel__opt" data-value="UnscheduledCardOnFile">UnscheduledCardOnFile</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="form-group">
+        <label for="shopperRef"><span data-i18n="label.shopperRef">Shopper Reference</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.shopperRef" data-tip="Your unique identifier for the shopper. &#10;Used to store and retrieve their saved payment methods.">i</span></label>
+        <input type="text" id="shopperRef" value="" placeholder="optional" data-i18n-ph="ph.optional" />
+        <div id="rememberNote" class="remember-note"><span data-i18n="note.remember">Remember this Shopper Reference — you'll need it for recurring payment using stored card: </span><b id="rememberRef"></b></div>
+        <div id="reuseNote" class="remember-note" data-i18n="note.reuse">Enter the Shopper Reference you used in your first-time (tokenization) test, so the stored card can be reused.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="merchantRef"><span data-i18n="label.merchantRef">Merchant Reference</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.merchantRef" data-tip="Your unique reference for this payment used to match the transaction in your own system. Auto-generated if left empty.">i</span></label>
+        <input type="text" id="merchantRef" placeholder="Leave empty to auto-generate" data-i18n-ph="ph.autoGenerate" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="form-group">
+        <label for="telephoneNumber"><span data-i18n="label.telephone">Telephone Number</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.telephone" data-tip="Shopper's phone number sent in the payments request. Used by some payment methods and risk checks.">i</span></label>
+        <input type="text" id="telephoneNumber" value="1234567890" />
+      </div>
+
+      <div class="form-group">
+        <label for="shopperEmail"><span data-i18n="label.email">Email</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.email" data-tip="Shopper's email sent in the payments request. Used by some payment methods and receipts.">i</span></label>
+        <input type="email" id="shopperEmail" value="test@example.com" />
+        <span id="emailError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;" data-i18n="err.email">Please enter a valid email address</span>
+      </div>
+    </div>
+
+    <div class="form-group" id="billingModeGroup" style="display:flex;align-items:center;gap:10px;">
+      <label class="checkbox-label" style="flex:0 0 auto;">
+        <input type="checkbox" id="billingAddressRequired" />
+        <span data-i18n="label.billingRequired">Billing Address Required</span>
+      </label>
+      <span class="info-tip" tabindex="0" data-i18n-tip="tip.billingRequired" data-tip="Require shopper to enter his billing address, for card payment only">i</span>
+      <div class="csel csel--disabled" data-id="billingAddressMode" data-value="full" style="margin-left:auto;flex:0 1 210px;min-width:0;">
+        <div class="csel__trigger"><span data-i18n="opt.fullAddress">Full address</span><div class="csel__arrow"></div></div>
+        <div class="csel__options">
+          <div class="csel__opt selected" data-value="full" data-i18n="opt.fullAddress">Full address</div>
+          <div class="csel__opt" data-value="partial" data-i18n="opt.postalOnly">Postal code only</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group" style="display:flex;align-items:center;">
+      <label class="checkbox-label">
+        <input type="checkbox" id="enableStoreDetails" checked />
+        <span data-i18n="label.enableStore">Enable Store Details</span>
+      </label>
+      <span class="info-tip" tabindex="0" data-i18n-tip="tip.enableStore" data-tip="Show &quot;save payment details&quot; checkbox in the card form so the shopper can store their card.">i</span>
+    </div>
+
+    <div class="form-group" style="display:flex;align-items:center;">
+      <label class="checkbox-label">
+        <input type="checkbox" id="showStoredPaymentMethods" checked />
+        <span data-i18n="label.showStored">Show Stored Payment Methods</span>
+      </label>
+      <span class="info-tip" tabindex="0" data-i18n-tip="tip.showStored" data-tip="Show the shopper's saved payment methods (stored cards) in Drop-in.">i</span>
+    </div>
+
+    <div class="row">
+      <div class="form-group">
+        <label><span data-i18n="label.threeDS">3DS Mode</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.threeDS" data-tip="• Native = 3DS2 rendered in merchant's page.&#10;• Redirect = shopper is redirected to the issuer's authentication page.">i</span></label>
+        <div class="csel" data-id="threeDSMode" data-value="native">
+          <div class="csel__trigger"><span>Native</span><div class="csel__arrow"></div></div>
+          <div class="csel__options">
+            <div class="csel__opt selected" data-value="native">Native</div>
+            <div class="csel__opt" data-value="redirect">Redirect</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label><span data-i18n="label.installments">Installments</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.installments" data-tip="Enable installment options in the card form. Available values depend on the selected country (e.g. Mexico: 3/6/9/12/18, Brazil: 2-12, Japan: 2-12 + revolving/bonus).">i</span></label>
         <div class="csel" data-id="installments" data-value="off">
           <div class="csel__trigger"><span data-i18n="installments.off">Disabled</span><div class="csel__arrow"></div></div>
           <div class="csel__options">
@@ -578,16 +583,10 @@
         </div>
       </div>
     </div>
-      </div>
-    </section>
 
-    <div class="action-area">
-      <button type="button" class="scenario-toggle" id="openPresets" data-i18n="preset.open">Open test scenarios</button>
-      <button class="btn" id="startBtn" data-i18n="btn.continue">Start Checkout</button>
-    </div>
+    <button class="btn" id="startBtn" data-i18n="btn.continue">Start Checkout</button>
   </div>
 
-  <div id="presetMount">
   <aside class="preset-panel">
     <h3 data-i18n="preset.title">Test Scenarios</h3>
     <p class="preset-hint" data-i18n="preset.hint">Quickly configure the parameters for common test flows. Please select one for testing and click Start Checkout.</p>
@@ -618,34 +617,13 @@
       <span class="preset-btn-desc" data-i18n="preset.reset.desc">Reset all settings back to their default values.</span>
     </button>
   </aside>
-  </div>
-  </main>
 
-  <dialog id="presetDialog" class="preset-dialog" aria-labelledby="presetDialogTitle">
-    <div class="preset-dialog__header">
-      <span id="presetDialogTitle" data-i18n="preset.mobileTitle">Test scenarios</span>
-      <button type="button" class="dialog-close" id="closePresets" aria-label="Close">×</button>
-    </div>
-  </dialog>
-
-  <script src="/vendor/tom-select/js/tom-select.complete.min.js"></script>
   <script>
-    // ── Select controls ──────────────────────────────────────────────────
+    // ── Custom select logic ──────────────────────────────────────────────
     function cselVal(id) {
-      const nativeSelect = document.getElementById(id);
-      if (nativeSelect && nativeSelect.tagName === 'SELECT') return nativeSelect.value;
       return document.querySelector(`.csel[data-id="${id}"]`).dataset.value;
     }
     function cselSet(id, val) {
-      const nativeSelect = document.getElementById(id);
-      if (nativeSelect && nativeSelect.tagName === 'SELECT') {
-        const option = Array.from(nativeSelect.options).find((item) => item.value === val);
-        if (!option) return;
-        nativeSelect.value = val;
-        if (nativeSelect.tomselect) nativeSelect.tomselect.setValue(val, true);
-        nativeSelect.dispatchEvent(new Event('change'));
-        return;
-      }
       const el = document.querySelector(`.csel[data-id="${id}"]`);
       const opt = el.querySelector(`.csel__opt[data-value="${val}"]`);
       if (!opt) return;
@@ -654,37 +632,6 @@
       el.querySelectorAll('.csel__opt').forEach(o => o.classList.remove('selected'));
       opt.classList.add('selected');
     }
-
-    function renderFlaggedOption(data, escape) {
-      const flag = data.flag ? `<span class="fi fi-${escape(data.flag)}" aria-hidden="true"></span>` : '';
-      return `<span>${flag}<span>${escape(data.text)}</span></span>`;
-    }
-    function initEnhancedSelects() {
-      document.querySelectorAll('.enhanced-select').forEach((select) => {
-        if (select.tomselect) return;
-        new TomSelect(select, {
-          allowEmptyOption: false,
-          closeAfterSelect: true,
-          controlInput: null,
-          create: false,
-          maxOptions: null,
-          render: { option: renderFlaggedOption, item: renderFlaggedOption },
-        });
-      });
-    }
-    function refreshEnhancedSelectLabels() {
-      document.querySelectorAll('.enhanced-select').forEach((select) => {
-        const control = select.tomselect;
-        if (!control) return;
-        Array.from(select.options).forEach((option) => {
-          control.updateOption(option.value, { value: option.value, text: option.textContent, flag: option.dataset.flag || '' });
-        });
-        control.refreshItems();
-        control.refreshOptions(false);
-      });
-    }
-    document.addEventListener('DOMContentLoaded', initEnhancedSelects);
-    document.addEventListener('langchange', refreshEnhancedSelectLabels);
 
     document.querySelectorAll('.csel').forEach(sel => {
       const trigger = sel.querySelector('.csel__trigger');
@@ -728,8 +675,7 @@
       }
     }
 
-    const countrySelect = document.getElementById('country');
-    countrySelect.addEventListener('change', () => {
+    document.querySelector('.csel[data-id="country"]').addEventListener('change', () => {
       const mapped = countryCurrency[cselVal('country')];
       if (mapped) cselSet('currency', mapped);
       updateInstallmentsAvailability();
@@ -756,24 +702,17 @@
       let hasError = false;
       if (isNaN(amountVal) || amountVal < 0.01) {
         errorEl.style.display = 'block';
-        document.getElementById('amount').setAttribute('aria-invalid', 'true');
         hasError = true;
       } else {
         errorEl.style.display = 'none';
-        document.getElementById('amount').removeAttribute('aria-invalid');
       }
       if (!emailValid) {
         emailErrEl.style.display = 'block';
-        emailEl.setAttribute('aria-invalid', 'true');
         hasError = true;
       } else {
         emailErrEl.style.display = 'none';
-        emailEl.removeAttribute('aria-invalid');
       }
-      if (hasError) {
-        (document.querySelector('[aria-invalid="true"]') || document.getElementById('amount')).focus();
-        return;
-      }
+      if (hasError) return;
       const params = new URLSearchParams({
         country: cselVal('country'),
         currency: cselVal('currency'),
@@ -803,29 +742,18 @@
       window.location.href = '/checkout.html?' + params.toString();
     });
 
-    // ── Responsive test-scenario panel ──────────────────────────────────
+    // ── Align preset panel top & bottom with the settings card ──────────
     const presetPanelEl = document.querySelector('.preset-panel');
-    const presetMount = document.getElementById('presetMount');
-    const presetDialog = document.getElementById('presetDialog');
-    const presetBreakpoint = window.matchMedia('(max-width: 1180px)');
-    function syncPresetPlacement() {
-      if (presetBreakpoint.matches) {
-        if (!presetDialog.contains(presetPanelEl)) presetDialog.append(presetPanelEl);
-      } else if (!presetMount.contains(presetPanelEl)) {
-        if (presetDialog.open) presetDialog.close();
-        presetMount.append(presetPanelEl);
-      }
+    const cardEl = document.querySelector('.card');
+    function alignPresetPanel() {
+      const rect = cardEl.getBoundingClientRect();
+      const top = Math.max(rect.top, 12);
+      presetPanelEl.style.top = top + 'px';
+      presetPanelEl.style.height = Math.max(rect.bottom - top, 0) + 'px';
     }
-    syncPresetPlacement();
-    presetBreakpoint.addEventListener('change', syncPresetPlacement);
-    document.getElementById('openPresets').addEventListener('click', () => {
-      syncPresetPlacement();
-      if (!presetDialog.open) presetDialog.showModal();
-    });
-    document.getElementById('closePresets').addEventListener('click', () => presetDialog.close());
-    presetDialog.addEventListener('click', (event) => {
-      if (event.target === presetDialog) presetDialog.close();
-    });
+    alignPresetPanel();
+    window.addEventListener('resize', alignPresetPanel);
+    window.addEventListener('scroll', alignPresetPanel, { passive: true });
 
     // ── Test scenario presets ────────────────────────────────────────────
     const shopperRefEl = document.getElementById('shopperRef');

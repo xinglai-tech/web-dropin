@@ -34,8 +34,29 @@ const app = express();
 app.set('trust proxy', true);
 
 // ── Security headers (applied to every response) ─────────────────────────────
+// Content-Security-Policy is scoped to work with the Adyen Drop-in/Components:
+//  - script/style/connect/img/font: self + Adyen checkoutshopper domains.
+//  - frame-src & form-action allow any https origin because 3DS challenge
+//    iframes and redirect payment methods target unpredictable issuer/bank URLs.
+//  - 'unsafe-inline'/'unsafe-eval' are required by the inline page scripts and
+//    the Adyen SDK.
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.adyen.com https://pay.google.com https://applepay.cdn-apple.com",
+  "style-src 'self' 'unsafe-inline' https://*.adyen.com",
+  "img-src 'self' data: blob: https://*.adyen.com https://*.gstatic.com https://*.google.com",
+  "font-src 'self' data: https://*.adyen.com",
+  "connect-src 'self' https://*.adyen.com https://pay.google.com https://google.com",
+  "frame-src 'self' https:",
+  "frame-ancestors 'self'",
+  "form-action 'self' https:",
+  "object-src 'none'",
+  "base-uri 'self'",
+].join('; ');
+
 app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Content-Security-Policy', CSP);
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   next();
@@ -153,21 +174,13 @@ app.get('/auth/logout', (req, res) => {
 
 // ── Auth middleware (protect everything below) ───────────────────────────────
 app.use((req, res, next) => {
-  const isPublicAsset = req.path === '/style.css'
-    || req.path === '/i18n.js'
-    || req.path === '/favicon.svg'
-    || req.path.startsWith('/vendor/tom-select/')
-    || req.path.startsWith('/vendor/flag-icons/');
-  if (isPublicAsset) return next();
+  if (req.path === '/style.css' || req.path === '/i18n.js' || req.path === '/favicon.svg') return next();
   if (verifyToken(req.cookies[AUTH_COOKIE])) return next();
   if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Unauthorized' });
   res.redirect('/login.html');
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
-// UI dependencies are served locally and don't depend on a third-party CDN at runtime.
-app.use('/vendor/tom-select', express.static(path.join(__dirname, 'node_modules', 'tom-select', 'dist')));
-app.use('/vendor/flag-icons', express.static(path.join(__dirname, 'node_modules', 'flag-icons')));
 
 // ── Adyen client ────────────────────────────────────────────────────────────
 const client = new Client({
