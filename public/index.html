@@ -81,6 +81,26 @@
 
     /* ── Compact payment settings ─────────────────────────── */
     .card { max-width: 480px; }
+    .settings-section { margin-bottom: 18px; }
+    .section-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #8a94a3;
+      margin: 0 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #eef1f4;
+    }
+    .flag {
+      width: 20px;
+      height: 15px;
+      object-fit: cover;
+      border-radius: 2px;
+      margin-right: 8px;
+      vertical-align: middle;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+    }
     .form-group { margin-bottom: 12px; }
     .form-group label { margin-bottom: 4px; font-size: 0.82rem; }
     .form-group input,
@@ -383,41 +403,42 @@
       <button type="button" class="lang-seg" data-lang="en">EN</button>
       <button type="button" class="lang-seg" data-lang="zh">中文</button>
     </div>
-    <h1>Adyen test</h1>
+    <h1 data-i18n="index.title">Payment Settings</h1>
   </div>
 
   <div class="card">
-    <h2 data-i18n="index.title">Payment Settings</h2>
-
+    <div class="settings-section">
+      <h3 class="section-title" data-i18n="settings.basic">Basic Settings</h3>
     <div class="row">
       <div class="form-group">
         <label><span data-i18n="label.country">Country</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.country" data-tip="Shopper's country.&#10;​Some payment methods are only available in certain countries.">i</span></label>
         <div class="csel" data-id="country" data-value="SG">
-          <div class="csel__trigger"><span data-i18n="country.SG">🇸🇬 Singapore</span><div class="csel__arrow"></div></div>
+          <div class="csel__trigger"><span><img class="flag" src="/flags/sg.svg" alt=""><span data-i18n="country.SG">Singapore</span></span><div class="csel__arrow"></div></div>
           <div class="csel__options">
-            <div class="csel__opt" data-value="AU" data-i18n="country.AU">🇦🇺 Australia</div>
-            <div class="csel__opt" data-value="BE" data-i18n="country.BE">🇧🇪 Belgium</div>
-            <div class="csel__opt" data-value="BR" data-i18n="country.BR">🇧🇷 Brazil</div>
-            <div class="csel__opt" data-value="CA" data-i18n="country.CA">🇨🇦 Canada</div>
-            <div class="csel__opt" data-value="DK" data-i18n="country.DK">🇩🇰 Denmark</div>
-            <div class="csel__opt" data-value="FI" data-i18n="country.FI">🇫🇮 Finland</div>
-            <div class="csel__opt" data-value="FR" data-i18n="country.FR">🇫🇷 France</div>
-            <div class="csel__opt" data-value="DE" data-i18n="country.DE">🇩🇪 Germany</div>
-            <div class="csel__opt" data-value="HK" data-i18n="country.HK">🇭🇰 Hong Kong</div>
-            <div class="csel__opt" data-value="IT" data-i18n="country.IT">🇮🇹 Italy</div>
-            <div class="csel__opt" data-value="JP" data-i18n="country.JP">🇯🇵 Japan</div>
-            <div class="csel__opt" data-value="MY" data-i18n="country.MY">🇲🇾 Malaysia</div>
-            <div class="csel__opt" data-value="MX" data-i18n="country.MX">🇲🇽 Mexico</div>
-            <div class="csel__opt" data-value="NL" data-i18n="country.NL">🇳🇱 Netherlands</div>
-            <div class="csel__opt" data-value="NZ" data-i18n="country.NZ">🇳🇿 New Zealand</div>
-            <div class="csel__opt" data-value="NO" data-i18n="country.NO">🇳🇴 Norway</div>
-            <div class="csel__opt selected" data-value="SG" data-i18n="country.SG">🇸🇬 Singapore</div>
-            <div class="csel__opt" data-value="KR" data-i18n="country.KR">🇰🇷 South Korea</div>
-            <div class="csel__opt" data-value="ES" data-i18n="country.ES">🇪🇸 Spain</div>
-            <div class="csel__opt" data-value="SE" data-i18n="country.SE">🇸🇪 Sweden</div>
-            <div class="csel__opt" data-value="TH" data-i18n="country.TH">🇹🇭 Thailand</div>
-            <div class="csel__opt" data-value="GB" data-i18n="country.GB">🇬🇧 United Kingdom</div>
-            <div class="csel__opt" data-value="US" data-i18n="country.US">🇺🇸 United States</div>
+            <div class="csel__opt" data-value="AU"><img class="flag" src="/flags/au.svg" alt=""><span data-i18n="country.AU">Australia</span></div>
+            <div class="csel__opt" data-value="BE"><img class="flag" src="/flags/be.svg" alt=""><span data-i18n="country.BE">Belgium</span></div>
+            <div class="csel__opt" data-value="BR"><img class="flag" src="/flags/br.svg" alt=""><span data-i18n="country.BR">Brazil</span></div>
+            <div class="csel__opt" data-value="CA"><img class="flag" src="/flags/ca.svg" alt=""><span data-i18n="country.CA">Canada</span></div>
+            <div class="csel__opt" data-value="DK"><img class="flag" src="/flags/dk.svg" alt=""><span data-i18n="country.DK">Denmark</span></div>
+            <div class="csel__opt" data-value="FI"><img class="flag" src="/flags/fi.svg" alt=""><span data-i18n="country.FI">Finland</span></div>
+            <div class="csel__opt" data-value="FR"><img class="flag" src="/flags/fr.svg" alt=""><span data-i18n="country.FR">France</span></div>
+            <div class="csel__opt" data-value="DE"><img class="flag" src="/flags/de.svg" alt=""><span data-i18n="country.DE">Germany</span></div>
+            <div class="csel__opt" data-value="HK"><img class="flag" src="/flags/hk.svg" alt=""><span data-i18n="country.HK">Hong Kong</span></div>
+            <div class="csel__opt" data-value="IT"><img class="flag" src="/flags/it.svg" alt=""><span data-i18n="country.IT">Italy</span></div>
+            <div class="csel__opt" data-value="JP"><img class="flag" src="/flags/jp.svg" alt=""><span data-i18n="country.JP">Japan</span></div>
+            <div class="csel__opt" data-value="MY"><img class="flag" src="/flags/my.svg" alt=""><span data-i18n="country.MY">Malaysia</span></div>
+            <div class="csel__opt" data-value="MX"><img class="flag" src="/flags/mx.svg" alt=""><span data-i18n="country.MX">Mexico</span></div>
+            <div class="csel__opt" data-value="NL"><img class="flag" src="/flags/nl.svg" alt=""><span data-i18n="country.NL">Netherlands</span></div>
+            <div class="csel__opt" data-value="NZ"><img class="flag" src="/flags/nz.svg" alt=""><span data-i18n="country.NZ">New Zealand</span></div>
+            <div class="csel__opt" data-value="NO"><img class="flag" src="/flags/no.svg" alt=""><span data-i18n="country.NO">Norway</span></div>
+            <div class="csel__opt" data-value="PH"><img class="flag" src="/flags/ph.svg" alt=""><span data-i18n="country.PH">Philippines</span></div>
+            <div class="csel__opt selected" data-value="SG"><img class="flag" src="/flags/sg.svg" alt=""><span data-i18n="country.SG">Singapore</span></div>
+            <div class="csel__opt" data-value="KR"><img class="flag" src="/flags/kr.svg" alt=""><span data-i18n="country.KR">South Korea</span></div>
+            <div class="csel__opt" data-value="ES"><img class="flag" src="/flags/es.svg" alt=""><span data-i18n="country.ES">Spain</span></div>
+            <div class="csel__opt" data-value="SE"><img class="flag" src="/flags/se.svg" alt=""><span data-i18n="country.SE">Sweden</span></div>
+            <div class="csel__opt" data-value="TH"><img class="flag" src="/flags/th.svg" alt=""><span data-i18n="country.TH">Thailand</span></div>
+            <div class="csel__opt" data-value="GB"><img class="flag" src="/flags/gb.svg" alt=""><span data-i18n="country.GB">United Kingdom</span></div>
+            <div class="csel__opt" data-value="US"><img class="flag" src="/flags/us.svg" alt=""><span data-i18n="country.US">United States</span></div>
           </div>
         </div>
       </div>
@@ -462,6 +483,7 @@
             <div class="csel__opt" data-value="MYR">MYR</div>
             <div class="csel__opt" data-value="NOK">NOK</div>
             <div class="csel__opt" data-value="NZD">NZD</div>
+            <div class="csel__opt" data-value="PHP">PHP</div>
             <div class="csel__opt" data-value="SEK">SEK</div>
             <div class="csel__opt selected" data-value="SGD">SGD</div>
             <div class="csel__opt" data-value="THB">THB</div>
@@ -475,7 +497,10 @@
         <span id="amountError" style="display:none;color:#dc2626;font-size:0.8rem;margin-top:4px;" data-i18n="err.amount">Amount must be at least 0.01</span>
       </div>
     </div>
+    </div>
 
+    <div class="settings-section">
+      <h3 class="section-title" data-i18n="settings.advanced">Advanced Settings</h3>
     <div class="row">
       <div class="form-group">
         <label>Shopper Interaction<span class="info-tip" tabindex="0" data-i18n-tip="tip.shopperInteraction" data-tip="Indicates if this is a one-time payment (Ecommerce) or a recurring transaction using an existing stored card (ContAuth).">i</span></label>
@@ -583,6 +608,7 @@
         </div>
       </div>
     </div>
+    </div>
 
     <button class="btn" id="startBtn" data-i18n="btn.continue">Start Checkout</button>
   </div>
@@ -628,7 +654,7 @@
       const opt = el.querySelector(`.csel__opt[data-value="${val}"]`);
       if (!opt) return;
       el.dataset.value = val;
-      el.querySelector('.csel__trigger span').textContent = opt.textContent;
+      el.querySelector('.csel__trigger span').innerHTML = opt.innerHTML;
       el.querySelectorAll('.csel__opt').forEach(o => o.classList.remove('selected'));
       opt.classList.add('selected');
     }
@@ -643,7 +669,7 @@
       sel.querySelectorAll('.csel__opt').forEach(opt => {
         opt.addEventListener('click', () => {
           sel.dataset.value = opt.dataset.value;
-          sel.querySelector('.csel__trigger span').textContent = opt.textContent;
+          sel.querySelector('.csel__trigger span').innerHTML = opt.innerHTML;
           sel.querySelectorAll('.csel__opt').forEach(o => o.classList.remove('selected'));
           opt.classList.add('selected');
           sel.classList.remove('open');
@@ -661,7 +687,7 @@
       AU: 'AUD', JP: 'JPY', HK: 'HKD', SE: 'SEK', NO: 'NOK',
       FI: 'EUR', DK: 'DKK', CA: 'CAD', BR: 'BRL', MY: 'MYR',
       TH: 'THB', KR: 'KRW', IT: 'EUR', ES: 'EUR', BE: 'EUR', NZ: 'NZD',
-      MX: 'MXN',
+      MX: 'MXN', PH: 'PHP',
     };
     // ── Installments availability by country (MX / BR / JP) ─────────────
     const INSTALLMENT_COUNTRIES = ['MX', 'BR', 'JP'];
