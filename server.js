@@ -45,7 +45,7 @@ const CSP = [
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.adyen.com https://pay.google.com https://applepay.cdn-apple.com",
   "style-src 'self' 'unsafe-inline' https://*.adyen.com",
   "img-src 'self' data: blob: https://*.adyen.com https://*.gstatic.com https://*.google.com",
-  "font-src 'self' data: https://*.adyen.com",
+  "font-src 'self' data: https://*.adyen.com https://applepay.cdn-apple.com",
   "connect-src 'self' https://*.adyen.com https://pay.google.com https://google.com",
   "frame-src 'self' https:",
   "frame-ancestors 'self'",
