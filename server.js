@@ -68,10 +68,10 @@ app.use(cookieParser());
 
 // ── Auth helpers ─────────────────────────────────────────────────────────────
 const AUTH_COOKIE = 'auth_token';
-const FOUR_HOURS = 4 * 60 * 60 * 1000;
+const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
 
 function makeToken() {
-  const expires = Date.now() + FOUR_HOURS;
+  const expires = Date.now() + SESSION_TTL;
   const data = `authenticated:${expires}`;
   const sig = crypto.createHmac('sha256', process.env.SESSION_SECRET).update(data).digest('hex');
   return `${data}:${sig}`;
@@ -155,7 +155,7 @@ app.post('/auth/login', async (req, res) => {
   const ok = code && await bcrypt.compare(code, process.env.ACCESS_CODE_HASH || '');
   if (ok) {
     loginState.delete(ip); // clear state on success
-    res.setHeader('Set-Cookie', `${AUTH_COOKIE}=${makeToken()}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${FOUR_HOURS / 1000}`);
+    res.setHeader('Set-Cookie', `${AUTH_COOKIE}=${makeToken()}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL / 1000}`);
     return res.redirect('/');
   }
 
