@@ -1,3 +1,85 @@
+/* ── Design tokens ───────────────────────────────────────────────────────────
+   Apple's design language (type ladder, radii scale, restraint, press-scale)
+   carried by Adyen green. Two greens are required: #0abf53 only reaches
+   2.4:1 against white, so it carries fills, rings and dark-surface text,
+   while a darkened sibling carries text and filled buttons on light. */
+:root {
+  /* Brand */
+  --accent: #0abf53;            /* Adyen green — 7.9:1 on the near-black bar */
+  --accent-ink: #08883a;        /* 4.6:1 on white — text + filled buttons */
+  --accent-press: #06722f;
+  --accent-soft: #4dd583;
+  --accent-tint: #e9f8ef;
+  --accent-tint-line: #bfe8cf;
+  --accent-ring: rgba(10, 191, 83, 0.28);
+
+  /* Ink */
+  --ink: #1d1d1f;
+  --ink-muted: #515154;
+  --ink-faint: #6e6e73;
+  --on-dark: #ffffff;
+  --on-dark-muted: #a1a1a6;
+
+  /* Surface */
+  --canvas: #f5f5f7;
+  --surface: #ffffff;
+  --surface-sunken: #fafafc;
+  /* Mid-green bar. Past #08883a white text falls under AA, so this tone
+     carries near-black green ink instead. Solid rather than a gradient: a
+     gradient this light would need white at one end and dark at the other,
+     and no single text colour clears both. */
+  --bar: #2fa862;
+  /* Chip labels and the selected segment both use --accent-ink, the same
+     green as "Restore to default", so the bar's controls match the accent
+     green used everywhere else on light surfaces. */
+  --bar-ink: var(--accent-ink);   /* 4.6:1 on the white chips */
+  --bar-ink-muted: #05230f;       /* subtitle sits on green, so it stays dark */
+  --bar-title: #ffffff;
+  --bar-accent: var(--accent-ink); /* selected segment fill — 4.6:1 with white */
+  --bar-accent-ink: #ffffff;
+  --bar-line: rgba(5, 35, 15, 0.14);
+  /* White chips with dark green labels — 17:1, and far lighter against the
+     bar than a filled green chip. */
+  --bar-control: #ffffff;
+  --bar-control-hover: #e9f8ef;
+
+  /* Line */
+  --hairline: #e0e0e0;
+  --hairline-soft: #f0f0f0;
+
+  /* Status */
+  --ok: #08883a;
+  --danger: #d70015;
+  --danger-tint: #fdecee;
+  --warn: #a16207;
+  --warn-tint: #fdf6e3;
+  --warn-line: #f0dca0;
+
+  /* Radius — Apple's scale */
+  --r-xs: 5px;
+  --r-sm: 8px;
+  --r-md: 11px;
+  --r-lg: 18px;
+  --r-pill: 9999px;
+
+  /* Depth — tier 1 for in-flow cards, tier 2 for true overlays */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-float: 0 4px 24px rgba(0, 0, 0, 0.10), 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-pop: 0 12px 40px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.07);
+
+  /* Motion — one exponential ease-out across the system */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Type — a fixed ladder. Every size in the app resolves to one of these;
+     it stays tight on purpose because this is a dense operator tool. */
+  --t-micro: 0.72rem;    /* uppercase group labels, meta */
+  --t-caption: 0.82rem;  /* descriptions, notes, secondary rows */
+  --t-ui: 0.95rem;       /* default control and body text */
+  --t-title: 1.2rem;     /* card and panel headings */
+  --t-headline: 1.35rem; /* page-bar title */
+  --t-display: 1.6rem;   /* result headline */
+}
+
 /* ── Reset & Base ────────────────────────────────────────────────────────── */
 *,
 *::before,
@@ -8,50 +90,152 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
-  background: #f5f7fa;
-  color: #1a1a2e;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 15px;
+  line-height: 1.47;
+  letter-spacing: -0.01em;
+  background: var(--canvas);
+  color: var(--ink);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
 }
 
 /* ── Header ──────────────────────────────────────────────────────────────── */
 .header {
   width: 100%;
-  background: linear-gradient(135deg, #4A8DAB 0%, #4A8DAB 100%);
-  color: #fff;
-  padding: 24px 0;
+  background: var(--bar);
+  /* Inherited colour is the dark ink, since anything inheriting it sits on
+     the green bar rather than on a white chip. */
+  color: var(--bar-ink-muted);
+  padding: 20px 0;
   text-align: center;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 .header h1 {
-  font-size: 1.6rem;
+  /* Presence comes from weight rather than an outline. 21.6px at 700 is still
+     "large text" for the contrast rule that lets white sit on this bar. */
+  font-size: var(--t-headline);
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.022em;
+  color: var(--bar-title);
+  text-shadow: 0 1px 2px rgba(5, 35, 15, 0.22);
 }
 .header p {
   margin-top: 4px;
-  font-size: 0.9rem;
-  opacity: 0.85;
+  font-size: var(--t-caption);
+  color: var(--bar-ink-muted);
+}
+
+/* ── Header utilities: logout + language switch ───────────────────────────
+   Shared by every signed-in page. Scoped with :has() so pages without the
+   controls (login) keep the compact bar. */
+.header:has(.logout-btn) {
+  position: relative;
+  min-height: 96px;
+  box-sizing: border-box;
+}
+.logout-btn {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  width: 88px;
+  box-sizing: border-box;
+  text-align: center;
+  color: var(--bar-ink);
+  font-size: var(--t-caption);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  background: var(--bar-control);
+  padding: 6px 0;
+  border: 1px solid var(--bar-line);
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s var(--ease), transform 0.15s var(--ease);
+}
+.logout-btn:hover { background: var(--bar-control-hover); }
+.logout-btn:active { transform: scale(0.95); }
+
+.lang-switch {
+  position: absolute;
+  top: 50px;
+  right: 16px;
+  display: inline-flex;
+  width: 88px;
+  box-sizing: border-box;
+  border: 1px solid var(--bar-line);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  background: var(--bar-control);
+}
+.lang-seg {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 5px 0;
+  font-family: inherit;
+  font-size: var(--t-caption);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--bar-ink);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+.lang-seg + .lang-seg { border-left: 1px solid var(--bar-line); }
+.lang-seg:hover:not(.active) { background: var(--bar-control-hover); }
+.lang-seg.active {
+  background: var(--bar-accent);
+  color: var(--bar-accent-ink);
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .header:has(.logout-btn) { min-height: 82px; padding-bottom: 18px; }
+  .header:has(.logout-btn) p { margin-top: 20px; }
+  .logout-btn {
+    font-size: var(--t-micro);
+    width: 68px;
+    padding: 4px 0;
+    top: 14px;
+    right: 8px;
+  }
+  .lang-switch {
+    width: 68px;
+    top: 46px;
+    right: 8px;
+  }
+  .lang-seg { font-size: var(--t-micro); }
 }
 
 /* ── Card container ──────────────────────────────────────────────────────── */
 .card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  padding: 32px;
-  margin: 32px 16px;
-  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  padding: 28px;
+  /* The gutter lives inside the width, not in a margin beside a 100% box —
+     otherwise width + margins overflow the viewport on narrow screens. */
+  margin: 28px 0;
+  width: calc(100% - 32px);
   max-width: 560px;
 }
 .card h2 {
-  font-size: 1.2rem;
+  font-size: var(--t-title);
+  font-weight: 600;
+  letter-spacing: -0.022em;
   margin-bottom: 20px;
-  color: #333;
+  color: var(--ink);
 }
 
 /* ── Form elements ───────────────────────────────────────────────────────── */
@@ -60,40 +244,46 @@ body {
 }
 .form-group label {
   display: block;
-  font-size: 0.85rem;
+  font-size: var(--t-caption);
   font-weight: 600;
+  letter-spacing: -0.01em;
   margin-bottom: 6px;
-  color: #555;
+  color: var(--ink-muted);
 }
 .form-group select,
 .form-group input {
   width: 100%;
   height: 44px;
   padding: 0 14px;
-  border: 1.5px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  background: #fafbfc;
-  color: #1a1a2e;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: var(--t-ui);
+  letter-spacing: -0.01em;
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  background: var(--surface-sunken);
+  color: var(--ink);
 }
 .form-group select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background: #fafbfc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E") no-repeat right 14px center;
+  background: var(--surface-sunken) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236e6e73' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E") no-repeat right 14px center;
   padding-right: 36px;
   cursor: pointer;
 }
 .form-group select:hover,
 .form-group input:hover {
-  border-color: #b0b8c1;
+  border-color: #c4c4c6;
 }
 .form-group select:focus,
 .form-group input:focus {
   outline: none;
-  border-color: #4A8DAB;
-  box-shadow: 0 0 0 3px rgba(74, 141, 171, 0.12);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.form-group input::placeholder {
+  color: var(--ink-faint);
 }
 
 .row {
@@ -108,23 +298,30 @@ body {
 .btn {
   display: inline-block;
   width: 100%;
-  padding: 14px;
-  background: #4A8DAB;
-  color: #fff;
-  font-size: 1rem;
+  padding: 13px;
+  background: var(--accent-ink);
+  color: var(--on-dark);
+  font-family: inherit;
+  font-size: var(--t-ui);
   font-weight: 600;
+  letter-spacing: -0.01em;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-pill);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s var(--ease), transform 0.15s var(--ease);
   text-align: center;
 }
 .btn:hover {
-  background: #3D7D99;
+  background: var(--accent-press);
+}
+.btn:active {
+  transform: scale(0.97);
 }
 .btn:disabled {
-  background: #b0b8c1;
+  background: #d2d2d7;
+  color: #86868b;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* ── Spinner ─────────────────────────────────────────────────────────────── */
@@ -139,10 +336,10 @@ body {
 .spinner::after {
   content: '';
   display: inline-block;
-  width: 36px;
-  height: 36px;
-  border: 4px solid #ddd;
-  border-top-color: #4A8DAB;
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--hairline);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -172,44 +369,40 @@ body {
   justify-content: center;
   font-size: 2.6rem;
   line-height: 1;
-  animation: badge-pop 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+  animation: badge-pop 0.45s var(--ease) both;
 }
 @keyframes badge-pop {
   from { transform: scale(0.5); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
 .result-badge.success {
-  background: #e7f6ee;
-  box-shadow: 0 0 0 8px rgba(22, 163, 74, 0.08);
+  background: var(--accent-tint);
 }
 .result-badge.refused {
-  background: #fdeaec;
-  box-shadow: 0 0 0 8px rgba(225, 29, 72, 0.08);
+  background: var(--danger-tint);
 }
 .result-badge.pending {
-  background: #fef5e6;
-  box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.08);
+  background: var(--warn-tint);
 }
 .result-badge.info {
-  background: #eaf3f8;
-  box-shadow: 0 0 0 8px rgba(74, 141, 171, 0.08);
+  background: #eef0f3;
 }
 .result-card h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  font-size: var(--t-display);
+  font-weight: 600;
+  letter-spacing: -0.022em;
   margin-bottom: 6px;
 }
 .result-sub {
-  color: #6b7280;
-  font-size: 0.92rem;
+  color: var(--ink-faint);
+  font-size: var(--t-ui);
   margin-bottom: 24px;
 }
 .result-details {
   text-align: left;
-  background: #f7f9fb;
-  border: 1px solid #edf1f5;
-  border-radius: 10px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
   padding: 6px 16px;
   margin-bottom: 8px;
 }
@@ -218,19 +411,19 @@ body {
   justify-content: space-between;
   gap: 12px;
   padding: 11px 0;
-  border-bottom: 1px solid #edf1f5;
-  font-size: 0.9rem;
+  border-bottom: 1px solid var(--hairline-soft);
+  font-size: var(--t-caption);
 }
 .result-card .detail-row:last-child {
   border-bottom: none;
 }
 .result-card .detail-row span:first-child {
   font-weight: 600;
-  color: #4A8DAB;
+  color: var(--ink-muted);
   white-space: nowrap;
 }
 .result-card .detail-row span:last-child {
-  color: #333;
+  color: var(--ink);
   word-break: break-all;
   text-align: right;
 }
@@ -240,44 +433,48 @@ body {
   width: 100%;
   margin-top: 20px;
   padding: 13px;
-  background: #4A8DAB;
-  color: #fff;
+  background: var(--accent-ink);
+  color: var(--on-dark);
   text-decoration: none;
   font-weight: 600;
-  border-radius: 8px;
-  transition: background 0.2s;
+  letter-spacing: -0.01em;
+  border-radius: var(--r-pill);
+  transition: background 0.2s var(--ease), transform 0.15s var(--ease);
 }
 .back-link:hover {
-  background: #3D7D99;
+  background: var(--accent-press);
+}
+.back-link:active {
+  transform: scale(0.97);
 }
 .webhook-link {
   display: block;
   margin-top: 14px;
   text-align: center;
-  color: #4A8DAB;
-  font-size: 0.9rem;
-  font-weight: 500;
+  color: var(--accent-ink);
+  font-size: var(--t-caption);
+  font-weight: 400;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color 0.2s var(--ease);
 }
 .webhook-link:hover {
-  color: #3D7D99;
+  color: var(--accent-press);
   text-decoration: underline;
 }
 
-/* ── Status colours ──────────────────────────────────────────────────────── */
+/* ── Status colours ──────────────────────────────────────────────────── */
 .status-authorised {
-  color: #16a34a;
+  color: var(--ok);
 }
 .status-refused,
 .status-error {
-  color: #e11d48;
+  color: var(--danger);
 }
 .status-pending {
-  color: #f59e0b;
+  color: var(--warn);
 }
 .status-info {
-  color: #4A8DAB;
+  color: var(--ink-muted);
 }
 
 /* ── Responsive: mobile (≤ 600px) ────────────────────────────────────────── */
@@ -286,19 +483,21 @@ body {
     padding: 20px 12px;
   }
   .header h1 {
-    font-size: 1.1rem;
+    /* Still bold and >=18.66px, so it stays "large text" for the contrast
+       rule that lets white sit on this bar. */
+    font-size: var(--t-title);
   }
   .header p {
-    font-size: 0.75rem;
+    font-size: var(--t-micro);
   }
 
   .card {
-    margin: 10px 8px;
+    margin: 10px 0;
+    width: calc(100% - 16px);
     padding: 14px 12px;
-    border-radius: 10px;
   }
   .card h2 {
-    font-size: 1rem;
+    font-size: var(--t-ui);
     margin-bottom: 10px;
   }
 
@@ -307,7 +506,7 @@ body {
   }
   .form-group label {
     margin-bottom: 3px;
-    font-size: 0.8rem;
+    font-size: var(--t-caption);
   }
 
   .row {
@@ -328,7 +527,7 @@ body {
 
   .btn {
     padding: 12px;
-    font-size: 0.95rem;
+    font-size: var(--t-ui);
     margin-top: 10px;
   }
 
@@ -341,7 +540,7 @@ body {
     font-size: 2.1rem;
   }
   .result-card h2 {
-    font-size: 1.25rem;
+    font-size: var(--t-title);
   }
   .result-card .detail-row {
     flex-direction: column;
@@ -351,7 +550,7 @@ body {
     text-align: left;
   }
   .result-card .detail-row span:first-child {
-    font-size: 0.8rem;
+    font-size: var(--t-caption);
   }
 }
 

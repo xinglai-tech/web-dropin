@@ -5,15 +5,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Adyen Checkout</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
   <link rel="stylesheet" href="/style.css" />
   <link rel="stylesheet"
         href="https://checkoutshopper-test.adyen.com/checkoutshopper/sdk/6.33.0/adyen.css" />
   <style>
     .adyen-checkout__store-details {
-      background: #f5f7fa !important;
-      border: none !important;
-      border-radius: 8px;
+      background: var(--surface-sunken) !important;
+      border: 1px solid var(--hairline) !important;
+      border-radius: var(--r-sm);
       padding: 12px !important;
+    }
+
+    /* ── Drop-in pay button ────────────────────────────────────────────────
+       Match the app's primary action. Scoped to --pay so branded wallet
+       buttons (Apple Pay, Google Pay, PayPal) keep their mandated styling —
+       recolouring those breaks each scheme's brand rules. */
+    .adyen-checkout__button--pay {
+      background: var(--accent-ink) !important;
+      border-color: var(--accent-ink) !important;
+      color: var(--on-dark) !important;
+      border-radius: var(--r-pill) !important;
+      font-family: inherit !important;
+      font-weight: 600 !important;
+      letter-spacing: -0.01em !important;
+      box-shadow: none !important;
+      transition: background 0.2s var(--ease), transform 0.15s var(--ease) !important;
+    }
+    .adyen-checkout__button--pay:hover:not(:disabled) {
+      background: var(--accent-press) !important;
+      border-color: var(--accent-press) !important;
+      box-shadow: none !important;
+    }
+    .adyen-checkout__button--pay:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+    .adyen-checkout__button--pay:focus-visible {
+      outline: 2px solid var(--accent-ink) !important;
+      outline-offset: 2px !important;
+    }
+    .adyen-checkout__button--pay:disabled,
+    .adyen-checkout__button--pay.adyen-checkout__button--disabled {
+      background: #d2d2d7 !important;
+      border-color: #d2d2d7 !important;
+      color: #86868b !important;
+    }
+    /* Secondary/ghost actions inside the drop-in (e.g. "Cancel"). */
+    .adyen-checkout__button--secondary {
+      border-radius: var(--r-pill) !important;
+      font-family: inherit !important;
+      color: var(--accent-ink) !important;
+      border-color: var(--hairline) !important;
+    }
+    .adyen-checkout__link,
+    .adyen-checkout__button--link {
+      color: var(--accent-ink) !important;
     }
 
     /* ── Test cards side panel ─────────────────────────────────────────── */
@@ -23,9 +71,10 @@
       left: 24px;
       width: 300px;
       overflow-y: auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-float);
       padding: 20px;
       z-index: 100;
     }
@@ -33,9 +82,11 @@
       display: block;
     }
     .test-cards-panel h3 {
-      font-size: 1rem;
+      font-size: var(--t-ui);
+      font-weight: 600;
+      letter-spacing: -0.022em;
       margin-bottom: 6px;
-      color: #333;
+      color: var(--ink);
     }
     .tc-head {
       display: flex;
@@ -50,25 +101,27 @@
       position: absolute;
       top: 10px;
       right: 10px;
-      border: 1.5px solid #d8e5ec;
-      background: #fff;
-      color: #4A8DAB;
-      font-size: 0.85rem;
-      font-weight: 700;
+      border: 1px solid var(--hairline);
+      background: var(--surface);
+      color: var(--accent-ink);
+      font-family: inherit;
+      font-size: var(--t-caption);
+      font-weight: 600;
       line-height: 1;
-      padding: 4px 7px;
-      border-radius: 6px;
+      padding: 5px 8px;
+      border-radius: var(--r-sm);
       cursor: pointer;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      transition: background 0.15s var(--ease), color 0.15s var(--ease),
+        border-color 0.15s var(--ease), transform 0.15s var(--ease);
     }
     .tc-popout:hover {
-      background: #f5f9fb;
-      color: #3D7D99;
-      border-color: #cfe0e9;
+      background: var(--accent-tint);
+      border-color: var(--accent-tint-line);
     }
+    .tc-popout:active { transform: scale(0.95); }
     .tc-hint {
-      font-size: 0.8rem;
-      color: #666;
+      font-size: var(--t-caption);
+      color: var(--ink-faint);
       margin-bottom: 14px;
     }
     .tc-row {
@@ -76,7 +129,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 8px 0;
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid var(--hairline-soft);
       gap: 8px;
     }
     .tc-row:last-child {
@@ -90,14 +143,14 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.72rem;
-      font-weight: 700;
+      font-size: var(--t-micro);
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: #4A8DAB;
+      letter-spacing: 0.06em;
+      color: var(--ink-faint);
       margin: 14px 0 4px;
       padding-bottom: 4px;
-      border-bottom: 1.5px solid #eef2f5;
+      border-bottom: 1px solid var(--hairline-soft);
     }
     .tc-group-title:first-child {
       margin-top: 0;
@@ -113,83 +166,88 @@
       line-height: 1;
     }
     .tc-brand {
-      font-size: 0.72rem;
-      color: #888;
+      font-size: var(--t-micro);
+      color: var(--ink-faint);
       font-weight: 600;
     }
     .tc-meta {
-      font-size: 0.68rem;
-      color: #e67e22;
+      font-size: var(--t-micro);
+      color: var(--warn);
       font-weight: 600;
       margin-top: 2px;
     }
     .tc-number {
-      font-size: 0.9rem;
+      font-size: var(--t-ui);
       font-family: 'SFMono-Regular', Consolas, monospace;
-      color: #1a1a2e;
+      color: var(--ink);
       letter-spacing: 0.02em;
     }
     .tc-number--sm {
-      font-size: 0.72rem;
+      font-size: var(--t-micro);
       letter-spacing: 0;
       word-break: break-all;
     }
     .tc-copy {
       border: none;
-      background: #eef2f5;
-      color: #4A8DAB;
-      font-size: 0.75rem;
+      background: var(--surface-sunken);
+      color: var(--accent-ink);
+      font-family: inherit;
+      font-size: var(--t-micro);
       font-weight: 600;
-      padding: 6px 10px;
-      border-radius: 6px;
+      padding: 6px 12px;
+      border-radius: var(--r-pill);
       cursor: pointer;
       white-space: nowrap;
-      transition: background 0.15s, color 0.15s;
+      transition: background 0.15s var(--ease), color 0.15s var(--ease),
+        transform 0.15s var(--ease);
     }
     .tc-copy:hover {
-      background: #dce6ec;
+      background: var(--accent-tint);
     }
+    .tc-copy:active { transform: scale(0.95); }
     .tc-copy.copied {
-      background: #4A8DAB;
-      color: #fff;
+      background: var(--accent-ink);
+      color: var(--on-dark);
     }
     .tc-note-title {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #4A8DAB;
+      font-size: var(--t-caption);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
       margin: 18px 0 6px;
       padding-bottom: 4px;
-      border-bottom: 1.5px solid #eef2f5;
+      border-bottom: 1px solid var(--hairline-soft);
     }
     .tc-highlight {
-      background: #eaf3f8;
-      border: 1px solid #cfe2ec;
-      border-radius: 8px;
+      background: var(--accent-tint);
+      border: 1px solid var(--accent-tint-line);
+      border-radius: var(--r-md);
       padding: 10px 12px;
       margin-top: 10px;
       margin-bottom: 14px;
     }
     .tc-highlight-title {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #4A8DAB;
+      font-size: var(--t-caption);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--accent-ink);
       margin-bottom: 6px;
     }
     .tc-highlight .tc-note {
-      color: #35566a;
+      color: #14532d;
       margin-bottom: 4px;
     }
     .tc-highlight .tc-note:last-child {
       margin-bottom: 0;
     }
     .tc-note {
-      font-size: 0.8rem;
-      color: #555;
+      font-size: var(--t-caption);
+      color: var(--ink-muted);
       line-height: 1.5;
       margin-bottom: 8px;
     }
     .tc-note.warn {
-      color: #c0392b;
+      color: var(--danger);
     }
     .tc-note.bullet {
       position: relative;
@@ -200,14 +258,14 @@
       content: '•';
       position: absolute;
       left: 3px;
-      color: #4A8DAB;
+      color: var(--accent-ink);
     }
     .tc-note a {
-      color: #4A8DAB;
+      color: var(--accent-ink);
       word-break: break-all;
     }
     .tc-note a:hover {
-      color: #3D7D99;
+      color: var(--accent-press);
     }
     @media (max-width: 1280px) {
       .test-cards-panel.visible {
@@ -219,12 +277,12 @@
        test-cred panel is hidden due to a narrow window. Toggled by JS. */
     .cred-hint-banner {
       display: none;
-      color: #4A8DAB;
+      color: var(--accent-ink);
       margin-top: 20px;
       padding: 4px 16px 6px;
-      font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
+      font-size: var(--t-title);
+      font-weight: 600;
+      letter-spacing: -0.01em;
       text-align: center;
       animation: credHintBlink 1s ease-in-out infinite;
     }
@@ -261,9 +319,10 @@
       max-width: calc(50vw - 330px);
       flex-direction: column;
       gap: 12px;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-float);
       padding: 16px;
       z-index: 100;
     }
@@ -271,9 +330,10 @@
       bottom: 0;
     }
     .debug-dock-title {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #4A8DAB;
+      font-size: var(--t-caption);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink-faint);
     }
     .debug-dock-buttons {
       display: flex;
@@ -299,60 +359,63 @@
       min-width: 0;
       text-align: center;
       white-space: nowrap;
-      background: #fff;
-      color: #4A8DAB;
-      border: 1.5px solid #d8e5ec;
-      border-radius: 8px;
+      background: var(--surface);
+      color: var(--accent-ink);
+      border: 1px solid var(--hairline);
+      border-radius: var(--r-pill);
       padding: 8px 10px;
+      font-family: inherit;
       font-size: clamp(0.78rem, 2.6vw, 0.9rem);
-      font-weight: 500;
+      font-weight: 600;
+      letter-spacing: -0.01em;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      transition: background 0.2s var(--ease), color 0.2s var(--ease),
+        border-color 0.2s var(--ease), transform 0.15s var(--ease);
     }
     .debug-toggle:hover {
-      background: #f5f9fb;
-      color: #3D7D99;
-      border-color: #cfe0e9;
+      background: var(--accent-tint);
+      border-color: var(--accent-tint-line);
     }
+    .debug-toggle:active { transform: scale(0.97); }
     .debug-toggle.active {
-      background: #4A8DAB;
-      color: #fff;
-      border-color: #4A8DAB;
+      background: var(--accent-ink);
+      color: var(--on-dark);
+      border-color: var(--accent-ink);
     }
     .debug-toggle.active:hover {
-      background: #3D7D99;
-      color: #fff;
+      background: var(--accent-press);
+      color: var(--on-dark);
     }
     #clear-log {
       display: none;
       align-self: center;
-      background: #fff;
-      color: #4A8DAB;
-      border: 1.5px solid #d8e5ec;
-      border-radius: 6px;
-      padding: 3px 10px;
-      font-size: 0.7rem;
-      font-weight: 500;
+      background: var(--surface);
+      color: var(--accent-ink);
+      border: 1px solid var(--hairline);
+      border-radius: var(--r-pill);
+      padding: 4px 12px;
+      font-family: inherit;
+      font-size: var(--t-micro);
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      transition: background 0.2s var(--ease), border-color 0.2s var(--ease);
     }
     #clear-log:hover {
-      background: #f5f9fb;
-      color: #3D7D99;
-      border-color: #cfe0e9;
+      background: var(--accent-tint);
+      border-color: var(--accent-tint-line);
     }
     .webhook-link {
       display: block;
       margin-top: 16px;
       text-align: center;
-      color: #4A8DAB;
-      font-size: 0.9rem;
-      font-weight: 500;
+      color: var(--accent-ink);
+      font-size: var(--t-caption);
+      font-weight: 400;
       text-decoration: none;
-      transition: color 0.2s;
+      transition: color 0.2s var(--ease);
     }
     .webhook-link:hover {
-      color: #3D7D99;
+      color: var(--accent-press);
       text-decoration: underline;
     }
     .debug-dock:has(.debug-panel.open) #clear-log {
@@ -361,27 +424,27 @@
     .debug-feedback {
       margin-top: 16px;
       padding-top: 14px;
-      border-top: 1px solid #eef2f5;
+      border-top: 1px solid var(--hairline-soft);
       text-align: center;
     }
     .debug-feedback-text {
-      font-size: 0.72rem;
-      color: #7a869a;
+      font-size: var(--t-micro);
+      color: var(--ink-faint);
       line-height: 1.4;
     }
     .debug-feedback-link {
-      color: #4A8DAB;
+      color: var(--accent-ink);
       font-weight: 600;
       text-decoration: underline;
     }
     .debug-feedback-link:hover {
-      color: #3D7D99;
+      color: var(--accent-press);
     }
     .debug-panel {
       display: none;
       width: 100%;
-      color: #1a1a2e;
-      border-top: 1px solid #eef2f5;
+      color: var(--ink);
+      border-top: 1px solid var(--hairline-soft);
       overflow: hidden;
       flex: 1 1 auto;
       min-height: 0;
@@ -397,42 +460,46 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 18px;
-      background: linear-gradient(135deg, #4A8DAB 0%, #4A8DAB 100%);
+      padding: 14px 18px;
+      background: var(--bar);
       flex-shrink: 0;
     }
     .debug-header h3 {
-      font-size: 1rem;
-      color: #fff;
+      font-size: var(--t-ui);
+      font-weight: 600;
+      letter-spacing: -0.022em;
+      color: var(--bar-ink);
     }
     .debug-btn {
-      background: rgba(255, 255, 255, 0.18);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 14px;
-      font-size: 0.95rem;
-      font-weight: 600;
+      background: var(--bar-control);
+      color: var(--bar-ink);
+      border: 1px solid var(--bar-line);
+      border-radius: var(--r-sm);
+      padding: 6px 12px;
+      font-family: inherit;
+      font-size: var(--t-caption);
+      font-weight: 400;
       cursor: pointer;
       margin-left: 8px;
-      transition: background 0.15s;
+      transition: background 0.15s var(--ease), transform 0.15s var(--ease);
     }
     .debug-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
+      background: var(--bar-control-hover);
     }
+    .debug-btn:active { transform: scale(0.95); }
     .debug-toolbar {
       padding: 10px 0;
       margin-top: 10px;
       background: transparent;
-      border-bottom: 1px solid #eef2f5;
+      border-bottom: 1px solid var(--hairline-soft);
       flex-shrink: 0;
     }
     .debug-freeze-label {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.82rem;
-      color: #33556a;
+      font-size: var(--t-caption);
+      color: var(--ink-muted);
       cursor: pointer;
       -webkit-user-select: none;
       user-select: none;
@@ -442,7 +509,7 @@
       height: 16px;
       margin: 0;
       flex: 0 0 16px;
-      accent-color: #4A8DAB;
+      accent-color: var(--accent-ink);
       cursor: pointer;
     }
     .debug-body {
@@ -458,36 +525,39 @@
       gap: 12px;
       margin-top: 10px;
       padding: 12px 14px;
-      background: #fff7ed;
-      border: 1px solid #fed7aa;
-      border-radius: 8px;
+      background: var(--warn-tint);
+      border: 1px solid var(--warn-line);
+      border-radius: var(--r-md);
       flex-shrink: 0;
-      font-size: 0.85rem;
-      color: #9a3412;
+      font-size: var(--t-caption);
+      color: var(--warn);
     }
     .debug-proceed {
-      background: #4A8DAB;
-      color: #fff;
+      background: var(--accent-ink);
+      color: var(--on-dark);
       border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      font-size: 0.9rem;
+      border-radius: var(--r-pill);
+      padding: 9px 18px;
+      font-family: inherit;
+      font-size: var(--t-caption);
       font-weight: 600;
+      letter-spacing: -0.01em;
       cursor: pointer;
       white-space: nowrap;
-      transition: background 0.15s;
+      transition: background 0.15s var(--ease), transform 0.15s var(--ease);
     }
     .debug-proceed:hover {
-      background: #3D7D99;
+      background: var(--accent-press);
     }
+    .debug-proceed:active { transform: scale(0.97); }
     .debug-note {
       flex-shrink: 0;
       margin: 0;
       padding: 10px 16px;
-      background: #fff7e6;
-      border-bottom: 1px solid #f0dca0;
-      color: #8a6d3b;
-      font-size: 0.78rem;
+      background: var(--warn-tint);
+      border-bottom: 1px solid var(--warn-line);
+      color: var(--warn);
+      font-size: var(--t-caption);
       line-height: 1.45;
       overflow: hidden;
       max-height: 200px;
@@ -502,8 +572,8 @@
       border-bottom-width: 0;
     }
     .debug-empty {
-      color: #888;
-      font-size: 0.85rem;
+      color: var(--ink-faint);
+      font-size: var(--t-caption);
       line-height: 1.5;
     }
     .debug-entry {
@@ -514,49 +584,53 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      font-size: 0.78rem;
-      font-weight: 700;
+      font-size: var(--t-caption);
+      font-weight: 600;
+      letter-spacing: -0.01em;
       margin-bottom: 6px;
       padding-bottom: 4px;
-      border-bottom: 1.5px solid #e3e8ee;
+      border-bottom: 1px solid var(--hairline);
     }
     .debug-entry-title .method {
-      color: #4A8DAB;
+      color: var(--ink-muted);
     }
     .debug-entry-title.req .label {
-      color: #d97706;
+      color: var(--warn);
     }
     .debug-entry-title.res .label {
-      color: #2e9d63;
+      color: var(--accent-ink);
     }
     .debug-copy {
-      background: #eef2f5;
-      color: #4A8DAB;
+      background: var(--surface-sunken);
+      color: var(--accent-ink);
       border: none;
-      border-radius: 5px;
-      padding: 3px 8px;
-      font-size: 0.7rem;
+      border-radius: var(--r-pill);
+      padding: 3px 10px;
+      font-family: inherit;
+      font-size: var(--t-micro);
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
-      transition: background 0.15s, color 0.15s;
+      transition: background 0.15s var(--ease), color 0.15s var(--ease),
+        transform 0.15s var(--ease);
     }
     .debug-copy:hover {
-      background: #dce6ec;
+      background: var(--accent-tint);
     }
+    .debug-copy:active { transform: scale(0.95); }
     .debug-copy.copied {
-      background: #4A8DAB;
-      color: #fff;
+      background: var(--accent-ink);
+      color: var(--on-dark);
     }
     .debug-json {
-      background: #fff;
-      border: 1px solid #e3e8ee;
-      border-radius: 8px;
+      background: var(--surface-sunken);
+      border: 1px solid var(--hairline);
+      border-radius: var(--r-sm);
       padding: 12px;
       font-family: 'SFMono-Regular', Consolas, monospace;
-      font-size: 0.72rem;
+      font-size: var(--t-micro);
       line-height: 1.5;
-      color: #1a1a2e;
+      color: var(--ink);
       white-space: pre-wrap;
       word-break: break-word;
       overflow-x: auto;
@@ -568,16 +642,22 @@
 </head>
 <body>
   <div class="header">
+    <a href="/auth/logout" class="logout-btn" data-i18n="common.logout">Logout</a>
+    <div id="langSwitch" class="lang-switch" role="group" aria-label="Language">
+      <button type="button" class="lang-seg" data-lang="en">EN</button>
+      <button type="button" class="lang-seg" data-lang="zh">中文</button>
+    </div>
     <h1 data-i18n="checkout.title">Checkout</h1>
   </div>
+  <script>if (window.initLangSwitch) initLangSwitch('#langSwitch');</script>
 
   <div id="cred-hint-banner" class="cred-hint-banner" data-i18n="checkout.hintBanner">Maximize your browser to see all contents</div>
 
   <div class="card">
     <div class="spinner active" id="spinner"></div>
-    <div id="error-banner" style="display:none;background:#fdecea;color:#c0392b;padding:12px 16px;border-radius:8px;margin-bottom:12px;font-size:0.9rem;word-break:break-all;"></div>
+    <div id="error-banner" style="display:none;background:var(--danger-tint);color:var(--danger);padding:12px 16px;border-radius:var(--r-md);margin-bottom:12px;font-size:0.9rem;word-break:break-all;"></div>
     <div id="dropin-container" style="display:none;"></div>
-    <div id="psp-info" style="display:none;background:#eef7ee;padding:12px 16px;border-radius:8px;margin-top:12px;font-size:0.9rem;text-align:center;color:#333;word-break:break-all;"></div>
+    <div id="psp-info" style="display:none;background:var(--accent-tint);border:1px solid var(--accent-tint-line);padding:12px 16px;border-radius:var(--r-md);margin-top:12px;font-size:0.9rem;text-align:center;color:#14532d;word-break:break-all;"></div>
     <div class="debug-dock" id="debug-dock">
       <span class="debug-dock-title" data-i18n="debug.console">Debug Console</span>
       <div class="debug-dock-buttons">
@@ -631,7 +711,7 @@
     </div>
 
     <div style="text-align:center;margin-top:16px;">
-      <a href="/" style="color:#4A8DAB;font-size:0.9rem;text-decoration:none;font-weight:500;" data-i18n="common.backHome">← Back to Home</a>
+      <a href="/" style="color:var(--accent-ink);font-size:0.88rem;text-decoration:none;font-weight:400;" data-i18n="common.backHome">← Back to Home</a>
     </div>
   </div>
 
@@ -834,7 +914,7 @@
       const left = document.createElement('span');
       left.innerHTML =
         '<span class="method">' + name + '</span> &middot; ' +
-        '<span class="label" style="color:#7b61a8;">' + time + '</span>';
+        '<span class="label">' + time + '</span>';
       const copyBtn = document.createElement('button');
       copyBtn.className = 'debug-copy';
       copyBtn.type = 'button';
@@ -2007,11 +2087,15 @@
             '});});<' + '/script>';
           const doc =
             '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + title + ' \u2014 Test Credentials</title>' +
+            // style.css carries the :root design tokens every rule below
+            // resolves against, so it must be linked, not just the inline CSS.
+            '<link rel="stylesheet" href="/style.css">' +
+            '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">' +
             styles +
             '<style>' +
-            'body{margin:0;background:#f5f7fa;color:#1a1a2e;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;}' +
+            'body{margin:0;background:var(--canvas);color:var(--ink);display:block;}' +
             '.popout{padding:20px;}' +
-            '.test-cards-panel{position:static!important;display:block!important;width:auto!important;max-height:none!important;box-shadow:none!important;margin:0!important;left:auto!important;top:auto!important;height:auto!important;}' +
+            '.test-cards-panel{position:static!important;display:block!important;width:auto!important;max-height:none!important;box-shadow:none!important;border:none!important;margin:0!important;left:auto!important;top:auto!important;height:auto!important;}' +
             '</style></head><body><div class="popout"><aside class="test-cards-panel visible"><h3>' +
             title + '</h3>' + hintHtml + '<div class="tc-list">' + list.innerHTML + '</div></aside></div>' +
             copyScript + '</body></html>';

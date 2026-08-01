@@ -43,9 +43,9 @@ app.set('trust proxy', true);
 const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.adyen.com https://pay.google.com https://applepay.cdn-apple.com",
-  "style-src 'self' 'unsafe-inline' https://*.adyen.com",
+  "style-src 'self' 'unsafe-inline' https://*.adyen.com https://fonts.googleapis.com",
   "img-src 'self' data: blob: https://*.adyen.com https://*.gstatic.com https://*.google.com",
-  "font-src 'self' data: https://*.adyen.com https://applepay.cdn-apple.com",
+  "font-src 'self' data: https://*.adyen.com https://applepay.cdn-apple.com https://fonts.gstatic.com",
   "connect-src 'self' https://*.adyen.com https://google.com https://*.google.com",
   "frame-src 'self' https:",
   "frame-ancestors 'self'",

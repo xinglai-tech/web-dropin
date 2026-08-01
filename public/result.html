@@ -5,13 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Payment Result</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
   <link rel="stylesheet" href="/style.css" />
   <script src="/i18n.js"></script>
 </head>
 <body>
   <div class="header">
+    <a href="/auth/logout" class="logout-btn" data-i18n="common.logout">Logout</a>
+    <div id="langSwitch" class="lang-switch" role="group" aria-label="Language">
+      <button type="button" class="lang-seg" data-lang="en">EN</button>
+      <button type="button" class="lang-seg" data-lang="zh">中文</button>
+    </div>
     <h1 data-i18n="result.title">Payment Result</h1>
   </div>
+  <script>if (window.initLangSwitch) initLangSwitch('#langSwitch');</script>
 
   <div class="card result-card" id="resultCard">
     <div class="spinner active" id="spinner"></div>
