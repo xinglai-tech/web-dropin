@@ -123,6 +123,7 @@
       // ── Checkout page chrome ──
       'checkout.title': 'Checkout',
       'checkout.hintBanner': 'Maximize your browser to see all contents',
+      'checkout.backToMethods': '← Back to payment methods',
       'debug.console': 'Debug Console',
       'debug.sdkEvent': 'SDK Event',
       'debug.apiLog': 'API Log',
@@ -264,6 +265,7 @@
       // ── Checkout page chrome ──
       'checkout.title': '结账',
       'checkout.hintBanner': '请最大化浏览器窗口以显示全部内容',
+      'checkout.backToMethods': '← 返回支付方式列表',
       'debug.console': '调试控制台',
       'debug.sdkEvent': 'SDK 事件',
       'debug.apiLog': 'API 日志',
