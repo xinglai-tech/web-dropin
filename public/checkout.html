@@ -1157,7 +1157,14 @@
           logEvent('onError', { name: error?.name, message: error?.message });
           console.error('Checkout error:', error);
           const msg = error.message || JSON.stringify(error);
-          if (/applepay|apple pay/i.test(msg)) return;
+          // Apple Pay reports itself unavailable on any device or browser that
+          // cannot run it, which is routine here and not worth a red banner.
+          // Match on that condition rather than on the words "Apple Pay": a
+          // bare name match also swallows genuine Apple Pay payment failures.
+          const isApplePay = /apple\s?pay/i.test(msg);
+          const isUnavailable =
+            /not (available|supported)|unavailable|cannot make payments/i.test(msg);
+          if (isApplePay && isUnavailable) return;
           showError(msg);
         },
       });
@@ -2131,10 +2138,23 @@
         update();
       }
 
+      const ERROR_VISIBLE_MS = 5000;
+      let errorHideTimer = null;
       function showError(msg) {
         const banner = document.getElementById('error-banner');
         banner.textContent = '⚠️ ' + msg;
         banner.style.display = 'block';
+        // The native Google Pay / Apple Pay sheet leaves the page scrolled at
+        // the drop-in, so a banner sitting above it is off-screen exactly when
+        // the shopper returns to read it. Wait a frame: dismissing the sheet
+        // re-renders the drop-in, which would otherwise undo the scroll.
+        requestAnimationFrame(() => {
+          banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+        clearTimeout(errorHideTimer);
+        errorHideTimer = setTimeout(() => {
+          banner.style.display = 'none';
+        }, ERROR_VISIBLE_MS);
       }
 
       function showPsp(psp) {
