@@ -2013,13 +2013,23 @@
           panel.style.left = Math.max(12, left) + 'px';
         };
 
+        // A phone has no second window to put the credentials in: window.open
+        // takes over the current tab, which would interrupt the payment the
+        // shopper just started. Detect the device rather than the width alone,
+        // so a narrow desktop window still gets the popout.
+        const isHandheld = () =>
+          window.matchMedia('(pointer: coarse)').matches &&
+          window.matchMedia('(max-width: 900px)').matches;
+
         // Banner shown at the top of the drop-in when the panel has content but
         // is hidden due to a narrow window (panel is display:none at <=1280px).
+        // It is suppressed on a handheld: it asks the shopper to widen a window
+        // they cannot widen, and it opens the popout we skip there anyway.
         const credHint = document.getElementById('cred-hint-banner');
         let panelShouldShow = false;
         const updateCredHint = () => {
           const narrow = window.matchMedia('(max-width: 1280px)').matches;
-          credHint.classList.toggle('show', panelShouldShow && narrow);
+          credHint.classList.toggle('show', panelShouldShow && narrow && !isHandheld());
         };
 
         let renderedKey = null;
@@ -2110,6 +2120,7 @@
         // methods are skipped.
         const NON_REDIRECT_CREDS = new Set(['ach', 'sepadirectdebit', 'bcmc_mobile']);
         autoOpenCredPopout = function () {
+          if (isHandheld()) return;
           const type = getSelectedType();
           if (!type || type === 'scheme') return;
           if (NON_REDIRECT_CREDS.has(type)) return;
