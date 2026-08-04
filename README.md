@@ -8,7 +8,14 @@ sent to Adyen.
 - **Backend** — `@adyen/api-library`
 - **Frontend** — Adyen Web Drop-in v6 (loaded from Adyen's CDN)
 
-Test environment only. Use test credentials.
+> [!WARNING]
+> **Do not deploy this to production.** It is a testing and demonstration tool,
+> intended solely for Adyen's TEST environment with test credentials.
+>
+> This code has not undergone any security review, penetration testing, or
+> vulnerability assessment. It is provided as-is, without warranty of any kind.
+> You alone are responsible for how you deploy and use it, and the authors
+> accept no liability for any damages or financial loss arising from its use.
 
 ## Features
 
