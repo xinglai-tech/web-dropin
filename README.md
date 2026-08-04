@@ -26,6 +26,14 @@ sent to Adyen.
 > 担保。使用者须自行承担部署与使用的全部责任；因使用本项目而导致的任何损害或
 > 资金损失，作者概不负责。
 
+> [!NOTE]
+> This is a personal project and is **not an official Adyen product**. It is not
+> affiliated with, endorsed by, or supported by Adyen. "Adyen" and the Adyen
+> logo are trademarks of Adyen N.V.
+>
+> 本项目为个人项目，**并非 Adyen 官方产品**，与 Adyen 无隶属关系，亦未获其背书
+> 或支持。「Adyen」及 Adyen 标识为 Adyen N.V. 的商标。
+
 ## Features
 
 - Card payments with native or redirect 3DS
@@ -153,3 +161,8 @@ logs/              Per-day payment request/response logs (gitignored)
 - Every payment call is written to `logs/payments-YYYY-MM-DD.log` with the full
   request and response. On Azure App Service these go to `/home/LogFiles`
   instead.
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE). Note in particular the disclaimer
+of warranty (section 7) and the limitation of liability (section 8).
