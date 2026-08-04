@@ -54,13 +54,23 @@ Test environment only. Use test credentials.
 
    Wrap `ACCESS_CODE_HASH` in single quotes: bcrypt hashes contain `$`.
 
-3. **Run**
+3. **Allow your origin**
+
+   A client key only works on origins you have whitelisted. In the Customer
+   Area, next to the client key, use **Add allowed origins** and add the origin
+   you serve this app from, for example `http://localhost:3000`.
+
+   The match is exact: `http://` and `https://` are different origins, and so
+   are ports 3000 and 8080. Skip this and Drop-in will not load, without saying
+   why.
+
+4. **Run**
 
    ```bash
    npm start
    ```
 
-4. Open `http://localhost:3000` and enter your access code.
+5. Open `http://localhost:3000` and enter your access code.
 
 ## HTTPS (needed for Apple Pay and Google Pay)
 
@@ -75,6 +85,9 @@ openssl req -x509 -newkey rsa:2048 -nodes -days 365 \
 Then open `https://localhost:3000` and accept the self-signed certificate
 warning. Both files are gitignored.
 
+Note that this changes your origin, so add `https://localhost:3000` to the
+client key's allowed origins too — the `http://` entry does not cover it.
+
 Card payments and redirect APMs work fine over HTTP, so this step is optional
 unless you are testing wallets.
 
@@ -84,7 +97,7 @@ unless you are testing wallets.
 | --- | --- | --- |
 | `ADYEN_API_KEY` | yes | API key from Customer Area → Developers → API credentials |
 | `ADYEN_MERCHANT_ACCOUNT` | yes | Merchant account name |
-| `ADYEN_CLIENT_KEY` | yes | Client key from the same screen |
+| `ADYEN_CLIENT_KEY` | yes | Client key from the same screen, with your origin in its allowed origins |
 | `ACCESS_CODE_HASH` | yes | bcrypt hash of the shared access code |
 | `SESSION_SECRET` | yes | Signs the session cookie |
 | `WEBHOOK_STATUS_URL` | no | Adds a webhook status link to the result screen |
