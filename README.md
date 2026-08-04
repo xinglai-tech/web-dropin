@@ -16,6 +16,15 @@ sent to Adyen.
 > vulnerability assessment. It is provided as-is, without warranty of any kind.
 > You alone are responsible for how you deploy and use it, and the authors
 > accept no liability for any damages or financial loss arising from its use.
+>
+> ---
+>
+> **请勿部署到生产环境。** 本项目仅为测试与演示工具，只应配合 Adyen 测试环境
+> 与测试凭据使用。
+>
+> 本代码未经任何安全审查、渗透测试或漏洞检测，按「现状」提供，不作任何形式的
+> 担保。使用者须自行承担部署与使用的全部责任；因使用本项目而导致的任何损害或
+> 资金损失，作者概不负责。
 
 ## Features
 
