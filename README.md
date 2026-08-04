@@ -41,8 +41,8 @@ Test environment only. Use test credentials.
    cp .env.example .env
    ```
 
-   Enter all required variables in env.example with your own values. Two params
-   are generated with below commands:
+   Enter all required variables in `.env` with your own values. Two params are
+   generated with below commands:
 
    ```bash
    # ACCESS_CODE_HASH — bcrypt hash of the access code you want to use
