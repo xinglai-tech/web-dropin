@@ -1207,6 +1207,9 @@
             onBinLookup: (d) => logEvent('card.onBinLookup', d),
             onFieldValid: (d) => logEvent('card.onFieldValid', { fieldType: d?.fieldType, valid: d?.valid, endDigits: d?.endDigits }),
           },
+          googlepay: {
+            allowedCardNetworks: ['AMEX', 'DISCOVER', 'JCB', 'MASTERCARD', 'VISA'],
+          },
           wechatpayQR: {
             countdownTime: 59,
           },
