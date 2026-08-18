@@ -225,6 +225,31 @@ app.post('/api/paymentMethods', async (req, res) => {
   }
 });
 
+// ── /paymentLinks ───────────────────────────────────────────────────────────
+app.post('/api/paymentLinks', async (req, res) => {
+  try {
+    const { countryCode, currency, amount, merchantRef, shopperRef, shopperLocale, description } = req.body;
+    const linkRequest = {
+      merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
+      reference: merchantRef || uuid(),
+      amount: {
+        currency: currency || 'SGD',
+        value: amount || 10,
+      },
+      countryCode: countryCode || 'SG',
+      ...(shopperRef && { shopperReference: shopperRef }),
+      ...(shopperLocale && { shopperLocale }),
+      description: description || 'Test Product',
+    };
+    const response = await checkout.PaymentLinksApi.paymentLinks(linkRequest, { idempotencyKey: uuid() });
+    logPayment('/paymentLinks', linkRequest, response);
+    res.json(response);
+  } catch (error) {
+    console.error('/paymentLinks error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {

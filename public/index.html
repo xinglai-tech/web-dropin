@@ -174,9 +174,122 @@
     }
     .remember-note.show { display: block; }
     .remember-note b { font-family: 'SFMono-Regular', Consolas, monospace; }
+    .preset-btn[disabled] { opacity: 0.55; cursor: progress; }
     @media (max-width: 1180px) {
       .preset-panel { display: none; }
     }
+
+    /* ── Pay by Link dialog ───────────────────────────────── */
+    .pbl-overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(29, 29, 31, 0.42);
+      z-index: 200;
+    }
+    .pbl-overlay[hidden] { display: none; }
+    .pbl-dialog {
+      width: min(100%, 460px);
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-pop);
+      padding: 24px;
+    }
+    .pbl-dialog h3 {
+      font-size: var(--t-title);
+      font-weight: 600;
+      letter-spacing: -0.022em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .pbl-note {
+      font-size: var(--t-caption);
+      color: var(--ink-faint);
+      line-height: 1.45;
+      margin-bottom: 18px;
+    }
+    .pbl-note.pbl-note--error { color: var(--danger); }
+    .pbl-link-row { display: flex; gap: 8px; }
+    .pbl-link-row input {
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 38px;
+      padding: 0 12px;
+      font-family: inherit;
+      font-size: var(--t-caption);
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      background: var(--surface-sunken);
+      border: 1px solid var(--hairline);
+      border-radius: var(--r-sm);
+    }
+    .pbl-copy {
+      flex: 0 0 auto;
+      height: 38px;
+      padding: 0 16px;
+      font-family: inherit;
+      font-size: var(--t-caption);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--on-dark);
+      background: var(--accent-ink);
+      border: 1px solid var(--accent-ink);
+      border-radius: var(--r-pill);
+      cursor: pointer;
+      transition: background 0.15s var(--ease), transform 0.15s var(--ease);
+    }
+    .pbl-copy:hover { background: var(--accent-press); border-color: var(--accent-press); }
+    .pbl-copy:active { transform: scale(0.97); }
+    .pbl-meta {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px 16px;
+      margin-top: 18px;
+      font-size: var(--t-caption);
+      line-height: 1.45;
+    }
+    .pbl-meta dt { color: var(--ink-faint); }
+    .pbl-meta dd {
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      word-break: break-word;
+    }
+    .pbl-meta:empty { display: none; }
+    .pbl-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .pbl-open {
+      font-size: var(--t-caption);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--accent-ink);
+      text-decoration: none;
+    }
+    .pbl-open:hover { text-decoration: underline; }
+    .pbl-open[hidden] { display: none; }
+    .pbl-close {
+      height: 38px;
+      padding: 0 18px;
+      font-family: inherit;
+      font-size: var(--t-caption);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink-muted);
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--r-pill);
+      cursor: pointer;
+      transition: background 0.15s var(--ease);
+    }
+    .pbl-close:hover { background: var(--surface-sunken); }
 
     /* ── Custom Select ──────────────────────────────────── */
     .csel { position: relative; width: 100%; }
@@ -581,11 +694,30 @@
       <span class="preset-btn-title" data-i18n="preset.installments.title">4. Test credit card installments</span>
       <span class="preset-btn-desc" data-i18n-html="preset.installments.desc">Sets amount to 100, country to Brazil, and enables installments. Click <b>Start Checkout</b>, then choose the number of installments on the checkout page.</span>
     </button>
+    <button type="button" class="preset-btn" id="preset-paybylink">
+      <span class="preset-btn-title" data-i18n="preset.paybylink.title">5. Generate a Pay by Link</span>
+    </button>
     <button type="button" class="preset-btn reset" id="preset-reset">
       <span class="preset-btn-title" data-i18n="preset.reset.title">Restore to default</span>
       <span class="preset-btn-desc" data-i18n="preset.reset.desc">Reset all settings back to their default values.</span>
     </button>
   </aside>
+
+  <div class="pbl-overlay" id="pbl-overlay" role="dialog" aria-modal="true" aria-labelledby="pbl-title" hidden>
+    <div class="pbl-dialog">
+      <h3 id="pbl-title" data-i18n="pbl.title">Payment link created</h3>
+      <p class="pbl-note" id="pbl-note" data-i18n="pbl.note">Open this link to pay on the Adyen-hosted payment page.</p>
+      <div class="pbl-link-row">
+        <input type="text" id="pbl-url" readonly />
+        <button type="button" class="pbl-copy" id="pbl-copy" data-i18n="pbl.copy">Copy</button>
+      </div>
+      <dl class="pbl-meta" id="pbl-meta"></dl>
+      <div class="pbl-actions">
+        <a class="pbl-open" id="pbl-open" href="#" target="_blank" rel="noopener" data-i18n="pbl.open">Open link</a>
+        <button type="button" class="pbl-close" id="pbl-close" data-i18n="pbl.close">Close</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     // ── Custom select logic ──────────────────────────────────────────────
@@ -807,6 +939,139 @@
       document.getElementById('amount').value = '100';
       updateInstallmentsAvailability();
       cselSet('installments', 'on');
+    });
+
+    // 5. Generate a Pay by Link
+    const pblBtn = document.getElementById('preset-paybylink');
+    const pblOverlay = document.getElementById('pbl-overlay');
+    const pblNote = document.getElementById('pbl-note');
+    const pblUrl = document.getElementById('pbl-url');
+    const pblCopy = document.getElementById('pbl-copy');
+    const pblMeta = document.getElementById('pbl-meta');
+    const pblOpen = document.getElementById('pbl-open');
+    const pblLinkRow = document.querySelector('.pbl-link-row');
+
+    function closePbl() {
+      pblOverlay.hidden = true;
+      pblBtn.focus();
+    }
+    function renderPblMeta(rows) {
+      pblMeta.innerHTML = '';
+      rows.forEach(([label, value]) => {
+        const dt = document.createElement('dt');
+        dt.textContent = label;
+        const dd = document.createElement('dd');
+        dd.textContent = value;
+        pblMeta.append(dt, dd);
+      });
+    }
+    function showPblError(message) {
+      pblNote.textContent = message;
+      pblNote.classList.add('pbl-note--error');
+      pblLinkRow.hidden = true;
+      pblOpen.hidden = true;
+      renderPblMeta([]);
+      pblOverlay.hidden = false;
+      document.getElementById('pbl-close').focus();
+    }
+
+    document.getElementById('pbl-close').addEventListener('click', closePbl);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !pblOverlay.hidden) closePbl();
+    });
+
+    pblCopy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pblUrl.value);
+      } catch (err) {
+        pblUrl.select();
+        document.execCommand('copy');
+      }
+      pblCopy.textContent = window.t ? window.t('pbl.copied') : 'Copied';
+      setTimeout(() => {
+        pblCopy.textContent = window.t ? window.t('pbl.copy') : 'Copy';
+      }, 1200);
+    });
+
+    // Adyen returns amounts in minor units; render them back in the currency's
+    // own major-unit format so the dialog shows what the shopper will pay.
+    const ZERO_DECIMAL = ['JPY', 'KRW', 'VND', 'CLP', 'PYG', 'GNF', 'RWF', 'UGX', 'XOF', 'XAF', 'ISK', 'HUF'];
+    const THREE_DECIMAL = ['BHD', 'JOD', 'KWD', 'OMR', 'TND'];
+    function currencyExponent(currency) {
+      if (ZERO_DECIMAL.includes(currency)) return 0;
+      if (THREE_DECIMAL.includes(currency)) return 3;
+      return 2;
+    }
+    function formatAmount(minorValue, currency) {
+      const digits = currencyExponent(currency);
+      const major = minorValue / Math.pow(10, digits);
+      try {
+        const locale = window.getLang && window.getLang() === 'zh' ? 'zh-CN' : 'en-US';
+        return new Intl.NumberFormat(locale, {
+          style: 'currency',
+          currency,
+          minimumFractionDigits: digits,
+          maximumFractionDigits: digits,
+        }).format(major);
+      } catch (err) {
+        return `${currency} ${major.toFixed(digits)}`;
+      }
+    }
+
+    pblBtn.addEventListener('click', async () => {
+      const amountVal = parseFloat(document.getElementById('amount').value);
+      if (isNaN(amountVal) || amountVal < 0.01) {
+        document.getElementById('amountError').style.display = 'block';
+        return;
+      }
+      document.getElementById('amountError').style.display = 'none';
+
+      const currency = cselVal('currency');
+      const minorAmount = Math.round(amountVal * Math.pow(10, currencyExponent(currency)));
+
+      const merchantRef = document.getElementById('merchantRef').value.trim();
+      const shopperRef = shopperRefEl.value.trim();
+      const body = {
+        countryCode: cselVal('country'),
+        currency,
+        amount: minorAmount,
+        shopperLocale: cselVal('shopperLocale'),
+        ...(merchantRef && { merchantRef }),
+        ...(shopperRef && { shopperRef }),
+      };
+
+      pblBtn.disabled = true;
+      try {
+        const res = await fetch('/api/paymentLinks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const result = await res.json();
+        if (!res.ok || result.error || !result.url) {
+          showPblError(result.error || (window.t ? window.t('pbl.error') : 'Could not create the payment link.'));
+          return;
+        }
+
+        pblNote.textContent = window.t ? window.t('pbl.note') : 'Open this link to pay on the Adyen-hosted payment page.';
+        pblNote.classList.remove('pbl-note--error');
+        pblLinkRow.hidden = false;
+        pblUrl.value = result.url;
+        pblOpen.href = result.url;
+        pblOpen.hidden = false;
+        renderPblMeta([
+          [window.t ? window.t('pbl.reference') : 'Reference', result.reference || '—'],
+          [window.t ? window.t('pbl.amount') : 'Amount', formatAmount(result.amount?.value ?? minorAmount, result.amount?.currency ?? currency)],
+          [window.t ? window.t('pbl.expiresAt') : 'Expires at', result.expiresAt || '—'],
+        ]);
+        pblOverlay.hidden = false;
+        pblUrl.focus();
+        pblUrl.select();
+      } catch (err) {
+        showPblError(err.message || (window.t ? window.t('pbl.error') : 'Could not create the payment link.'));
+      } finally {
+        pblBtn.disabled = false;
+      }
     });
 
     // Restore to default
