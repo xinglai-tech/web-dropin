@@ -52,6 +52,30 @@
       border-color: #d2d2d7 !important;
       color: #86868b !important;
     }
+    .adyen-checkout__payment-method--selected.adyen-checkout__payment-method--scheme
+      .adyen-checkout__button--pay {
+      position: relative !important;
+      margin-top: 40px !important;
+      overflow: visible !important;
+    }
+    .adyen-checkout__payment-method--selected.adyen-checkout__payment-method--scheme
+      .adyen-checkout__button--pay::before {
+      content: '卡信息由 Adyen 安全处理，本站不存储卡信息。';
+      position: absolute;
+      bottom: calc(100% + 9px);
+      left: 50%;
+      width: min(100%, 26rem);
+      color: var(--ink-muted);
+      font-family: inherit;
+      font-size: var(--t-caption);
+      font-weight: 400;
+      line-height: 1.45;
+      letter-spacing: -0.005em;
+      text-align: center;
+      text-transform: none;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
     /* Secondary/ghost actions inside the drop-in (e.g. "Cancel"). */
     .adyen-checkout__button--secondary {
       border-radius: var(--r-pill) !important;
