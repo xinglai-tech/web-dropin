@@ -66,53 +66,8 @@
       font-weight: 600;
       letter-spacing: -0.022em;
       color: var(--ink);
-      margin-bottom: 4px;
-    }
-    /* Integration switch: Drop-in ⇄ Components. The thumb slides between the
-       two halves, so the control reads as one toggle rather than two buttons. */
-    .mode-switch {
-      position: relative;
-      display: flex;
-      margin: 10px 0 14px;
-      padding: 3px;
-      background: var(--surface-sunken);
-      border: 1px solid var(--hairline);
-      border-radius: var(--r-pill);
-      -webkit-user-select: none; -moz-user-select: none; user-select: none;
-    }
-    .mode-switch__thumb {
-      position: absolute;
-      top: 3px;
-      bottom: 3px;
-      left: 3px;
-      width: calc(50% - 3px);
-      background: var(--accent-ink);
-      border-radius: var(--r-pill);
-      transition: transform 0.25s var(--ease);
-      pointer-events: none;
-    }
-    .mode-switch[data-value="components"] .mode-switch__thumb { transform: translateX(100%); }
-    .mode-switch__seg {
-      position: relative;
-      z-index: 1;
-      flex: 1 1 0;
-      min-width: 0;
-      padding: 7px 4px;
-      background: none;
-      border: 0;
-      border-radius: var(--r-pill);
-      font-family: inherit;
-      font-size: var(--t-caption);
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      color: var(--ink-muted);
-      cursor: pointer;
-      transition: color 0.25s var(--ease);
-    }
-    .mode-switch__seg.active { color: var(--on-dark); }
-    .mode-switch__seg:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
-    @media (prefers-reduced-motion: reduce) {
-      .mode-switch__thumb { transition: none; }
+      /* The hint paragraph that used to carry this gap is gone. */
+      margin-bottom: 12px;
     }
     .preset-btn {
       display: block;
@@ -374,6 +329,55 @@
     .csel__options::-webkit-scrollbar-thumb { background: #d2d2d7; border-radius: 3px; }
 
     .csel--disabled { opacity: 0.45; pointer-events: none; }
+
+    /* ── Integration switch (Drop-in ⇄ Components) ──────────────────────
+       Sits with the other settings rather than in the test scenario panel,
+       which is hidden below 1180px — a control that picks the integration
+       has to stay reachable on a phone. The thumb slides between the two
+       halves so the pair reads as one toggle, not two buttons. */
+    .mode-switch {
+      position: relative;
+      display: flex;
+      padding: 3px;
+      background: var(--surface-sunken);
+      border: 1px solid var(--hairline);
+      border-radius: var(--r-pill);
+      -webkit-user-select: none; -moz-user-select: none; user-select: none;
+    }
+    .mode-switch__thumb {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      left: 3px;
+      width: calc(50% - 3px);
+      background: var(--accent-ink);
+      border-radius: var(--r-pill);
+      transition: transform 0.25s var(--ease);
+      pointer-events: none;
+    }
+    .mode-switch[data-value="components"] .mode-switch__thumb { transform: translateX(100%); }
+    .mode-switch__seg {
+      position: relative;
+      z-index: 1;
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 8px 4px;
+      background: none;
+      border: 0;
+      border-radius: var(--r-pill);
+      font-family: inherit;
+      font-size: var(--t-caption);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink-muted);
+      cursor: pointer;
+      transition: color 0.25s var(--ease);
+    }
+    .mode-switch__seg.active { color: var(--on-dark); }
+    .mode-switch__seg:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) {
+      .mode-switch__thumb { transition: none; }
+    }
 
     label.checkbox-label {
       display: flex; align-items: center; gap: 10px; cursor: pointer;
@@ -708,16 +712,20 @@
     </div>
     </div>
 
+    <div class="form-group" id="integrationGroup">
+      <label><span data-i18n="label.integration">Integration</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.integration" data-tip="• Drop-in = one component renders the whole payment method list.&#10;• Components = Google Pay, Apple Pay and the card form are mounted separately, each on its own.">i</span></label>
+      <div class="mode-switch" id="mode-switch" data-value="dropin" role="tablist" aria-label="Integration">
+        <span class="mode-switch__thumb" aria-hidden="true"></span>
+        <button type="button" class="mode-switch__seg active" data-mode="dropin" role="tab" aria-selected="true">Drop-in</button>
+        <button type="button" class="mode-switch__seg" data-mode="components" role="tab" aria-selected="false">Components</button>
+      </div>
+    </div>
+
     <button class="btn" id="startBtn" data-i18n="btn.continue">Start Checkout</button>
   </div>
 
   <aside class="preset-panel">
     <h3 data-i18n="preset.title">Test Scenarios</h3>
-    <div class="mode-switch" id="mode-switch" data-value="dropin" role="tablist" aria-label="Integration">
-      <span class="mode-switch__thumb" aria-hidden="true"></span>
-      <button type="button" class="mode-switch__seg active" data-mode="dropin" role="tab" aria-selected="true">Drop-in</button>
-      <button type="button" class="mode-switch__seg" data-mode="components" role="tab" aria-selected="false">Components</button>
-    </div>
     <button type="button" class="preset-btn" id="preset-firstpay">
       <span class="preset-btn-title" data-i18n="preset.firstpay.title">1. First-time card tokenization</span>
       <span class="preset-btn-desc" data-i18n-html="preset.firstpay.desc">Generates a new Shopper Reference.<br>Please also check "save for my next payment" in the next page.</span>
