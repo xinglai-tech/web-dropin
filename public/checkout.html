@@ -1404,10 +1404,21 @@
             component.mount(mount);
             logEvent('component.mounted', { paymentMethod: spec.txVariant });
           } catch (err) {
-            showCmpNote(mount, 'cmp.unavailable');
-            logEvent('component.unavailable', { paymentMethod: spec.txVariant, message: err?.message });
+            showCmpNote(mount, isUnreachable(err) ? 'cmp.unreachable' : 'cmp.unavailable');
+            logEvent('component.unavailable', { paymentMethod: spec.txVariant, name: err?.name, message: err?.message });
           }
         }));
+      }
+
+      // A wallet the device cannot run and a wallet the network cannot reach
+      // both reject, but they send the tester after different things: another
+      // device versus a way out to pay.google.com. Saying "this device does
+      // not support it" about a perfectly capable phone behind a blocked
+      // route wastes exactly the time the note was meant to save.
+      const UNREACHABLE_NAMES = new Set(['SCRIPT_ERROR', 'NETWORK_ERROR']);
+      const UNREACHABLE_MESSAGE = /unable to load script|sdk failed to load|timed out/i;
+      function isUnreachable(err) {
+        return UNREACHABLE_NAMES.has(err?.name) || UNREACHABLE_MESSAGE.test(err?.message || '');
       }
 
       const AVAILABILITY_TIMEOUT_MS = 5000;
