@@ -1377,27 +1377,46 @@
           { id: 'card', txVariant: 'scheme', Component: Card, config: cardConfig },
         ];
 
-        for (const spec of specs) {
+        // The panel observes the container, so it has to be watching before
+        // the components land in it.
+        debugToggles.style.display = 'flex';
+        document.getElementById('debug-feedback').style.display = 'block';
+        setupTestCardsPanel();
+
+        // Check availability in parallel and cap each check, the way Drop-in
+        // does internally. Asking the wallets one after another would let a
+        // slow one hold up the card form: Apple Pay cannot answer until it has
+        // fetched a script from Apple's CDN, and on a device that will never
+        // run Apple Pay anyway, that wait would buy nothing and cost the
+        // shopper the only payment method they can actually use.
+        // Each component mounts into a container that is already in the
+        // markup, so the blocks keep their order however the races finish.
+        await Promise.all(specs.map(async (spec) => {
           const mount = document.getElementById('cmp-mount-' + spec.id);
           if (!offered.has(spec.txVariant)) {
             showCmpNote(mount, 'cmp.notOffered');
             logEvent('component.notOffered', { paymentMethod: spec.txVariant });
-            continue;
+            return;
           }
           try {
             const component = new spec.Component(adyenCheckout, spec.config);
-            await component.isAvailable();
+            await withTimeout(component.isAvailable());
             component.mount(mount);
             logEvent('component.mounted', { paymentMethod: spec.txVariant });
           } catch (err) {
             showCmpNote(mount, 'cmp.unavailable');
             logEvent('component.unavailable', { paymentMethod: spec.txVariant, message: err?.message });
           }
-        }
+        }));
+      }
 
-        debugToggles.style.display = 'flex';
-        document.getElementById('debug-feedback').style.display = 'block';
-        setupTestCardsPanel();
+      const AVAILABILITY_TIMEOUT_MS = 5000;
+      function withTimeout(promise) {
+        let timer;
+        const limit = new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error('Availability check timed out')), AVAILABILITY_TIMEOUT_MS);
+        });
+        return Promise.race([promise, limit]).finally(() => clearTimeout(timer));
       }
 
       function showCmpNote(mount, key) {
