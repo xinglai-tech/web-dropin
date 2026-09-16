@@ -1114,7 +1114,10 @@
       }
 
       // ── Convert major units to minor units ────────────────────────────
-      const zeroDecimalCurrencies = ['JPY', 'KRW', 'VND', 'CLP', 'PYG', 'GNF', 'RWF', 'UGX', 'XOF', 'XAF', 'ISK', 'HUF'];
+      // Keep in step with ZERO_DECIMAL / THREE_DECIMAL in index.html, which
+      // converts the same amount for Pay by Link. A currency listed in one
+      // and not the other makes the two paths charge different amounts.
+      const zeroDecimalCurrencies = ['JPY', 'KRW', 'VND', 'CLP', 'PYG', 'GNF', 'RWF', 'UGX', 'XOF', 'XAF', 'ISK', 'HUF', 'IDR'];
       const threeDecimalCurrencies = ['BHD', 'JOD', 'KWD', 'OMR', 'TND'];
       let amount;
       if (zeroDecimalCurrencies.includes(currency)) {
