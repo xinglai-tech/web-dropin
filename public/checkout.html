@@ -53,13 +53,15 @@
       color: #86868b !important;
     }
     .adyen-checkout__payment-method--selected.adyen-checkout__payment-method--scheme
-      .adyen-checkout__button--pay {
+      .adyen-checkout__button--pay,
+    #cmp-mount-card .adyen-checkout__button--pay {
       position: relative !important;
       margin-top: 40px !important;
       overflow: visible !important;
     }
     .adyen-checkout__payment-method--selected.adyen-checkout__payment-method--scheme
-      .adyen-checkout__button--pay::before {
+      .adyen-checkout__button--pay::before,
+    #cmp-mount-card .adyen-checkout__button--pay::before {
       content: '卡信息由 Adyen 安全处理，本站不存储卡信息。';
       position: absolute;
       bottom: calc(100% + 9px);
@@ -86,6 +88,74 @@
     .adyen-checkout__link,
     .adyen-checkout__button--link {
       color: var(--accent-ink) !important;
+    }
+
+    /* ── Components integration ───────────────────────────────────────────
+       A standalone component looks all but identical to the same method
+       inside Drop-in, so each one gets its own labelled frame and the mode
+       gets a banner. Only the card component's pay button is restyled:
+       recolouring a branded wallet button breaks that scheme's brand rules. */
+    .cmp-badge {
+      margin-bottom: 16px;
+      padding: 9px 14px;
+      background: var(--warn-tint);
+      border: 1px dashed var(--warn-line);
+      border-radius: var(--r-md);
+      color: var(--warn);
+      font-size: var(--t-caption);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      text-align: center;
+      line-height: 1.45;
+    }
+    .cmp-block {
+      margin-bottom: 16px;
+      padding: 0 14px 14px;
+      background: var(--surface-sunken);
+      border: 1px dashed var(--accent-tint-line);
+      border-radius: var(--r-lg);
+    }
+    .cmp-block__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 11px 0;
+      margin-bottom: 12px;
+      border-bottom: 1px dashed var(--accent-tint-line);
+    }
+    .cmp-block__name {
+      font-size: var(--t-caption);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+    .cmp-block__type {
+      flex-shrink: 0;
+      padding: 3px 9px;
+      background: var(--accent-tint);
+      border-radius: var(--r-pill);
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      font-size: var(--t-micro);
+      color: var(--accent-ink);
+    }
+    .cmp-block__body {
+      padding: 12px;
+      background: var(--surface);
+      border-radius: var(--r-md);
+    }
+    .cmp-note {
+      margin: 0;
+      padding: 4px 0;
+      font-size: var(--t-caption);
+      color: var(--ink-faint);
+      line-height: 1.45;
+      text-align: center;
+    }
+    /* Square corners so the card component's button does not read as the
+       pill-shaped Drop-in one. */
+    #cmp-mount-card .adyen-checkout__button--pay {
+      border-radius: var(--r-sm) !important;
     }
 
     /* ── Test cards side panel ─────────────────────────────────────────── */
@@ -681,6 +751,21 @@
     <div class="spinner active" id="spinner"></div>
     <div id="error-banner" style="display:none;background:var(--danger-tint);color:var(--danger);padding:12px 16px;border-radius:var(--r-md);margin-bottom:12px;font-size:0.9rem;word-break:break-all;"></div>
     <div id="dropin-container" style="display:none;"></div>
+    <div id="components-view" style="display:none;">
+      <p class="cmp-badge" data-i18n="cmp.badge">Components integration — each payment method is mounted on its own.</p>
+      <section class="cmp-block">
+        <header class="cmp-block__head"><span class="cmp-block__name">Google Pay</span><code class="cmp-block__type">googlepay</code></header>
+        <div class="cmp-block__body" id="cmp-mount-googlepay"></div>
+      </section>
+      <section class="cmp-block">
+        <header class="cmp-block__head"><span class="cmp-block__name">Apple Pay</span><code class="cmp-block__type">applepay</code></header>
+        <div class="cmp-block__body" id="cmp-mount-applepay"></div>
+      </section>
+      <section class="cmp-block">
+        <header class="cmp-block__head"><span class="cmp-block__name">Card</span><code class="cmp-block__type">scheme</code></header>
+        <div class="cmp-block__body" id="cmp-mount-card"></div>
+      </section>
+    </div>
     <button id="dropin-reset" class="btn" type="button" style="display:none;margin-top:12px;" data-i18n="checkout.backToMethods">← Back to payment methods</button>
     <div id="psp-info" style="display:none;background:var(--accent-tint);border:1px solid var(--accent-tint-line);padding:12px 16px;border-radius:var(--r-md);margin-top:12px;font-size:0.9rem;text-align:center;color:#14532d;word-break:break-all;"></div>
     <div class="debug-dock" id="debug-dock">
@@ -976,7 +1061,7 @@
     }
 
     (async () => {
-      const { AdyenCheckout, Dropin } = window.AdyenWeb;
+      const { AdyenCheckout, Dropin, GooglePay, ApplePay, Card } = window.AdyenWeb;
       let lastPspReference = '';
       // ── Read query params ───────────────────────────────────────────────
       const params  = new URLSearchParams(window.location.search);
@@ -998,6 +1083,9 @@
       const threeDSMode = params.get('threeDSMode') || 'native';
       const chargebackHolderName = params.get('chargebackHolderName') || '';
       const installmentsEnabled = params.get('installments') === 'on';
+      // Drop-in builds the payment method list itself; components mode mounts
+      // a handful of methods separately so each one can be inspected on its own.
+      const isComponents = params.get('integration') === 'components';
 
       // Country-specific installment plans applied to the card component.
       // For JP, `values` apply to the regular plan; revolving/bonus always send
@@ -1200,11 +1288,23 @@
         },
       });
 
-      // ── Mount Drop-in ───────────────────────────────────────────────────
+      // ── Mount the payment UI ────────────────────────────────────────────
       let lastSelectedType = null;
       let refreshCredPanel = null;
       let autoOpenCredPopout = null;
-      const dropin = new Dropin(adyenCheckout, {
+      let dropin = null;
+
+      const cardConfig = {
+        enableStoreDetails,
+        billingAddressRequired,
+        ...(billingAddressRequired && { billingAddressMode }),
+        ...cardInstallmentConfig,
+        onBrand: (d) => logEvent('card.onBrand', { brand: d?.brand, type: d?.type }),
+        onBinLookup: (d) => logEvent('card.onBinLookup', d),
+        onFieldValid: (d) => logEvent('card.onFieldValid', { fieldType: d?.fieldType, valid: d?.valid, endDigits: d?.endDigits }),
+      };
+
+      const dropinConfig = {
         onReady: () => {
           logEvent('onReady', { component: 'dropin' });
           document.getElementById('spinner').classList.remove('active');
@@ -1222,15 +1322,7 @@
         showStoredPaymentMethods,
         showRemovePaymentMethodButton: true,
         paymentMethodsConfiguration: {
-          card: {
-            enableStoreDetails,
-            billingAddressRequired,
-            ...(billingAddressRequired && { billingAddressMode }),
-            ...cardInstallmentConfig,
-            onBrand: (d) => logEvent('card.onBrand', { brand: d?.brand, type: d?.type }),
-            onBinLookup: (d) => logEvent('card.onBinLookup', d),
-            onFieldValid: (d) => logEvent('card.onFieldValid', { fieldType: d?.fieldType, valid: d?.valid, endDigits: d?.endDigits }),
-          },
+          card: cardConfig,
           googlepay: {
             allowedCardNetworks: ['AMEX', 'DISCOVER', 'JCB', 'MASTERCARD', 'VISA'],
           },
@@ -1260,7 +1352,64 @@
             reject();
           }
         },
-      }).mount('#dropin-container');
+      };
+
+      // ── Components integration ──────────────────────────────────────────
+      // Each method is instantiated and mounted on its own instead of letting
+      // Drop-in assemble the list. A method the shopper cannot use here is
+      // replaced by a note: the wallets only report that asynchronously, and
+      // an empty frame gives no clue why nothing rendered.
+      async function mountComponents() {
+        // Reveal the frames before mounting: the card component's secured
+        // fields are iframes, and they cannot measure themselves inside a
+        // display:none parent. The wallets resolve their availability
+        // asynchronously, so the blocks fill in one by one.
+        document.getElementById('spinner').classList.remove('active');
+        document.getElementById('components-view').style.display = '';
+
+        const offered = new Set((paymentMethodsResponse.paymentMethods || []).map((pm) => pm.type));
+        const specs = [
+          { id: 'googlepay', txVariant: 'googlepay', Component: GooglePay, config: { allowedCardNetworks: ['AMEX', 'DISCOVER', 'JCB', 'MASTERCARD', 'VISA'] } },
+          { id: 'applepay', txVariant: 'applepay', Component: ApplePay, config: {} },
+          { id: 'card', txVariant: 'scheme', Component: Card, config: cardConfig },
+        ];
+
+        for (const spec of specs) {
+          const mount = document.getElementById('cmp-mount-' + spec.id);
+          if (!offered.has(spec.txVariant)) {
+            showCmpNote(mount, 'cmp.notOffered');
+            logEvent('component.notOffered', { paymentMethod: spec.txVariant });
+            continue;
+          }
+          try {
+            const component = new spec.Component(adyenCheckout, spec.config);
+            await component.isAvailable();
+            component.mount(mount);
+            logEvent('component.mounted', { paymentMethod: spec.txVariant });
+          } catch (err) {
+            showCmpNote(mount, 'cmp.unavailable');
+            logEvent('component.unavailable', { paymentMethod: spec.txVariant, message: err?.message });
+          }
+        }
+
+        debugToggles.style.display = 'flex';
+        document.getElementById('debug-feedback').style.display = 'block';
+        setupTestCardsPanel();
+      }
+
+      function showCmpNote(mount, key) {
+        const note = document.createElement('p');
+        note.className = 'cmp-note';
+        note.setAttribute('data-i18n', key);
+        note.textContent = window.t(key);
+        mount.appendChild(note);
+      }
+
+      if (isComponents) {
+        await mountComponents();
+      } else {
+        dropin = new Dropin(adyenCheckout, dropinConfig).mount('#dropin-container');
+      }
 
       // ── Test cards side panel ─────────────────────────────────────────
       function setupTestCardsPanel() {
@@ -2024,6 +2173,12 @@
           'selected', 'loading', 'confirming', 'disabling', 'pending', 'open', 'standalone', 'list',
         ]);
         const getSelectedType = () => {
+          // Components mode has no payment method list to select from, and the
+          // card component is on the page from the start, so the test cards are
+          // relevant for as long as it is mounted.
+          if (isComponents) {
+            return document.querySelector('#cmp-mount-card .adyen-checkout__card-input') ? 'scheme' : null;
+          }
           const sel = document.querySelector('.adyen-checkout__payment-method--selected');
           if (!sel) {
             // During an inline action (QR / await, e.g. BCMC mobile) the payment
@@ -2105,7 +2260,7 @@
           update();
         });
 
-        const container = document.getElementById('dropin-container');
+        const container = document.getElementById(isComponents ? 'components-view' : 'dropin-container');
         new MutationObserver(update).observe(container, {
           subtree: true,
           childList: true,
@@ -2224,8 +2379,10 @@
       const dropinReset = document.getElementById('dropin-reset');
       let heldDropinError = null;
 
+      // Components mode has no list to be replaced and no status to re-assert,
+      // so there the error banner is the whole story.
       function applyDropinError() {
-        if (heldDropinError == null) return;
+        if (heldDropinError == null || !dropin) return;
         dropin.setStatus('error', { message: heldDropinError });
         dropinReset.style.display = 'block';
       }
@@ -2240,7 +2397,7 @@
       function clearDropinError() {
         heldDropinError = null;
         dropinReset.style.display = 'none';
-        dropin.setStatus('ready');
+        if (dropin) dropin.setStatus('ready');
       }
 
       dropinReset.addEventListener('click', clearDropinError);

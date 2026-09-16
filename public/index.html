@@ -68,11 +68,51 @@
       color: var(--ink);
       margin-bottom: 4px;
     }
-    .preset-panel .preset-hint {
+    /* Integration switch: Drop-in ⇄ Components. The thumb slides between the
+       two halves, so the control reads as one toggle rather than two buttons. */
+    .mode-switch {
+      position: relative;
+      display: flex;
+      margin: 10px 0 14px;
+      padding: 3px;
+      background: var(--surface-sunken);
+      border: 1px solid var(--hairline);
+      border-radius: var(--r-pill);
+      -webkit-user-select: none; -moz-user-select: none; user-select: none;
+    }
+    .mode-switch__thumb {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      left: 3px;
+      width: calc(50% - 3px);
+      background: var(--accent-ink);
+      border-radius: var(--r-pill);
+      transition: transform 0.25s var(--ease);
+      pointer-events: none;
+    }
+    .mode-switch[data-value="components"] .mode-switch__thumb { transform: translateX(100%); }
+    .mode-switch__seg {
+      position: relative;
+      z-index: 1;
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 7px 4px;
+      background: none;
+      border: 0;
+      border-radius: var(--r-pill);
+      font-family: inherit;
       font-size: var(--t-caption);
-      color: var(--ink-faint);
-      line-height: 1.45;
-      margin-bottom: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink-muted);
+      cursor: pointer;
+      transition: color 0.25s var(--ease);
+    }
+    .mode-switch__seg.active { color: var(--on-dark); }
+    .mode-switch__seg:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) {
+      .mode-switch__thumb { transition: none; }
     }
     .preset-btn {
       display: block;
@@ -673,7 +713,11 @@
 
   <aside class="preset-panel">
     <h3 data-i18n="preset.title">Test Scenarios</h3>
-    <p class="preset-hint" data-i18n="preset.hint">Quickly configure the parameters for common test flows. Please select one for testing and click Start Checkout.</p>
+    <div class="mode-switch" id="mode-switch" data-value="dropin" role="tablist" aria-label="Integration">
+      <span class="mode-switch__thumb" aria-hidden="true"></span>
+      <button type="button" class="mode-switch__seg active" data-mode="dropin" role="tab" aria-selected="true">Drop-in</button>
+      <button type="button" class="mode-switch__seg" data-mode="components" role="tab" aria-selected="false">Components</button>
+    </div>
     <button type="button" class="preset-btn" id="preset-firstpay">
       <span class="preset-btn-title" data-i18n="preset.firstpay.title">1. First-time card tokenization</span>
       <span class="preset-btn-desc" data-i18n-html="preset.firstpay.desc">Generates a new Shopper Reference.<br>Please also check "save for my next payment" in the next page.</span>
@@ -793,6 +837,20 @@
       if (!billingReqEl.checked) billingModeCsel.classList.remove('open');
     });
 
+    // ── Integration mode (Drop-in ⇄ Components) ──────────────────────────
+    const modeSwitch = document.getElementById('mode-switch');
+    function setIntegrationMode(mode) {
+      modeSwitch.dataset.value = mode;
+      modeSwitch.querySelectorAll('[data-mode]').forEach((seg) => {
+        const on = seg.dataset.mode === mode;
+        seg.classList.toggle('active', on);
+        seg.setAttribute('aria-selected', String(on));
+      });
+    }
+    modeSwitch.querySelectorAll('[data-mode]').forEach((seg) => {
+      seg.addEventListener('click', () => setIntegrationMode(seg.dataset.mode));
+    });
+
     // ── Submit ───────────────────────────────────────────────────────────
     document.getElementById('startBtn').addEventListener('click', () => {
       const amountVal = parseFloat(document.getElementById('amount').value);
@@ -842,6 +900,7 @@
       params.set('shopperLocale', cselVal('shopperLocale'));
       params.set('threeDSMode', cselVal('threeDSMode'));
       if (chargebackHolderName) params.set('chargebackHolderName', chargebackHolderName);
+      if (modeSwitch.dataset.value === 'components') params.set('integration', 'components');
       window.location.href = '/checkout.html?' + params.toString();
     });
 
@@ -1080,6 +1139,7 @@
     document.getElementById('preset-reset').addEventListener('click', () => {
       clearRememberNote();
       clearChargeback();
+      setIntegrationMode('dropin');
       cselSet('country', 'SG');
       cselSet('shopperLocale', 'en-US');
       cselSet('currency', 'SGD');

@@ -109,7 +109,6 @@
 
       // ── Test scenarios panel ──
       'preset.title': 'Test Scenarios',
-      'preset.hint': 'Quickly configure the parameters for common test flows. Please select one for testing and click Start Checkout.',
       'preset.firstpay.title': '1. First-time card tokenization',
       'preset.firstpay.desc': 'Generates a new Shopper Reference.<br>Please also check "save for my next payment" in the next page.',
       'preset.reuse.title': '2. Pay with a stored card',
@@ -137,6 +136,9 @@
       'checkout.title': 'Checkout',
       'checkout.hintBanner': 'Maximize your browser to see all contents',
       'checkout.backToMethods': '← Back to payment methods',
+      'cmp.badge': 'Components integration — each payment method is mounted as its own component.',
+      'cmp.unavailable': 'Not available in this browser or on this device.',
+      'cmp.notOffered': 'Not returned by /paymentMethods for this country and currency.',
       'debug.console': 'Debug Console',
       'debug.sdkEvent': 'SDK Event',
       'debug.apiLog': 'API Log',
@@ -264,7 +266,6 @@
 
       // ── Test scenarios panel ──
       'preset.title': '测试场景',
-      'preset.hint': '快速配置常见测试流程的参数。请选择一个进行测试，然后点击"开始结账"。',
       'preset.firstpay.title': '1. 首次卡片令牌化',
       'preset.firstpay.desc': '生成一个新的 Shopper Reference。<br>请在下一页勾选"保存以便下次支付"。',
       'preset.reuse.title': '2. 使用已保存的卡支付',
@@ -292,6 +293,9 @@
       'checkout.title': '结账',
       'checkout.hintBanner': '请最大化浏览器窗口以显示全部内容',
       'checkout.backToMethods': '← 返回支付方式列表',
+      'cmp.badge': 'Components 集成方式 —— 每个支付方式都作为独立组件单独挂载。',
+      'cmp.unavailable': '当前浏览器或设备不支持该支付方式。',
+      'cmp.notOffered': '当前国家与货币下 /paymentMethods 未返回该支付方式。',
       'debug.console': '调试控制台',
       'debug.sdkEvent': 'SDK 事件',
       'debug.apiLog': 'API 日志',
