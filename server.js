@@ -253,7 +253,7 @@ app.post('/api/paymentLinks', async (req, res) => {
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {
-    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail, billingAddress, deliveryAddress, installments } = req.body;
+    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail, billingAddress, deliveryAddress, installments, order } = req.body;
     const orderRef = merchantRef || uuid();
 
     const origin = `${req.protocol}://${req.get('host')}`;
@@ -328,6 +328,12 @@ app.post('/api/payments', async (req, res) => {
       recurringProcessingModel: recurringModel || (paymentMethod?.storedPaymentMethodId ? 'CardOnFile' : undefined),
       ...(storePaymentMethod && { storePaymentMethod: true }),
       ...(installments && { installments }),
+      // Ties this payment to a partial-payment order (gift cards). Adyen
+      // returns the order with its remaining amount so the next payment can
+      // pay off the rest.
+      ...(order?.orderData && order?.pspReference && {
+        order: { orderData: order.orderData, pspReference: order.pspReference },
+      }),
       billingAddress: mergeAddress(billingAddress),
       deliveryAddress: mergeAddress(deliveryAddress),
       shopperIP: clientIp(req),
@@ -353,6 +359,77 @@ app.post('/api/payments/details', async (req, res) => {
     res.json(response);
   } catch (error) {
     console.error('/payments/details error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Gift cards / partial payments ───────────────────────────────────────────
+// A gift card rarely covers the whole basket, so Drop-in splits the payment
+// across an Adyen "order": check the balance, open an order for the full
+// amount, then pay it off with one /payments call per method. These three
+// endpoints back the Drop-in callbacks that drive that.
+
+// Drop-in calls this first, with the encrypted gift card details, to find out
+// how much the card holds.
+app.post('/api/paymentMethods/balance', async (req, res) => {
+  try {
+    const { paymentMethod, currency, amount } = req.body;
+    const balanceRequest = {
+      merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
+      amount: {
+        currency: currency || 'SGD',
+        value: amount || 10,
+      },
+      paymentMethod,
+    };
+    const response = await checkout.OrdersApi.getBalanceOfGiftCard(balanceRequest);
+    logPayment('/paymentMethods/balance', balanceRequest, response);
+    res.json(response);
+  } catch (error) {
+    console.error('/paymentMethods/balance error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Called only when the balance falls short: opens an order for the full amount
+// that the gift card and the follow-up method both pay into.
+app.post('/api/orders', async (req, res) => {
+  try {
+    const { currency, amount, merchantRef } = req.body;
+    const orderRequest = {
+      merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
+      reference: merchantRef || uuid(),
+      amount: {
+        currency: currency || 'SGD',
+        value: amount || 10,
+      },
+    };
+    const response = await checkout.OrdersApi.orders(orderRequest, { idempotencyKey: uuid() });
+    logPayment('/orders', orderRequest, response);
+    res.json(response);
+  } catch (error) {
+    console.error('/orders error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Releases the amount already paid into a part-paid order when the shopper
+// backs out, so the gift card balance is not left held.
+app.post('/api/orders/cancel', async (req, res) => {
+  try {
+    const { order } = req.body;
+    const cancelRequest = {
+      merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
+      order: {
+        orderData: order?.orderData,
+        pspReference: order?.pspReference,
+      },
+    };
+    const response = await checkout.OrdersApi.cancelOrder(cancelRequest);
+    logPayment('/orders/cancel', cancelRequest, response);
+    res.json(response);
+  } catch (error) {
+    console.error('/orders/cancel error:', error.message);
     res.status(500).json({ error: error.message });
   }
 });

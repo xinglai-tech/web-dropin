@@ -1149,6 +1149,32 @@
       // ── Build return URL for redirect payments ──────────────────────────
       const returnUrl = `${window.location.origin}/result.html`;
 
+      // ── Gift cards / partial payments ───────────────────────────────────
+      // A gift card that does not cover the basket splits the payment across
+      // an Adyen order, and each /payments call has to carry the amount that
+      // that particular payment covers. The SDK tracks the order for us and
+      // puts it in state.data, but it never puts an amount there, so the split
+      // is ours to work out: the gift card takes whatever it holds, and the
+      // method that follows takes what the order says is left.
+      let orderRemaining = amount;
+      let giftcardBalance = null;
+
+      function paymentAmountFor(type) {
+        if (type === 'giftcard' && giftcardBalance != null) {
+          return Math.min(giftcardBalance, orderRemaining);
+        }
+        return orderRemaining;
+      }
+
+      function trackOrderProgress(result) {
+        const left = result?.order?.remainingAmount?.value;
+        if (typeof left === 'number') {
+          orderRemaining = left;
+          giftcardBalance = null; // the next gift card, if any, has its own
+          logEvent('order.remaining', { value: left, currency: result.order.remainingAmount.currency });
+        }
+      }
+
       // ── Initialise Adyen Checkout (Advanced Flow) ───────────────────────
       const adyenCheckout = await AdyenCheckout({
         environment,
@@ -1163,6 +1189,104 @@
           logEvent('onChange', { paymentMethod: component?.props?.type, isValid: state.isValid, data: state.data });
         },
 
+        // ── Gift card callbacks ──────────────────────────────────────────
+        // Note the two calling conventions: v6 kept onBalanceCheck and
+        // onOrderRequest on the old (resolve, reject, data) signature, while
+        // onOrderCancel and onPaymentMethodsRequest take (data, actions).
+        // The published gift card guide still shows the v5 shape for
+        // onOrderCancel, so it is the SDK that is authoritative here.
+
+        // Drop-in asks how much the card holds, then decides for itself
+        // whether the basket needs an order on top.
+        onBalanceCheck: async (resolve, reject, data) => {
+          logEvent('onBalanceCheck', { paymentMethod: data?.paymentMethod?.type });
+          try {
+            const balanceRequestBody = { ...data, currency, amount: orderRemaining };
+            logApi('/paymentMethods/balance', 'Request', balanceRequestBody);
+            const res = await fetch('/api/paymentMethods/balance', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(balanceRequestBody),
+            });
+            const result = await res.json();
+            logApi('/paymentMethods/balance', 'Response', result);
+            if (result.error) return reject(new Error(result.error));
+            // Remember it: the gift card can only be charged what it holds,
+            // and that figure never reaches us through state.data.
+            if (typeof result?.balance?.value === 'number') giftcardBalance = result.balance.value;
+            resolve(result);
+          } catch (err) {
+            reject(err);
+          }
+        },
+
+        // Reached only when the balance falls short. The order covers the full
+        // amount, not the remainder, since nothing has been paid yet.
+        onOrderRequest: async (resolve, reject, data) => {
+          logEvent('onOrderRequest', { paymentMethod: data?.paymentMethod?.type });
+          try {
+            const orderRequestBody = { currency, amount, ...(merchantRef && { merchantRef }) };
+            logApi('/orders', 'Request', orderRequestBody);
+            const res = await fetch('/api/orders', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(orderRequestBody),
+            });
+            const result = await res.json();
+            logApi('/orders', 'Response', result);
+            if (result.error) return reject(new Error(result.error));
+            resolve(result);
+          } catch (err) {
+            reject(err);
+          }
+        },
+
+        // The shopper dropped a part-paid order. Cancelling releases the
+        // amount the gift card already covered. Drop-in reads `amount` off
+        // whatever we resolve with, so it has to be the full amount again.
+        onOrderCancel: async ({ order }, actions) => {
+          logEvent('onOrderCancel', { pspReference: order?.pspReference });
+          try {
+            const cancelRequestBody = { order };
+            logApi('/orders/cancel', 'Request', cancelRequestBody);
+            const res = await fetch('/api/orders/cancel', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(cancelRequestBody),
+            });
+            const result = await res.json();
+            logApi('/orders/cancel', 'Response', result);
+            orderRemaining = amount;
+            giftcardBalance = null;
+            actions.resolve({ amount: { currency, value: amount } });
+          } catch (err) {
+            actions.reject(err);
+          }
+        },
+
+        // Optional, but a basket that is part paid is a smaller basket, and
+        // some methods are not offered at the smaller amount. Re-asking keeps
+        // the list honest about what can still be used.
+        onPaymentMethodsRequest: async (data, actions) => {
+          logEvent('onPaymentMethodsRequest', { order: !!data?.order });
+          try {
+            const refreshBody = { ...pmRequestBody, amount: orderRemaining };
+            logApi('/paymentMethods', 'Request', refreshBody);
+            const res = await fetch('/api/paymentMethods', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(refreshBody),
+            });
+            const result = await res.json();
+            logApi('/paymentMethods', 'Response', result);
+            if (result.error) return actions.reject(new Error(result.error));
+            if (!showStoredPaymentMethods) delete result.storedPaymentMethods;
+            actions.resolve(result);
+          } catch (err) {
+            actions.reject(err);
+          }
+        },
+
         // Called when the shopper submits payment
         onSubmit: async (state, component, actions) => {
           logEvent('onSubmit', { paymentMethod: component?.props?.type, isValid: state.isValid });
@@ -1174,7 +1298,7 @@
             const paymentsRequestBody = {
               ...state.data,
               currency,
-              amount,
+              amount: paymentAmountFor(state.data?.paymentMethod?.type),
               countryCode: country,
               channel,
               returnUrl,
@@ -1207,6 +1331,7 @@
               return;
             }
             if (result.pspReference) lastPspReference = result.pspReference;
+            trackOrderProgress(result);
 
             // Hide the "feedback" prompt once an inline action UI (QR / await /
             // SDK, e.g. BCMC mobile) is shown, since a payment method is already
@@ -1651,6 +1776,48 @@
                   { text: '• **Auth Verified: Visa** — Visa ••0000' },
                 ],
               },
+            ],
+          },
+          giftcard: {
+            title: 'Gift Card Test',
+            highlight: {
+              title: 'Result by amount (last 3 digits)',
+              notes: [
+                { text: '**100** Authorised · **123** Refused · **124** Not enough balance' },
+                { text: '**125** Blocked Card · **126** Expired Card · **130** Acquirer Error' },
+                { text: '**134** Invalid Pin · **135** Pin tries exceeded' },
+              ],
+            },
+            sections: [
+              {
+                title: 'Test cards',
+                fields: [
+                  { label: 'Givex', value: '6036280000000000000' },
+                  { label: 'Generic', value: '6364530000000000' },
+                  { label: 'SVS', value: '6006490000000000' },
+                  { label: 'Fiserv', value: '7777182708544835' },
+                ],
+                notes: [
+                  { text: '**Security code**: any value. **Expiry**: 12 / 2222.' },
+                ],
+              },
+              {
+                title: 'Intersolve (PIN instead of CVC)',
+                fields: [
+                  { label: 'Plastix', value: '4010100000000000000' },
+                  { label: 'Gift Card', value: '6280501100000000000' },
+                  { label: 'VVV Giftcard', value: '6064364295385017427' },
+                ],
+                notes: [
+                  { text: '**PIN**: 73737, except VVV Giftcard, which uses 737373.' },
+                ],
+              },
+            ],
+            notesTitle: 'Before you test',
+            notes: [
+              { text: 'The gift card brand has to be enabled in your Customer Area, otherwise /paymentMethods never returns it and it cannot appear in Drop-in.', warn: true },
+              { text: 'The balance currency must match the transaction currency, or Drop-in fails the balance check with a currency error. The test cards hold **EUR 50**, so set the currency to **EUR**.', warn: true },
+              { text: 'For the partial payment flow, pay **more than EUR 50** so the balance falls short: Drop-in then opens an order and asks for a second payment method.' },
             ],
           },
           ach: {
