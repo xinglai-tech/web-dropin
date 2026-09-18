@@ -1087,6 +1087,17 @@
       // a handful of methods separately so each one can be inspected on its own.
       const isComponents = params.get('integration') === 'components';
 
+      // One merchant reference for the whole attempt. A gift card splits a
+      // purchase across an order and several /payments calls; Adyen ties those
+      // together by the order, but our reference is what names the purchase in
+      // the payment list, so the parts belong under one. Left to itself the
+      // backend mints a fresh uuid per call and scatters them.
+      // randomUUID needs a secure context, and this app can be served over
+      // plain http when there is no certificate to hand.
+      const newReference = () =>
+        crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      let paymentReference = merchantRef || newReference();
+
       // Country-specific installment plans applied to the card component.
       // For JP, `values` apply to the regular plan; revolving/bonus always send
       // value 1, which the component handles automatically.
@@ -1225,7 +1236,7 @@
         onOrderRequest: async (resolve, reject, data) => {
           logEvent('onOrderRequest', { paymentMethod: data?.paymentMethod?.type });
           try {
-            const orderRequestBody = { currency, amount, ...(merchantRef && { merchantRef }) };
+            const orderRequestBody = { currency, amount, merchantRef: paymentReference };
             logApi('/orders', 'Request', orderRequestBody);
             const res = await fetch('/api/orders', {
               method: 'POST',
@@ -1258,6 +1269,10 @@
             logApi('/orders/cancel', 'Response', result);
             orderRemaining = amount;
             giftcardBalance = null;
+            // That order is closed, so the next one is a new purchase and
+            // wants its own reference. A reference the tester typed is theirs
+            // to repeat, so leave that one alone.
+            if (!merchantRef) paymentReference = newReference();
             actions.resolve({ amount: { currency, value: amount } });
           } catch (err) {
             actions.reject(err);
@@ -1308,7 +1323,7 @@
               ...(telephoneNumber && { telephoneNumber }),
               ...(shopperEmail && { shopperEmail }),
               ...(recurringModel && { recurringModel }),
-              ...(merchantRef && { merchantRef }),
+              merchantRef: paymentReference,
             };
             // Chargeback test: set the special holderName directly on the card
             // paymentMethod so the request carries the real Adyen param.
