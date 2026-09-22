@@ -253,7 +253,7 @@ app.post('/api/paymentLinks', async (req, res) => {
 // ── /payments ───────────────────────────────────────────────────────────────
 app.post('/api/payments', async (req, res) => {
   try {
-    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail, billingAddress, deliveryAddress, installments, order } = req.body;
+    const { paymentMethod, browserInfo, currency, amount, countryCode, returnUrl, channel, merchantRef, shopperRef, storePaymentMethod, shopperInteraction, recurringModel, threeDSMode, telephoneNumber, shopperEmail, shopperStatement, billingAddress, deliveryAddress, installments, order } = req.body;
     const orderRef = merchantRef || uuid();
 
     const origin = `${req.protocol}://${req.get('host')}`;
@@ -319,6 +319,10 @@ app.post('/api/payments', async (req, res) => {
         },
       ],
       ...(shopperEmail && { shopperEmail }),
+      // Only reaches the shopper's bank statement if the transaction
+      // description in the Customer Area is set to the dynamic or combination
+      // option; on its own the parameter is accepted and ignored.
+      ...(shopperStatement && { shopperStatement }),
       shopperName: {
         firstName: 'Test',
         lastName: 'Shopper',

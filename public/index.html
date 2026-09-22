@@ -656,6 +656,11 @@
       </div>
     </div>
 
+    <div class="form-group">
+      <label for="shopperStatement"><span data-i18n="label.shopperStatement">Shopper Statement</span><span class="info-tip" tabindex="0" data-i18n-tip="tip.shopperStatement" data-tip="Text for the shopper's bank statement. Left empty, the parameter is not sent at all.&#10;Keep it to 22 characters: banks truncate longer ones.&#10;Allowed: a-z A-Z 0-9 space . , ' _ - ? + * /&#10;Only reaches the statement if the transaction description in your Customer Area is set to the dynamic or combination option.">i</span></label>
+      <input type="text" id="shopperStatement" value="" maxlength="22" placeholder="optional" data-i18n-ph="ph.optional" />
+    </div>
+
     <div class="form-group" id="billingModeGroup" style="display:flex;align-items:center;gap:10px;">
       <label class="checkbox-label" style="flex:0 0 auto;">
         <input type="checkbox" id="billingAddressRequired" />
@@ -899,6 +904,8 @@
       if (phone) params.set('telephoneNumber', phone);
       const email = document.getElementById('shopperEmail').value.trim();
       if (email) params.set('shopperEmail', email);
+      const shopperStatement = document.getElementById('shopperStatement').value.trim();
+      if (shopperStatement) params.set('shopperStatement', shopperStatement);
       if (billingReqEl.checked) {
         params.set('billingAddressRequired', 'true');
         params.set('billingAddressMode', cselVal('billingAddressMode'));
@@ -1163,6 +1170,7 @@
       document.getElementById('merchantRef').value = '';
       document.getElementById('telephoneNumber').value = '1234567890';
       document.getElementById('shopperEmail').value = 'test@example.com';
+      document.getElementById('shopperStatement').value = '';
       document.getElementById('billingAddressRequired').checked = false;
       billingModeCsel.classList.add('csel--disabled');
       document.getElementById('enableStoreDetails').checked = true;

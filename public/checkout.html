@@ -1074,6 +1074,7 @@
       const shopperInteraction = params.get('shopperInteraction') || 'Ecommerce';
       const telephoneNumber = params.get('telephoneNumber') || '';
       const shopperEmail = params.get('shopperEmail') || '';
+      const shopperStatement = params.get('shopperStatement') || '';
       const recurringModel = params.get('recurringModel') || '';
       const billingAddressRequired = params.get('billingAddressRequired') === 'true';
       const billingAddressMode = params.get('billingAddressMode') || 'full';
@@ -1322,6 +1323,7 @@
               threeDSMode,
               ...(telephoneNumber && { telephoneNumber }),
               ...(shopperEmail && { shopperEmail }),
+              ...(shopperStatement && { shopperStatement }),
               ...(recurringModel && { recurringModel }),
               merchantRef: paymentReference,
             };
